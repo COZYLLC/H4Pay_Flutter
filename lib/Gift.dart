@@ -40,9 +40,9 @@ Future<List<Gift>?> fetchGift(_uid) async {
   final response = await http.post(
       Uri.parse('${dotenv.env['API_URL']}/gift/recipientlist'),
       body: {"uid": _uid});
-  final jsonResponse = jsonDecode(response.body);
   if (response.statusCode == 200) {
-    if (jsonResponse['querySuccess']) {
+    final jsonResponse = jsonDecode(response.body);
+    if (jsonResponse['status']) {
       List gifts = jsonDecode(response.body)['result'];
       return gifts.map((e) => Gift.fromList(e)).toList();
     } else {

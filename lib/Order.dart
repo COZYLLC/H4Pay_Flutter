@@ -40,9 +40,9 @@ Future<List<Order>?> fetchOrder(_uid) async {
   final response = await http.get(
     Uri.parse('${dotenv.env['API_URL']}/orders/fromuid/$_uid'),
   );
-  final jsonResponse = jsonDecode(response.body);
   if (response.statusCode == 200) {
-    if (jsonResponse['lookupSuccess']) {
+    final jsonResponse = jsonDecode(response.body);
+    if (jsonResponse['status']) {
       List orders = jsonDecode(response.body)['order'];
       return orders.map((e) => Order.fromList(e)).toList();
     } else {

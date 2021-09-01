@@ -30,13 +30,18 @@ class Product {
   }
 }
 
-Future<List<Product>> fetchProduct() async {
+Future<List<Product>?> fetchProduct() async {
   final response = await http.get(
     Uri.parse('${dotenv.env['API_URL']}/product'),
   );
   if (response.statusCode == 200) {
-    List products = jsonDecode(response.body)['list'];
-    return products.map((e) => Product.fromList(e)).toList();
+    final jsonResponse = jsonDecode(response.body);
+    if (jsonResponse['status']) {
+      List products = jsonDecode(response.body)['list'];
+      return products.map((e) => Product.fromList(e)).toList();
+    } else {
+      return null;
+    }
   } else {
     throw Exception('Failed to fetch product.');
   }

@@ -6,17 +6,21 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay_flutter/Gift.dart';
 import 'package:h4pay_flutter/Order.dart';
 import 'package:h4pay_flutter/Product.dart';
-import 'package:h4pay_flutter/components/Products.dart';
-import 'dart:ui' as ui;
+import 'package:h4pay_flutter/components/Card.dart';
 import 'package:http/http.dart' as http;
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env");
-  runApp(MyApp());
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  runApp(MyApp(prefs));
 }
 
 class MyApp extends StatelessWidget {
+  final prefs;
+  MyApp(this.prefs);
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -24,18 +28,20 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'H4Pay'),
+      home: MyHomePage(title: 'H4Pay', prefs: prefs),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title, required this.prefs})
+      : super(key: key);
 
   final String title;
+  final SharedPreferences prefs;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState(prefs);
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -44,6 +50,10 @@ class _MyHomePageState extends State<MyHomePage> {
   int _giftBadgeCount = 0;
   int _accountBadgeCount = 0;
   int _cartBadgeCount = 0;
+
+  final SharedPreferences prefs;
+
+  _MyHomePageState(this.prefs);
 
   Future<String> fetchStoreState() async {
     final response =
@@ -64,14 +74,26 @@ class _MyHomePageState extends State<MyHomePage> {
     // calculate cart items, orders, gifts and set badge states.
     final orders = await fetchOrder('ckm0728wash');
     final gifts = await fetchGift('ckm0728wash');
+    int orderCount = 0;
+    int giftCount = 0;
     if (orders != null) {
+      orders.forEach(
+        (order) => {
+          if (!order.exchanged) {orderCount++},
+        },
+      );
       setState(() {
-        _accountBadgeCount = orders.length;
+        _accountBadgeCount = orderCount;
       });
     }
     if (gifts != null) {
+      gifts.forEach(
+        (gift) => {
+          if (!gift.exchanged) {giftCount++}
+        },
+      );
       setState(() {
-        _giftBadgeCount = gifts.length;
+        _giftBadgeCount = giftCount;
       });
     }
 
@@ -80,6 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
+    super.initState();
     updateBadges();
   }
 
@@ -148,7 +171,60 @@ class _MyHomePageState extends State<MyHomePage> {
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       final products = snapshot.data as List<Product>;
-                      return ProductsWidget(products: products);
+                      return GridView.count(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        crossAxisCount: 2,
+                        children: List.generate(
+                          products.length,
+                          (index) {
+                            EdgeInsets margin;
+                            index % 2 == 0
+                                ? margin = EdgeInsets.fromLTRB(22, 12, 9, 12)
+                                : margin = EdgeInsets.fromLTRB(9, 12, 22, 12);
+                            return CardWidget(
+                              margin: margin,
+                              onClick: () {
+                                addProductToCart(index);
+                              },
+                              child: Column(
+                                children: [
+                                  Image.network(
+                                    products[index].img,
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.3,
+                                  ),
+                                  Container(
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          child: Text(
+                                            products[index].productName,
+                                            textAlign: TextAlign.left,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15),
+                                          ),
+                                          alignment: Alignment(-1, 0),
+                                        ),
+                                        Container(
+                                          child: Text(
+                                            "${products[index].price} 원",
+                                            textAlign: TextAlign.left,
+                                          ),
+                                          alignment: Alignment(-1, 0),
+                                        ),
+                                      ],
+                                    ),
+                                    alignment: Alignment(-1, 0),
+                                    padding: EdgeInsets.only(left: 20),
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      );
                     } else {
                       return CircularProgressIndicator();
                     }
@@ -189,5 +265,25 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
     );
+  }
+
+  addProductToCart(int id) {
+    final cartString = prefs.getString('cart'); // SharedPrefernce에서 장바구니 로드
+    Map cartMap = {"$id": 1}; // 장바구니 데이터가 없을 때 초기 데이터.
+    if (cartString != null) {
+      cartMap = json.decode(cartString); // 장바구니 데이터 파싱
+      cartMap["$id"] == null
+          ? cartMap["$id"] = 1
+          : cartMap["$id"]++; // 해당 ID의 데이터가 없으면 1개로, 있으면 1 더하기
+    }
+    prefs.setString('cart',
+        json.encode(cartMap)); // 장바구니 데이터 Stringify 후 SharedPreference에 저장
+    int itemCount = 0;
+    cartMap.forEach((key, value) {
+      itemCount += value as int;
+    });
+    setState(() {
+      _cartBadgeCount = itemCount;
+    });
   }
 }
