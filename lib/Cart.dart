@@ -22,13 +22,30 @@ class _CartState extends State<Cart> {
 
   Map cartMap = {};
 
+  void updateCart() {
+    prefs.setString('cart', json.encode(cartMap));
+  }
+
+  void _incrementCounter(idx) {
+    updateCart();
+    setState(() {
+      cartMap['$idx']++;
+    });
+  }
+
+  void _decrementCounter(idx) {
+    updateCart();
+    setState(() {
+      cartMap['$idx']--;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     final cartString = prefs.getString('cart');
     if (cartString != null) {
       cartMap = json.decode(cartString);
-      print(cartMap);
     }
   }
 
@@ -98,7 +115,7 @@ class _CartState extends State<Cart> {
                                   ),
                                 ),
                                 Text(
-                                  (products[idx].price * cartMap["$idx"])
+                                  (products[idx].price * cartMap['$idx'])
                                       .toString(),
                                   style: TextStyle(fontSize: 20),
                                 ),
@@ -107,23 +124,17 @@ class _CartState extends State<Cart> {
                                     cartMap["$idx"] != 1
                                         ? IconButton(
                                             onPressed: () {
-                                              setState(() {
-                                                cartMap["$idx"] -= 1;
-                                              });
-                                              updateCart();
+                                              _decrementCounter(idx);
                                             },
                                             icon: Icon(Icons.remove),
                                           )
                                         : Container(),
                                     Text(
-                                      cartMap["$idx"].toString(),
+                                      cartMap['$idx'].toString(),
                                     ),
                                     IconButton(
                                       onPressed: () {
-                                        setState(() {
-                                          cartMap["$idx"] += 1;
-                                        });
-                                        updateCart();
+                                        _incrementCounter(idx);
                                       },
                                       icon: Icon(Icons.add),
                                     )
@@ -133,7 +144,12 @@ class _CartState extends State<Cart> {
                             ),
                             Spacer(),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                setState(() {
+                                  cartMap.remove('$idx');
+                                });
+                                updateCart();
+                              },
                               child: Text("삭제"),
                             ),
                           ],
@@ -150,9 +166,5 @@ class _CartState extends State<Cart> {
         ),
       ),
     );
-  }
-
-  void updateCart() {
-    prefs.setString('cart', json.encode(cartMap));
   }
 }

@@ -87,7 +87,6 @@ class MyHomePageState extends State<MyHomePage> {
       });
     }
     final cartString = prefs.getString('cart'); // SharedPrefernce에서 장바구니 로드
-    print(cartString);
     if (cartString != null) {
       final Map cartMap = json.decode(cartString); // 장바구니 데이터 파싱
       setState(() {
