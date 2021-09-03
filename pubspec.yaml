@@ -50,3 +50,14 @@ flutter:
   uses-material-design: true
   assets:
     - .env
+  fonts:
+    - family: Spoqa_Han_Sans
+      fonts:
+        - asset: assets/font/SpoqaHanSansNeo-Light.otf
+          weight: 300
+        - asset: assets/font/SpoqaHanSansNeo-Regular.otf
+          weight: 400
+        - asset: assets/font/SpoqaHanSansNeo-Medium.otf
+          weight: 500
+        - asset: assets/font/SpoqaHanSansNeo-Bold.otf
+          weight: 700

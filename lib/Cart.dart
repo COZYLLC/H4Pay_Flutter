@@ -1,21 +1,24 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:h4pay_flutter/Product.dart';
 import 'package:h4pay_flutter/components/Card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class CartPage extends StatefulWidget {
+class Cart extends StatefulWidget {
   final SharedPreferences prefs;
 
   @override
-  CartPage(this.prefs);
+  Cart(this.prefs);
 
-  _CartPageState createState() => _CartPageState(prefs);
+  _CartState createState() => _CartState(prefs);
 }
 
-class _CartPageState extends State<CartPage> {
+class _CartState extends State<Cart> {
   final SharedPreferences prefs;
-  _CartPageState(this.prefs);
+  _CartState(this.prefs);
+  int dummy = 0;
 
   Map cartMap = {};
 
@@ -25,6 +28,7 @@ class _CartPageState extends State<CartPage> {
     final cartString = prefs.getString('cart');
     if (cartString != null) {
       cartMap = json.decode(cartString);
+      print(cartMap);
     }
   }
 
@@ -32,26 +36,123 @@ class _CartPageState extends State<CartPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            GridView.count(
-              crossAxisCount: 1,
-              physics: NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              children: List.generate(cartMap.length, (index) {
-                final idx = cartMap.keys.elementAt(index) as int;
-                return CardWidget(
-                  margin: EdgeInsets.all(18),
-                  onClick: () {},
-                  child: Row(
-                    children: [Text("$idx 번 상품 ${cartMap[idx]}개")],
+        child: FutureBuilder(
+          future: fetchProduct(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final List<Product> products = snapshot.data as List<Product>;
+              return Column(
+                children: [
+                  ListView.builder(
+                    itemCount: cartMap.length,
+                    physics: NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      final idx =
+                          int.parse(cartMap.keys.elementAt(index) as String);
+                      /*return  Column(children: [
+                        Text("$cartMap['$idx']"),
+                        IconButton(
+                            onPressed: () {
+                              setState(() {
+                                cartMap["$idx"]++;
+                              });
+                            },
+                            icon: Icon(Icons.add))
+                      ]); */
+                      return CardWidget(
+                        margin: EdgeInsets.all(18),
+                        onClick: () {},
+                        child: Row(
+                          children: [
+                            Container(
+                              // 제품 사진
+                              padding: EdgeInsets.all(20),
+                              child: CachedNetworkImage(
+                                imageUrl: products[idx].img,
+                                progressIndicatorBuilder:
+                                    (context, url, downloadProgress) =>
+                                        CircularProgressIndicator(
+                                            value: downloadProgress.progress),
+                                errorWidget: (context, url, error) =>
+                                    Icon(Icons.error),
+                                width: MediaQuery.of(context).size.width * 0.25,
+                                height:
+                                    MediaQuery.of(context).size.width * 0.25,
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.4,
+                                  height: 30,
+                                  child: Text(
+                                    products[idx].productName,
+                                    //dummy.toString(),
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.fade,
+                                  ),
+                                ),
+                                Text(
+                                  (products[idx].price * cartMap["$idx"])
+                                      .toString(),
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                                Row(
+                                  children: [
+                                    cartMap["$idx"] != 1
+                                        ? IconButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                cartMap["$idx"] -= 1;
+                                              });
+                                              updateCart();
+                                            },
+                                            icon: Icon(Icons.remove),
+                                          )
+                                        : Container(),
+                                    Text(
+                                      cartMap["$idx"].toString(),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          cartMap["$idx"] += 1;
+                                        });
+                                        updateCart();
+                                      },
+                                      icon: Icon(Icons.add),
+                                    )
+                                  ],
+                                )
+                              ],
+                            ),
+                            Spacer(),
+                            TextButton(
+                              onPressed: () {},
+                              child: Text("삭제"),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              }),
-            )
-          ],
+                ],
+              );
+            } else {
+              return CircularProgressIndicator();
+            }
+          },
         ),
       ),
     );
+  }
+
+  void updateCart() {
+    prefs.setString('cart', json.encode(cartMap));
   }
 }
