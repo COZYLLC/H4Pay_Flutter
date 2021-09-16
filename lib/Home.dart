@@ -1,10 +1,12 @@
 import 'dart:convert';
 
+import 'package:async/async.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_options.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:h4pay_flutter/Cart.dart';
 import 'package:h4pay_flutter/Product.dart';
 import 'package:h4pay_flutter/components/Card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,13 +17,21 @@ class Home extends StatefulWidget {
   Home(this.prefs);
 
   @override
-  _HomeState createState() => _HomeState(prefs);
+  HomeState createState() => HomeState(prefs);
 }
 
-class _HomeState extends State<Home> {
+class HomeState extends State<Home> {
   final SharedPreferences prefs;
+  int? currentTile;
+  Future<List<Product>?>? _fetchProduct;
+  HomeState(this.prefs);
 
-  _HomeState(this.prefs);
+  @override
+  void initState() {
+    super.initState();
+    _fetchProduct = fetchProduct('homePage');
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -57,7 +67,7 @@ class _HomeState extends State<Home> {
             }).toList(),
           ),
           FutureBuilder(
-            future: fetchProduct(),
+            future: _fetchProduct,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 final products = snapshot.data as List<Product>;
@@ -72,52 +82,22 @@ class _HomeState extends State<Home> {
                       index % 2 == 0
                           ? margin = EdgeInsets.fromLTRB(22, 12, 9, 12)
                           : margin = EdgeInsets.fromLTRB(9, 12, 22, 12);
-                      return CardWidget(
+                      return ProductCard(
+                        product: products[index],
+                        isClicked: currentTile == index,
+                        cartOnClick: addProductToCart,
+                        giftOnClick: () {
+                          print("gift Clicked");
+                        },
+                      );
+                      /* CardWidget(
                         margin: margin,
                         onClick: () {
                           addProductToCart(index);
                         },
-                        child: Column(
-                          children: [
-                            CachedNetworkImage(
-                              imageUrl: products[index].img,
-                              progressIndicatorBuilder:
-                                  (context, url, downloadProgress) =>
-                                      CircularProgressIndicator(
-                                          value: downloadProgress.progress),
-                              errorWidget: (context, url, error) =>
-                                  Icon(Icons.error),
-                              width: MediaQuery.of(context).size.width * 0.3,
-                              height: MediaQuery.of(context).size.width * 0.3,
-                            ),
-                            Container(
-                              child: Column(
-                                children: [
-                                  Container(
-                                    child: Text(
-                                      products[index].productName,
-                                      textAlign: TextAlign.left,
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15),
-                                    ),
-                                    alignment: Alignment(-1, 0),
-                                  ),
-                                  Container(
-                                    child: Text(
-                                      "${products[index].price} 원",
-                                      textAlign: TextAlign.left,
-                                    ),
-                                    alignment: Alignment(-1, 0),
-                                  ),
-                                ],
-                              ),
-                              alignment: Alignment(-1, 0),
-                              padding: EdgeInsets.only(left: 20),
-                            )
-                          ],
+                        child: 
                         ),
-                      );
+                      ); */
                     },
                   ),
                 );
@@ -144,20 +124,11 @@ class _HomeState extends State<Home> {
       'cart',
       json.encode(cartMap),
     ); // 장바구니 데이터 Stringify 후 SharedPreference에 저장
-    final MyHomePageState parentState =
-        context.findAncestorStateOfType() as MyHomePageState;
+    final MyHomePageState? parentState =
+        context.findAncestorStateOfType<MyHomePageState>();
+    print(parentState!);
     parentState.setState(() {
       parentState.cartBadgeCount = countAllItemsInCart(cartMap);
     });
   }
-}
-
-int countAllItemsInCart(Map cartMap) {
-  int itemCount = 0;
-  cartMap.forEach(
-    (key, value) {
-      itemCount += value as int;
-    },
-  );
-  return itemCount;
 }

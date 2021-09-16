@@ -1,10 +1,35 @@
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:h4pay_flutter/Product.dart';
 import 'package:h4pay_flutter/components/Card.dart';
+import 'package:h4pay_flutter/components/WebView.dart';
+import 'package:h4pay_flutter/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+int countAllItemsInCart(Map cartMap) {
+  int itemCount = 0;
+  cartMap.forEach(
+    (key, value) {
+      itemCount += value as int;
+    },
+  );
+  return itemCount;
+}
+
+int calculateTotalPrice(Map cartMap, List<Product> products) {
+  num price = 0;
+  cartMap.forEach(
+    (key, value) {
+      price += products[int.parse(key)].price * value;
+    },
+  );
+  return price.toInt();
+}
 
 class Cart extends StatefulWidget {
   final SharedPreferences prefs;
@@ -12,37 +37,48 @@ class Cart extends StatefulWidget {
   @override
   Cart(this.prefs);
 
-  _CartState createState() => _CartState(prefs);
+  CartState createState() => CartState(prefs);
 }
 
-class _CartState extends State<Cart> {
+class CartState extends State<Cart> {
   final SharedPreferences prefs;
-  _CartState(this.prefs);
-  int dummy = 0;
+  CartState(this.prefs);
+  int totalPrice = 0;
 
   Map cartMap = {};
+  List<Product>? products;
+  Future<List<Product>?>? _fetchProduct;
 
   void updateCart() {
     prefs.setString('cart', json.encode(cartMap));
+    final MyHomePageState? parentState =
+        context.findAncestorStateOfType<MyHomePageState>();
+    parentState!.setState(() {
+      parentState.cartBadgeCount = countAllItemsInCart(cartMap);
+    });
+    setState(() {
+      totalPrice = calculateTotalPrice(cartMap, products!);
+    });
   }
 
-  void _incrementCounter(idx) {
-    updateCart();
+  void incrementCounter(idx) {
     setState(() {
       cartMap['$idx']++;
     });
+    updateCart();
   }
 
-  void _decrementCounter(idx) {
-    updateCart();
+  void decrementCounter(idx) {
     setState(() {
       cartMap['$idx']--;
     });
+    updateCart();
   }
 
   @override
   void initState() {
     super.initState();
+    _fetchProduct = fetchProduct('cartPage');
     final cartString = prefs.getString('cart');
     if (cartString != null) {
       cartMap = json.decode(cartString);
@@ -54,113 +90,96 @@ class _CartState extends State<Cart> {
     return Scaffold(
       body: SingleChildScrollView(
         child: FutureBuilder(
-          future: fetchProduct(),
+          future: _fetchProduct!,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              final List<Product> products = snapshot.data as List<Product>;
-              return Column(
-                children: [
-                  ListView.builder(
-                    itemCount: cartMap.length,
-                    physics: NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      final idx =
-                          int.parse(cartMap.keys.elementAt(index) as String);
-                      /*return  Column(children: [
-                        Text("$cartMap['$idx']"),
-                        IconButton(
-                            onPressed: () {
-                              setState(() {
-                                cartMap["$idx"]++;
-                              });
-                            },
-                            icon: Icon(Icons.add))
-                      ]); */
-                      return CardWidget(
-                        margin: EdgeInsets.all(18),
-                        onClick: () {},
-                        child: Row(
-                          children: [
-                            Container(
-                              // 제품 사진
-                              padding: EdgeInsets.all(20),
-                              child: CachedNetworkImage(
-                                imageUrl: products[idx].img,
-                                progressIndicatorBuilder:
-                                    (context, url, downloadProgress) =>
-                                        CircularProgressIndicator(
-                                            value: downloadProgress.progress),
-                                errorWidget: (context, url, error) =>
-                                    Icon(Icons.error),
-                                width: MediaQuery.of(context).size.width * 0.25,
-                                height:
-                                    MediaQuery.of(context).size.width * 0.25,
-                              ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.4,
-                                  height: 30,
-                                  child: Text(
-                                    products[idx].productName,
-                                    //dummy.toString(),
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
-                                    overflow: TextOverflow.fade,
-                                  ),
-                                ),
-                                Text(
-                                  (products[idx].price * cartMap['$idx'])
-                                      .toString(),
-                                  style: TextStyle(fontSize: 20),
-                                ),
-                                Row(
-                                  children: [
-                                    cartMap["$idx"] != 1
-                                        ? IconButton(
-                                            onPressed: () {
-                                              _decrementCounter(idx);
-                                            },
-                                            icon: Icon(Icons.remove),
-                                          )
-                                        : Container(),
-                                    Text(
-                                      cartMap['$idx'].toString(),
-                                    ),
-                                    IconButton(
-                                      onPressed: () {
-                                        _incrementCounter(idx);
-                                      },
-                                      icon: Icon(Icons.add),
-                                    )
-                                  ],
-                                )
-                              ],
-                            ),
-                            Spacer(),
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  cartMap.remove('$idx');
-                                });
-                                updateCart();
-                              },
-                              child: Text("삭제"),
+              products = snapshot.data as List<Product>;
+              SchedulerBinding.instance!.addPostFrameCallback((_) {
+                setState(() {
+                  totalPrice = calculateTotalPrice(cartMap, products!);
+                });
+              });
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+                child: Column(
+                  children: [
+                    ListView.builder(
+                      itemCount: cartMap.length,
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        final idx =
+                            int.parse(cartMap.keys.elementAt(index) as String);
+                        return CartCard(
+                          product: products![idx],
+                          qty: cartMap['$idx'],
+                        );
+                      },
+                    ),
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Text.rich(
+                        TextSpan(
+                          text: '총 가격: ',
+                          children: <TextSpan>[
+                            TextSpan(
+                                text: totalPrice.toString(),
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            TextSpan(
+                              text: ' 원',
                             ),
                           ],
                         ),
-                      );
-                    },
-                  ),
-                ],
+                      ),
+                    ),
+                    Container(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: () {
+                          showBottomSheet(
+                            context: context,
+                            builder: (context) => Container(
+                              height: MediaQuery.of(context).size.height * 0.75,
+                              child: WebViewExample(
+                                  amount: 2000, orderId: "48324328432984275"),
+                            ),
+                          );
+                        },
+                        child: Text("결제하기"),
+                        style: ButtonStyle(
+                          shape:
+                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                              side: BorderSide(color: Colors.grey[400]!),
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               );
             } else {
-              return CircularProgressIndicator();
+              return CardWidget(
+                margin: EdgeInsets.all(22),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 16.0),
+                      width: double.infinity,
+                      height: 100,
+                      child: Shimmer.fromColors(
+                        child: Container(),
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                      ),
+                    ),
+                  ],
+                ),
+                onClick: () {},
+              );
             }
           },
         ),
