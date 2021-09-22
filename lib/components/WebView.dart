@@ -2,16 +2,24 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:h4pay_flutter/Order.dart';
+import 'package:h4pay_flutter/Payment.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 
 class WebViewExample extends StatefulWidget {
   final amount;
   final orderId;
-  WebViewExample({required this.amount, required this.orderId});
+  final orderName;
+  final customerName;
+  final Type type;
+  WebViewExample(
+      {required this.amount,
+      required this.orderId,
+      required this.orderName,
+      required this.customerName,
+      required this.type});
 
   @override
   WebViewExampleState createState() => WebViewExampleState();
@@ -19,20 +27,7 @@ class WebViewExample extends StatefulWidget {
 
 class WebViewExampleState extends State<WebViewExample> {
   WebViewController? _webViewController;
-
-  final String paymentHtml = '''
-  <html>
-  <head>
-    <title>결제하기</title>
-    <script src="https://js.tosspayments.com/v1"></script>
-    <script>
-      var clientKey = "test_ck_5GePWvyJnrKWyAz0GB1rgLzN97Eo";
-      var tossPayments = TossPayments(clientKey);
-    </script>
-  </head>
-  <body></body>
-  </html>
-  ''';
+  bool isMoved = false;
 
   @override
   void initState() {
@@ -42,41 +37,21 @@ class WebViewExampleState extends State<WebViewExample> {
 
   @override
   Widget build(BuildContext context) {
+    final url = "http://192.168.1.253:8080";
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        shape: ContinuousRectangleBorder(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(40),
-            topRight: Radius.circular(40),
-          ),
-        ),
-        title: Align(
-          alignment: Alignment.center,
-          child: Container(
-            width: 100,
-            height: 5,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(width: 1, color: Colors.white),
-              borderRadius: BorderRadius.all(Radius.circular(38)),
-            ),
-          ),
-        ),
-      ),
       body: WebView(
         initialUrl:
-            /* Uri.dataFromString(
-          paymentHtml,
-          mimeType: 'text/html',
-          encoding: Encoding.getByName('utf-8'),
-        ).toString() */
-            "https://h4pay.co.kr/payment?amount=${widget.amount}&orderId=${widget.orderId}",
+            //"https://h4pay.co.kr/payment?amount=${widget.amount}&orderId=${widget.orderId}",
+            "$url/payment?amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}",
+
+        //"http://10.172.16.134:8080/payment/success/presuccess.html",
         javascriptMode: JavascriptMode.unrestricted,
         onWebViewCreated: (WebViewController webViewController) {
           _webViewController = webViewController;
         },
         navigationDelegate: (request) async {
+          print("[WEBVIEW] ${request.url}");
+          print("[WEBVIEW] ${request.url.startsWith("$url/payment/success")}");
           final appInfo = AppInfo(url: request.url);
           if (appInfo.isAppLink()) {
             try {
@@ -85,24 +60,71 @@ class WebViewExampleState extends State<WebViewExample> {
                 launch(appInfo.appUrl!);
                 return NavigationDecision.prevent;
               } else {
-                if (Platform.isIOS) {
-                  launch("https://apps.apple.com/app/{appInfo.package}");
-                } else if (Platform.isAndroid) {
-                  launch("market://details?id=${appInfo.package}");
-                }
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("앱 설치"),
+                        content: const Text("토스 앱이 설치되어 있지 않습니다. 스토어로 이동합니다."),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              if (Platform.isIOS) {
+                                launch(
+                                  "https://apps.apple.com/app/id839333328",
+                                );
+                              } else if (Platform.isAndroid) {
+                                launch(
+                                  "market://details?id=${appInfo.package}",
+                                );
+                              }
+                              Navigator.pop(context);
+                            },
+                            child: Text("확인"),
+                          ),
+                        ],
+                      );
+                    });
                 return NavigationDecision.prevent;
               }
             } catch (e) {
               print("cannot open app");
-
               return NavigationDecision.prevent;
             }
+          } else if (request.url.startsWith("$url/payment/success")) {
+            print("[WEBVIEW] PAYMENT SUCCESS");
+            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PaymentSuccessPage(
+                  type: widget.type,
+                  params: _parseParams(request.url),
+                ),
+              ),
+            );
+            return NavigationDecision.prevent;
+          } else if (request.url.startsWith("$url/payment/fail")) {
+            Navigator.pop(context);
+            return NavigationDecision.prevent;
           } else {
             return NavigationDecision.navigate;
           }
         },
       ),
     );
+  }
+
+  Map _parseParams(String url) {
+    print("[API] $url");
+    final params = url.split('/success?')[1].split("&");
+    var parsedParams = {};
+    for (var i = 0; i < 3; i++) {
+      final param = params[i].split("=");
+      parsedParams[param[0]] = param[1];
+    }
+    print("[API] $parsedParams");
+    return parsedParams;
   }
 }
 
@@ -191,4 +213,22 @@ class AppInfo {
     'kb-acp://',
     'supertoss://'
   ];
+}
+
+class WebViewScaffold extends StatelessWidget {
+  final String initialUrl;
+
+  const WebViewScaffold({Key? key, required this.initialUrl}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        shape: ContinuousRectangleBorder(),
+      ),
+      body: WebView(
+        initialUrl: initialUrl,
+      ),
+    );
+  }
 }

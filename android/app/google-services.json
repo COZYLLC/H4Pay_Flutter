@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "420160555392",
+    "project_id": "h4pay-0921",
+    "storage_bucket": "h4pay-0921.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:420160555392:android:bd2448626cbd2db5249965",
+        "android_client_info": {
+          "package_name": "com.cozyllc.h4pay"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "420160555392-6lsf3etfpv89rggepk9vr4ta9lb1bvja.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cozyllc.h4pay",
+            "certificate_hash": "22d681cc6f5465f71eb38011ac88659ace653da0"
+          }
+        },
+        {
+          "client_id": "420160555392-50d9e464453lhrba7hqnaf6q46kn74np.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDX8dLNvYOV36hb1O4giqi264rjlFKKyJ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "420160555392-50d9e464453lhrba7hqnaf6q46kn74np.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

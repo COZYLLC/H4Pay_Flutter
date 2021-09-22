@@ -3,7 +3,11 @@ import 'dart:convert';
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:h4pay_flutter/Gift.dart';
+import 'package:h4pay_flutter/Order.dart';
 import 'package:h4pay_flutter/Product.dart';
+import 'package:h4pay_flutter/Util.dart';
+import 'package:h4pay_flutter/components/Button.dart';
 import 'package:h4pay_flutter/components/Card.dart';
 import 'package:h4pay_flutter/components/WebView.dart';
 import 'package:h4pay_flutter/main.dart';
@@ -116,47 +120,44 @@ class CartState extends State<Cart> {
                         );
                       },
                     ),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Text.rich(
-                        TextSpan(
-                          text: '총 가격: ',
-                          children: <TextSpan>[
-                            TextSpan(
-                                text: totalPrice.toString(),
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                            TextSpan(
-                              text: ' 원',
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                     Container(
-                      width: double.infinity,
-                      child: TextButton(
-                        onPressed: () {
-                          showBottomSheet(
-                            context: context,
-                            builder: (context) => Container(
-                              height: MediaQuery.of(context).size.height * 0.75,
-                              child: WebViewExample(
-                                  amount: 2000, orderId: "48324328432984275"),
+                      child: this.totalPrice != 0
+                          ? Column(
+                              children: [
+                                Align(
+                                  alignment: Alignment.topLeft,
+                                  child: Text.rich(
+                                    TextSpan(
+                                      text: '총 가격: ',
+                                      children: <TextSpan>[
+                                        TextSpan(
+                                          text: getPrettyAmountStr(
+                                            totalPrice,
+                                          ),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                H4PayButton(
+                                  text: "결제하기",
+                                  onClick: _payment,
+                                  backgroundColor: Colors.blue,
+                                  width: double.infinity,
+                                )
+                              ],
+                            )
+                          : Center(
+                              child: Text(
+                                "장바구니가 비어 있는 것 같네요.",
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.w700),
+                              ),
                             ),
-                          );
-                        },
-                        child: Text("결제하기"),
-                        style: ButtonStyle(
-                          shape:
-                              MaterialStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                              side: BorderSide(color: Colors.grey[400]!),
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
+                    ),
                   ],
                 ),
               );
@@ -182,6 +183,31 @@ class CartState extends State<Cart> {
               );
             }
           },
+        ),
+      ),
+    );
+  }
+
+  _payment() {
+    final _orderId = "1" + genOrderId() + "000";
+    final tempPurchase = {
+      'type': 'Order',
+      'amount': this.totalPrice,
+      'item': cartMap,
+      'orderId': _orderId
+    };
+    prefs.setString('tempPurchase', json.encode(tempPurchase));
+    showBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        //height: MediaQuery.of(context).size.height,
+        child: WebViewExample(
+          type: Order,
+          amount: this.totalPrice,
+          orderId: _orderId,
+          orderName:
+              getProductNameFromList(tempPurchase['item'] as Map, products!),
+          customerName: "최경민",
         ),
       ),
     );
