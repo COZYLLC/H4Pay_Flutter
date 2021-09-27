@@ -6,6 +6,7 @@ import 'package:h4pay_flutter/Gift.dart';
 import 'package:h4pay_flutter/Order.dart';
 import 'package:h4pay_flutter/Purchase.dart';
 import 'package:h4pay_flutter/PurchaseDetail.dart';
+import 'package:h4pay_flutter/Result.dart';
 import 'package:h4pay_flutter/User.dart';
 import 'package:h4pay_flutter/components/Button.dart';
 import 'package:h4pay_flutter/main.dart';
@@ -85,37 +86,35 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          H4PayButton(
-                            text: "홈으로 돌아가기",
-                            width: MediaQuery.of(context).size.width * 0.4,
-                            onClick: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MyHomePage(
-                                    title: "H4Pay",
-                                    prefs: _prefs!,
-                                  ),
-                                ),
-                              );
-                            },
-                            backgroundColor: Colors.blue,
+                          Expanded(
+                            child: H4PayButton(
+                              text: "홈으로 돌아가기",
+                              width: MediaQuery.of(context).size.width * 0.4,
+                              onClick: () {
+                                int count = 0;
+                                Navigator.pop(context);
+                              },
+                              backgroundColor: Colors.blue,
+                            ),
                           ),
-                          H4PayButton(
-                            text: "상세 정보 확인",
-                            width: MediaQuery.of(context).size.width * 0.4,
-                            onClick: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PurchaseDetailPage(
-                                    purchase: purchase,
+                          Container(width: 10),
+                          Expanded(
+                            child: H4PayButton(
+                              text: "상세 정보 확인",
+                              width: MediaQuery.of(context).size.width * 0.4,
+                              onClick: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PurchaseDetailPage(
+                                      purchase: purchase,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                            backgroundColor: Colors.blue,
-                          )
+                                );
+                              },
+                              backgroundColor: Colors.blue,
+                            ),
+                          ),
                         ],
                       )
                     ],
@@ -149,6 +148,7 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
   Future<Purchase?> _processPayment() async {
     _prefs = await SharedPreferences.getInstance();
     final H4PayUser? user = await userFromStorage();
+    print(user);
     if (user != null) {
       final Map<String, dynamic> tempPurchase =
           json.decode(_prefs!.getString('tempPurchase')!);
@@ -170,17 +170,34 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
           print("order");
           tempPurchase['uid'] = user.uid;
           final order = Order.fromJson(tempPurchase);
-          order.create();
+          final H4PayResult createResult = await order.create();
           print("[PAYMENT] $tempPurchase");
-
-          return order;
+          if (createResult.success) {
+            print(_prefs);
+            _prefs!.setString('cart', json.encode({}));
+            print("[PAYMENT] ${_prefs!.getString('cart')}");
+            return order;
+          } else {
+            showSnackbar(
+                context, createResult.data, Colors.red, Duration(seconds: 1));
+          }
         } else {
-          print("gift");
           tempPurchase['uidfrom'] = user.uid;
+          tempPurchase['extended'] = false;
           final gift = Gift.fromJson(tempPurchase);
-          gift.create();
+          final H4PayResult createResult = await gift.create();
           print("[PAYMENT] $tempPurchase");
-          return gift;
+          print(createResult.success);
+          print(createResult.data);
+          if (createResult.success) {
+            print(_prefs);
+            _prefs!.setString('cart', json.encode({}));
+            print("[PAYMENT] ${_prefs!.getString('cart')}");
+            return gift;
+          } else {
+            showSnackbar(
+                context, createResult.data, Colors.red, Duration(seconds: 1));
+          }
         }
       }
     } else {

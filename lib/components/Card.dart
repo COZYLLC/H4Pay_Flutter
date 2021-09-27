@@ -1,9 +1,13 @@
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:h4pay_flutter/Cart.dart';
 import 'package:h4pay_flutter/Event.dart';
+import 'package:h4pay_flutter/Gift.dart';
 import 'package:h4pay_flutter/Home.dart';
+import 'package:h4pay_flutter/Notice.dart';
 import 'package:h4pay_flutter/Order.dart';
 import 'package:h4pay_flutter/Purchase.dart';
 import 'package:h4pay_flutter/PurchaseDetail.dart';
@@ -12,6 +16,7 @@ import 'package:h4pay_flutter/PurchaseList.dart';
 import 'package:h4pay_flutter/components/Button.dart';
 import 'package:h4pay_flutter/Util.dart';
 import 'package:blur/blur.dart';
+import 'package:h4pay_flutter/main.dart';
 
 class CardWidget extends StatefulWidget {
   final margin;
@@ -178,17 +183,36 @@ class ProductCardState extends State<ProductCard> {
                             padding: EdgeInsets.only(left: 20),
                           )
                         ],
+                      ).blurred(
+                        blur:
+                            widget.isClicked || widget.product.soldout ? 2 : 0,
+                        blurColor: Colors.grey[400]!,
+                        colorOpacity: widget.isClicked || widget.product.soldout
+                            ? 0.5
+                            : 0,
+                        borderRadius: BorderRadius.circular(23),
                       ),
-                    ).frosted(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(23),
-                      ),
-                      blur: widget.isClicked ? 5 : 0,
-                      frostColor:
-                          widget.isClicked ? Colors.grey[400]! : Colors.white,
                     ),
                   ),
                 ),
+                widget.product.soldout
+                    ? Container(
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(23),
+                          color: Colors.red.withOpacity(0.5),
+                        ),
+                        padding: EdgeInsets.all(18),
+                        child: Text(
+                          "품절",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      )
+                    : Container(),
                 IgnorePointer(
                   ignoring: !widget.isClicked,
                   child: AnimatedOpacity(
@@ -267,8 +291,8 @@ class CartCardState extends State<CartCard> {
           return WideCardScaffold(
             imageUrl: widget.product.img,
             cardContent: [
-              Container(
-                width: constraints.maxWidth * 0.39,
+              Expanded(
+                flex: 2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -289,39 +313,40 @@ class CartCardState extends State<CartCard> {
                     ),
                     Row(
                       children: [
-                        IconButton(
-                          onPressed: () {
-                            if (widget.qty != 1) {
-                              parentState.decrementCounter(widget.product.id);
-                            }
-                          },
-                          icon: Icon(Icons.remove),
+                        Expanded(
+                          child: IconButton(
+                            onPressed: () {
+                              if (widget.qty != 1) {
+                                parentState.decrementCounter(widget.product.id);
+                              }
+                            },
+                            icon: Icon(Icons.remove),
+                          ),
                         ),
                         Text(
                           widget.qty.toString(),
                         ),
-                        IconButton(
-                          onPressed: () {
-                            parentState.incrementCounter(widget.product.id);
-                          },
-                          icon: Icon(Icons.add),
-                        )
+                        Expanded(
+                          child: IconButton(
+                            onPressed: () {
+                              parentState.incrementCounter(widget.product.id);
+                            },
+                            icon: Icon(Icons.add),
+                          ),
+                        ),
                       ],
                     )
                   ],
                 ),
               ),
-              Spacer(),
-              Container(
-                child: TextButton(
-                  onPressed: () {
-                    parentState.setState(() {
-                      parentState.cartMap.remove('${widget.product.id}');
-                    });
-                    parentState.updateCart();
-                  },
-                  child: Text("삭제"),
-                ),
+              TextButton(
+                onPressed: () {
+                  parentState.setState(() {
+                    parentState.cartMap.remove('${widget.product.id}');
+                  });
+                  parentState.updateCart();
+                },
+                child: Text("삭제"),
               ),
             ],
           );
@@ -371,12 +396,20 @@ class ProductImage extends StatelessWidget {
 class PurchaseCard extends StatelessWidget {
   final Purchase purchase;
   final Product product;
+  final String uid;
 
-  const PurchaseCard({Key? key, required this.purchase, required this.product})
+  const PurchaseCard(
+      {Key? key,
+      required this.purchase,
+      required this.product,
+      required this.uid})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final isGift = purchase.uid == null;
+    final isReceiver = purchase.uidto == uid;
+    final isUsable = !checkExpire(purchase.expire) && !purchase.exchanged;
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,81 +425,155 @@ class PurchaseCard extends StatelessWidget {
           WideCardScaffold(
             imageUrl: product.img,
             cardContent: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    getProductName(purchase.item, product),
-                  ),
-                  Text(
-                    getPrettyAmountStr(purchase.amount),
-                  ),
-                  Text(
-                    getPrettyDateStr(purchase.expire, true),
-                  ),
-                  Text(
-                    purchase.exchanged ? "교환 됨" : "",
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      getProductName(purchase.item, product),
+                    ),
+                    Text(
+                      getPrettyAmountStr(purchase.amount),
+                    ),
+                    Text(
+                      getPrettyDateStr(purchase.expire, true),
+                    ),
+                    Text(
+                      purchase.exchanged ? "교환됨" : "",
+                      style: TextStyle(
+                        color: Colors.red,
+                      ),
+                    ),
+                    Text(
+                      checkExpire(purchase.expire) ? "만료됨" : "",
+                      style: TextStyle(
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
               )
             ],
           ),
           Container(
-            child: purchase.uid != null
-                ? H4PayButton(
-                    text: "주문 취소",
-                    width: double.infinity,
-                    onClick: () {
-                      showAlertDialog(
-                          context, "주문 취소", "주문을 취소하시겠습니까?\n결제한 금액은 환불됩니다.",
-                          () async {
-                        final isCanceled = await cancelOrder(purchase.orderId);
-                        if (isCanceled) {
-                          showSnackbar(
-                            context,
-                            "취소 처리 되었습니다.",
-                            Colors.green,
-                            Duration(
-                              seconds: 1,
-                            ),
-                          );
-                          PurchaseListState? parentState = context
-                              .findAncestorStateOfType<PurchaseListState>();
-                          parentState!.setState(() {
-                            parentState.componentKey++;
-                          });
-                        } else {
-                          showSnackbar(
-                            context,
-                            "취소 처리에 실패했습니다.",
-                            Colors.red,
-                            Duration(
-                              seconds: 1,
-                            ),
-                          );
-                        }
-                        Navigator.pop(context, "OK");
-                      }, () {
-                        Navigator.pop(context, "Cancel");
-                      });
-                    },
-                    backgroundColor: Colors.red,
+            child: isUsable //만료되지 않았고 교환되지 않은 것
+                ? Row(
+                    // 모두
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      H4PayButton(
+                        text: "사용 하기",
+                        onClick: () {
+                          if (!checkExpire(purchase.expire)) {
+                            if (!isGift || isReceiver) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PurchaseDetailPage(
+                                    purchase: purchase,
+                                  ),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        backgroundColor: !isGift || isReceiver
+                            ? Colors.green
+                            : Colors.grey[400]!,
+                        width: MediaQuery.of(context).size.width * 0.4,
+                      ),
+                      !isGift // 일반선물
+                          ? H4PayButton(
+                              text: "주문 취소",
+                              width: MediaQuery.of(context).size.width * 0.4,
+                              onClick: () {
+                                showAlertDialog(context, "주문 취소",
+                                    "주문을 취소하시겠습니까?\n결제한 금액은 환불됩니다.", () async {
+                                  final isCanceled =
+                                      await cancelOrder(purchase.orderId);
+                                  if (isCanceled) {
+                                    showSnackbar(
+                                      context,
+                                      "취소 처리 되었습니다.",
+                                      Colors.green,
+                                      Duration(
+                                        seconds: 1,
+                                      ),
+                                    );
+                                    PurchaseListState? parentState =
+                                        context.findAncestorStateOfType<
+                                            PurchaseListState>();
+                                    parentState!.setState(() {
+                                      parentState.componentKey++;
+                                    });
+                                  } else {
+                                    showSnackbar(
+                                      context,
+                                      "취소 처리에 실패했습니다.",
+                                      Colors.red,
+                                      Duration(
+                                        seconds: 1,
+                                      ),
+                                    );
+                                  }
+                                  Navigator.pop(context, "OK");
+                                }, () {
+                                  Navigator.pop(context, "Cancel");
+                                });
+                              },
+                              backgroundColor: Colors.red,
+                            )
+                          : H4PayButton(
+                              text: "기간 연장",
+                              onClick: () {
+                                if (!purchase.extended! &&
+                                    purchase.uidfrom != uid) {
+                                  showAlertDialog(context, "기간 연장",
+                                      "기간을 연장하면 환불이 불가합니다.\n정말로 기간을 연장하시겠습니까?",
+                                      () async {
+                                    final extendRes =
+                                        await (purchase as Gift).extend();
+                                    if (extendRes.success) {
+                                      PurchaseListState? parentState =
+                                          context.findAncestorStateOfType<
+                                              PurchaseListState>();
+                                      parentState!.setState(() {
+                                        parentState.componentKey++;
+                                      });
+                                      showSnackbar(
+                                        context,
+                                        "기간 연장이 완료되었습니다!",
+                                        Colors.green,
+                                        Duration(seconds: 1),
+                                      );
+                                    } else {
+                                      showSnackbar(
+                                        context,
+                                        extendRes.data,
+                                        Colors.red,
+                                        Duration(seconds: 1),
+                                      );
+                                    }
+                                    Navigator.pop(context);
+                                  }, () {
+                                    Navigator.pop(context);
+                                  });
+                                }
+                              },
+                              backgroundColor:
+                                  purchase.extended! || purchase.uidfrom == uid
+                                      ? Colors.grey[400]!
+                                      : Colors.blue,
+                              width: MediaQuery.of(context).size.width * 0.4,
+                            )
+                    ],
                   )
                 : Container(),
           )
         ],
       ),
       margin: EdgeInsets.symmetric(vertical: 9.0, horizontal: 18.0),
-      onClick: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PurchaseDetailPage(
-              purchase: purchase,
-            ),
-          ),
-        );
-      },
+      onClick: null,
     );
   }
 }
@@ -482,54 +589,138 @@ class EventCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(event.name,
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 25)),
-              Text("${getPrettyAmountStr(event.price)} 할인"),
-              Text(
-                  "${getPrettyDateStr(event.start, false)} ~ ${getPrettyDateStr(event.start, false)}")
-            ],
+          Expanded(
+            flex: 8,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  event.title,
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+                  softWrap: false,
+                ),
+                Text("${getPrettyAmountStr(event.price)} 할인"),
+                Text(
+                    "${getPrettyDateStr(event.start, false)} ~ ${getPrettyDateStr(event.start, false)}")
+              ],
+            ),
           ),
           Spacer(),
           Image.network(
-            'https://m.kyochon.com/resources/image/contents/event/customEvent/img_event_custom_10.jpg',
+            'https://i.imgur.com/OeVfhHx.png',
             width: MediaQuery.of(context).size.width * 0.2,
           ),
         ],
       ),
       onClick: () {
-        showCustomAlertDialog(
-            context,
-            event.name,
-            [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Image.network(
-                      'https://m.kyochon.com/resources/image/contents/event/customEvent/img_event_custom_10.jpg'),
-                  Container(
-                    height: 30,
-                  ),
-                  Text("${getPrettyAmountStr(event.price)} 할인"),
-                  Text(
-                      "${getPrettyDateStr(event.start, false)} ~ ${getPrettyDateStr(event.start, false)}")
-                ],
-              ),
-            ],
-            [
-              H4PayButton(
-                text: "닫기",
-                onClick: () {
-                  Navigator.pop(context);
-                },
-                backgroundColor: Colors.blue,
-                width: double.infinity,
-              )
-            ],
-            true);
+        showEventCard(context, event);
       },
     );
   }
+}
+
+class NoticeCard extends StatelessWidget {
+  final Notice notice;
+
+  const NoticeCard({Key? key, required this.notice}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return CardWidget(
+      margin: EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 8,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  notice.title,
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 25),
+                ),
+                Text(
+                  notice.content,
+                  softWrap: false,
+                  overflow: TextOverflow.fade,
+                  maxLines: 1,
+                ),
+                Text(getPrettyDateStr(notice.date, false))
+              ],
+            ),
+          ),
+          Spacer(),
+          Image.network(
+            notice.img,
+            width: MediaQuery.of(context).size.width * 0.2,
+          ),
+        ],
+      ),
+      onClick: () {
+        showNoticeCard(context, notice);
+      },
+    );
+  }
+}
+
+void showNoticeCard(BuildContext context, Notice notice) {
+  showCustomAlertDialog(
+      context,
+      notice.title,
+      [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CachedNetworkImage(imageUrl: notice.img),
+            Container(
+              height: 30,
+            ),
+            Text(notice.content),
+            Text(getPrettyDateStr(notice.date, false))
+          ],
+        ),
+      ],
+      [
+        H4PayButton(
+          text: "닫기",
+          onClick: () {
+            Navigator.pop(context);
+          },
+          backgroundColor: Colors.blue,
+          width: double.infinity,
+        )
+      ],
+      true);
+}
+
+void showEventCard(BuildContext context, Event event) {
+  showCustomAlertDialog(
+      context,
+      event.title,
+      [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CachedNetworkImage(imageUrl: event.img),
+            Container(
+              height: 30,
+            ),
+            Text("${getPrettyAmountStr(event.price)} 할인"),
+            Text(
+                "${getPrettyDateStr(event.start, false)} ~ ${getPrettyDateStr(event.start, false)}"),
+            Text(event.content),
+          ],
+        ),
+      ],
+      [
+        H4PayButton(
+          text: "닫기",
+          onClick: () {
+            Navigator.pop(context);
+          },
+          backgroundColor: Colors.blue,
+          width: double.infinity,
+        )
+      ],
+      true);
 }

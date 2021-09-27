@@ -46,5 +46,7 @@
 			<string>https</string>
 			<string>http</string>
 		</array>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>For upload photo explan customer's difficulties.</string>
 	</dict>
 </plist>

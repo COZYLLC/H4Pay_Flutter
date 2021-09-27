@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:h4pay_flutter/Gift.dart';
 import 'package:h4pay_flutter/Order.dart';
 import 'package:h4pay_flutter/Product.dart';
+import 'package:h4pay_flutter/User.dart';
 import 'package:h4pay_flutter/Util.dart';
 import 'package:h4pay_flutter/components/Button.dart';
 import 'package:h4pay_flutter/components/Card.dart';
@@ -83,9 +84,16 @@ class CartState extends State<Cart> {
   void initState() {
     super.initState();
     _fetchProduct = fetchProduct('cartPage');
+    loadCart();
+  }
+
+  loadCart() {
     final cartString = prefs.getString('cart');
+    print("[CART] $cartString");
     if (cartString != null) {
-      cartMap = json.decode(cartString);
+      setState(() {
+        cartMap = json.decode(cartString);
+      });
     }
   }
 
@@ -107,57 +115,64 @@ class CartState extends State<Cart> {
                 margin: EdgeInsets.symmetric(horizontal: 18, vertical: 9),
                 child: Column(
                   children: [
-                    ListView.builder(
-                      itemCount: cartMap.length,
-                      physics: NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        final idx =
-                            int.parse(cartMap.keys.elementAt(index) as String);
-                        return CartCard(
-                          product: products![idx],
-                          qty: cartMap['$idx'],
-                        );
-                      },
-                    ),
-                    Container(
-                      child: this.totalPrice != 0
-                          ? Column(
-                              children: [
-                                Align(
-                                  alignment: Alignment.topLeft,
-                                  child: Text.rich(
-                                    TextSpan(
-                                      text: '총 가격: ',
-                                      children: <TextSpan>[
-                                        TextSpan(
-                                          text: getPrettyAmountStr(
-                                            totalPrice,
-                                          ),
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
+                    AnimatedCrossFade(
+                      firstChild: Column(
+                        children: [
+                          ListView.builder(
+                            itemCount: cartMap.length,
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) {
+                              final idx = int.parse(
+                                  cartMap.keys.elementAt(index) as String);
+                              return CartCard(
+                                product: products![idx],
+                                qty: cartMap['$idx'],
+                              );
+                            },
+                          ),
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: Text.rich(
+                              TextSpan(
+                                text: '총 가격: ',
+                                children: <TextSpan>[
+                                  TextSpan(
+                                    text: getPrettyAmountStr(
+                                      totalPrice,
+                                    ),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
-                                H4PayButton(
-                                  text: "결제하기",
-                                  onClick: _payment,
-                                  backgroundColor: Colors.blue,
-                                  width: double.infinity,
-                                )
-                              ],
-                            )
-                          : Center(
-                              child: Text(
-                                "장바구니가 비어 있는 것 같네요.",
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.w700),
+                                ],
                               ),
                             ),
-                    ),
+                          ),
+                          H4PayButton(
+                            text: "결제하기",
+                            onClick: _payment,
+                            backgroundColor: Colors.blue,
+                            width: double.infinity,
+                          )
+                        ],
+                      ),
+                      secondChild: Container(
+                        height: MediaQuery.of(context).size.height * 0.8,
+                        alignment: Alignment.center,
+                        child: Text(
+                          "장바구니가 비어 있는 것 같네요.",
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      crossFadeState: this.totalPrice != 0
+                          ? CrossFadeState.showFirst
+                          : CrossFadeState.showSecond,
+                      duration: Duration(
+                        milliseconds: 500,
+                      ),
+                    )
                   ],
                 ),
               );
@@ -188,7 +203,7 @@ class CartState extends State<Cart> {
     );
   }
 
-  _payment() {
+  _payment() async {
     final _orderId = "1" + genOrderId() + "000";
     final tempPurchase = {
       'type': 'Order',
@@ -197,19 +212,25 @@ class CartState extends State<Cart> {
       'orderId': _orderId
     };
     prefs.setString('tempPurchase', json.encode(tempPurchase));
-    showBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        //height: MediaQuery.of(context).size.height,
-        child: WebViewExample(
-          type: Order,
-          amount: this.totalPrice,
-          orderId: _orderId,
-          orderName:
-              getProductNameFromList(tempPurchase['item'] as Map, products!),
-          customerName: "최경민",
+    final H4PayUser? user = await userFromStorage();
+    if (user != null) {
+      showBottomSheet(
+        context: context,
+        builder: (context) => Container(
+          //height: MediaQuery.of(context).size.height,
+          child: WebViewExample(
+            type: Order,
+            amount: this.totalPrice,
+            orderId: _orderId,
+            orderName:
+                getProductNameFromList(tempPurchase['item'] as Map, products!),
+            customerName: user.name,
+          ),
         ),
-      ),
-    );
+      ).closed.whenComplete(() => loadCart());
+    } else {
+      showSnackbar(
+          context, "사용자 정보를 불러올 수 없습니다.", Colors.red, Duration(seconds: 1));
+    }
   }
 }

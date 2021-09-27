@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:h4pay_flutter/Cart.dart';
 import 'package:h4pay_flutter/Order.dart';
 import 'package:h4pay_flutter/Payment.dart';
+import 'package:h4pay_flutter/main.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -35,9 +38,17 @@ class WebViewExampleState extends State<WebViewExample> {
     // Enable hybrid composition.
   }
 
+  FutureOr updateBadges(value) {
+    final MyHomePageState? myHomePageState =
+        context.findAncestorStateOfType<MyHomePageState>();
+    myHomePageState!.updateBadges();
+    myHomePageState.setState(() {});
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final url = "http://192.168.1.253:8080";
+    final url = "http://172.30.1.1:8080";
     return Scaffold(
       body: WebView(
         initialUrl:
@@ -93,7 +104,6 @@ class WebViewExampleState extends State<WebViewExample> {
             }
           } else if (request.url.startsWith("$url/payment/success")) {
             print("[WEBVIEW] PAYMENT SUCCESS");
-            Navigator.pop(context);
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -102,7 +112,7 @@ class WebViewExampleState extends State<WebViewExample> {
                   params: _parseParams(request.url),
                 ),
               ),
-            );
+            ).then(updateBadges);
             return NavigationDecision.prevent;
           } else if (request.url.startsWith("$url/payment/fail")) {
             Navigator.pop(context);

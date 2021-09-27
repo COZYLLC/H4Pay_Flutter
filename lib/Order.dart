@@ -1,5 +1,6 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay_flutter/Purchase.dart';
+import 'package:h4pay_flutter/Result.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -37,7 +38,7 @@ class Order extends Purchase {
     );
   }
 
-  Future<bool> create() async {
+  Future<H4PayResult> create() async {
     final jsonBody = json.encode(
       toJson(this),
     );
@@ -51,10 +52,15 @@ class Order extends Purchase {
     );
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
-      print("[API] $response");
-      return jsonResponse['status'];
+      return H4PayResult(
+        success: jsonResponse['status'],
+        data: jsonResponse['message'],
+      );
     } else {
-      return false;
+      return H4PayResult(
+        success: false,
+        data: "서버 오류입니다.",
+      );
     }
   }
 

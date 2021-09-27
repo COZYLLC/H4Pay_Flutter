@@ -1,4 +1,5 @@
 import 'package:h4pay_flutter/Purchase.dart';
+import 'package:h4pay_flutter/Result.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -6,18 +7,20 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class Gift extends Purchase {
   final String uidfrom;
   final String uidto;
+  final bool extended;
 
-  Gift({
-    required this.uidfrom,
-    required this.uidto,
-    required orderId,
-    required date,
-    required item,
-    required expire,
-    required amount,
-    required exchanged,
-    required paymentKey,
-  }) : super(
+  Gift(
+      {required this.uidfrom,
+      required this.uidto,
+      required orderId,
+      required date,
+      required item,
+      required expire,
+      required amount,
+      required exchanged,
+      required paymentKey,
+      required this.extended})
+      : super(
           uidfrom: uidfrom,
           uidto: uidto,
           item: item,
@@ -39,10 +42,11 @@ class Gift extends Purchase {
         expire: json['expire'],
         amount: json['amount'],
         exchanged: json['exchanged'],
-        paymentKey: json['paymentKey']);
+        paymentKey: json['paymentKey'],
+        extended: json['extended']);
   }
 
-  Future<bool> create() async {
+  Future<H4PayResult> create() async {
     final jsonBody = json.encode(
       toJson(this),
     );
@@ -58,9 +62,10 @@ class Gift extends Purchase {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       print("[API] $response");
-      return jsonResponse['status'];
+      return H4PayResult(
+          success: jsonResponse['status'], data: jsonResponse['message']);
     } else {
-      return false;
+      return H4PayResult(success: false, data: "서버 오류입니다.");
     }
   }
 
@@ -74,7 +79,21 @@ class Gift extends Purchase {
         'expire': instance.expire,
         'amount': instance.amount,
         'exchanged': instance.exchanged,
+        'extended': instance.extended
       };
+
+  Future<H4PayResult> extend() async {
+    final response = await http.post(
+      Uri.parse('${dotenv.env['API_URL']}/gift/${this.orderId}/extend'),
+    );
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return H4PayResult(
+          success: jsonResponse['status'], data: jsonResponse['message']);
+    } else {
+      return H4PayResult(success: false, data: "서버 오류입니다.");
+    }
+  }
 }
 
 Future<List<Gift>?> fetchGift(_uid) async {
@@ -90,7 +109,7 @@ Future<List<Gift>?> fetchGift(_uid) async {
       return null;
     }
   } else {
-    throw Exception('Failed to fetch order.');
+    throw Exception('Failed to fetch gift.');
   }
 }
 
@@ -107,11 +126,11 @@ Future<List<Gift>?> fetchSentGift(_uid) async {
       return null;
     }
   } else {
-    throw Exception('Failed to fetch order.');
+    throw Exception('Failed to fetch sentgift.');
   }
 }
 
-Future<String?> checkUserValid(String studentId) async {
+Future<H4PayResult> checkUserValid(String studentId) async {
   final List<Map> studentList = [
     {'studentid': studentId}
   ];
@@ -129,15 +148,27 @@ Future<String?> checkUserValid(String studentId) async {
       );
       if (nameResponse.statusCode == 200) {
         final jsonResponse = jsonDecode(nameResponse.body);
-        return jsonResponse['users'][0];
+        return H4PayResult(
+          success: jsonResponse['status'],
+          data: jsonResponse['users'][0],
+        );
       } else {
-        return null;
+        return H4PayResult(
+          success: jsonResponse['status'],
+          data: jsonResponse['message'],
+        );
       }
     } else {
-      return null;
+      return H4PayResult(
+        success: jsonResponse['status'],
+        data: jsonResponse['message'],
+      );
     }
   } else {
-    throw Exception('Failed to check user valid.');
+    return H4PayResult(
+      success: false,
+      data: '서버 오류입니다.',
+    );
   }
 }
 

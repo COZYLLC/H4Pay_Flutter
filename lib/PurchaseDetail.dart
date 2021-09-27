@@ -54,6 +54,7 @@ class PurchaseDetailPageState extends State<PurchaseDetailPage> {
                     barcode: Barcode.code128(),
                     data: widget.purchase.orderId,
                   ),
+                  Spacer(),
                   ReceiptText(title: "주문 번호", content: widget.purchase.orderId),
                   ReceiptText(
                     title: "상품명",

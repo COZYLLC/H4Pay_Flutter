@@ -70,44 +70,101 @@ void showAlertDialog(BuildContext context, String title, String content,
           ),
         ),
         title: Text(title),
-        content: Text(content),
-        actions: <Widget>[
-          H4PayButton(
-              text: "확인",
-              onClick: okClicked,
-              backgroundColor: Colors.blue,
-              width: MediaQuery.of(context).size.width * 0.3),
-          H4PayButton(
-              text: "취소",
-              onClick: cancelClicked,
-              backgroundColor: Colors.blue,
-              width: MediaQuery.of(context).size.width * 0.3)
-        ],
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(content),
+            Container(
+              height: MediaQuery.of(context).size.height * 0.05,
+            ),
+            OkCancelGroup(okClicked: okClicked, cancelClicked: cancelClicked)
+          ],
+        ),
       );
     },
   );
 }
 
+class OkCancelGroup extends StatelessWidget {
+  final okClicked;
+  final cancelClicked;
+  OkCancelGroup({required this.okClicked, required this.cancelClicked});
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 8,
+          child: H4PayButton(
+            text: "확인",
+            onClick: okClicked,
+            backgroundColor: Colors.blue,
+          ),
+        ),
+        Spacer(
+          flex: 1,
+        ),
+        Expanded(
+          flex: 8,
+          child: H4PayButton(
+            text: "취소",
+            onClick: cancelClicked,
+            backgroundColor: Colors.blue,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+checkExpire(String expire) {
+  return DateTime.now().millisecondsSinceEpoch >
+      DateTime.parse(expire).millisecondsSinceEpoch;
+}
+
 showCustomAlertDialog(BuildContext context, String title, List<Widget> content,
-    List<Widget> actions, bool dismissable) async {
+    List<Widget>? actions, bool dismissable) async {
   await showDialog(
     context: context,
     barrierDismissible: dismissable, // user must tap button!
     builder: (BuildContext context) {
-      return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(23.0),
-            ),
-          ),
-          title: Text(title),
-          content: Column(
-            children: content,
-            mainAxisSize: MainAxisSize.min,
-          ),
-          actions: actions);
+      return H4PayDialog(
+        title: title,
+        content: Column(
+          children: content,
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+        actions: actions,
+      );
     },
   );
+}
+
+class H4PayDialog extends StatelessWidget {
+  final String title;
+  final Widget content;
+  final List<Widget>? actions;
+
+  const H4PayDialog(
+      {Key? key, required this.title, required this.content, this.actions})
+      : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(23.0),
+          ),
+        ),
+        title: Text(title),
+        content: SingleChildScrollView(child: content),
+        actions: actions);
+  }
+}
+
+navigateTo(Widget page, BuildContext context) {
+  Navigator.push(context, MaterialPageRoute(builder: (context) => page));
 }
 
 void showSnackbar(
@@ -116,4 +173,26 @@ void showSnackbar(
     SnackBar(
         content: Text(content), backgroundColor: color, duration: duration),
   );
+}
+
+String roleStrFromLetter(String letter) {
+  String? role;
+  switch (letter) {
+    case 'A':
+      role = "시스템 관리자";
+      break;
+    case 'AT':
+      role = "매점 관리 교사";
+      break;
+    case 'T':
+      role = "일반 교사";
+      break;
+    case 'M':
+      role = "매점 관리 학생";
+      break;
+    case 'S':
+      role = "학생";
+      break;
+  }
+  return role!;
 }

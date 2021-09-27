@@ -1,5 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -11,9 +9,7 @@ import 'package:h4pay_flutter/main.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:connectivity/connectivity.dart';
 
 class LoginPage extends StatefulWidget {
@@ -29,7 +25,7 @@ class LoginPageState extends State<LoginPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    Firebase.initializeApp();
+    //Firebase.initializeApp();
     _loginCheck();
   }
 
@@ -97,13 +93,13 @@ class LoginPageState extends State<LoginPage> {
                   },
                 ),
               ),
-              H4PayButton(
+/*               H4PayButton(
                 text: "googleLogin",
                 onClick: _signInWithGoogle,
                 backgroundColor: Colors.lightBlue,
                 width: double.infinity,
               ),
-              SignInWithAppleButton(onPressed: _signInWithApple),
+              SignInWithAppleButton(onPressed: _signInWithApple), */
               H4PayButton(
                 text: "로그인",
                 width: double.infinity,
@@ -135,6 +131,19 @@ class LoginPageState extends State<LoginPage> {
                 },
                 backgroundColor: Colors.lightBlue,
               ),
+              H4PayButton(
+                text: "회원가입",
+                width: double.infinity,
+                onClick: () async {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RegisterPage(),
+                    ),
+                  );
+                },
+                backgroundColor: Colors.lightBlue,
+              ),
             ],
           ),
         ),
@@ -142,6 +151,7 @@ class LoginPageState extends State<LoginPage> {
     );
   }
 
+/* 
   Future<bool> _signInWithGoogle() async {
     try {
       GoogleSignInAccount? account = await GoogleSignIn(scopes: [
@@ -219,7 +229,7 @@ class LoginPageState extends State<LoginPage> {
       return false;
     }
   }
-
+ */
   Future<bool> _login(String id, String pw) async {
     final bytes = utf8.encode(pw);
     final digest = sha256.convert(bytes);

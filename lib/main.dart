@@ -1,18 +1,20 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay_flutter/Cart.dart';
-import 'package:h4pay_flutter/EventList.dart';
+import 'package:h4pay_flutter/Event.dart';
+import 'package:h4pay_flutter/NoticeList.dart';
 import 'package:h4pay_flutter/Gift.dart';
 import 'package:h4pay_flutter/Home.dart';
 import 'package:h4pay_flutter/Login.dart';
-import 'package:h4pay_flutter/MyInfo.dart';
+import 'package:h4pay_flutter/MyPage.dart';
 import 'package:h4pay_flutter/Order.dart';
-import 'package:h4pay_flutter/PurchaseList.dart';
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 import 'package:h4pay_flutter/Support.dart';
 import 'package:h4pay_flutter/User.dart';
+import 'package:h4pay_flutter/Util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -58,14 +60,26 @@ class MyHomePageState extends State<MyHomePage> {
   int accountBadgeCount = 0;
   int cartBadgeCount = 0;
   Future? _fetchStoreStatus;
+  Map<String, int> badges = {'order': 0, 'gift': 0};
 
   final SharedPreferences prefs;
   MyHomePageState(this.prefs);
 
   Future updateBadges() async {
     // calculate cart items, orders, gifts and set badge states.
+    print("[LOGIC] update badges");
     final H4PayUser? user = await userFromStorage();
-    final orders = await fetchOrder(user!.uid);
+    if (user == null) {
+      showSnackbar(
+        context,
+        "사용자 정보를 불러올 수 없습니다. 앱을 종료합니다.",
+        Colors.red,
+        Duration(seconds: 1),
+      );
+      await Future.delayed(Duration(seconds: 3));
+      exit(0);
+    }
+    final orders = await fetchOrder(user.uid);
     final gifts = await fetchGift(user.uid);
 
     int orderCount = 0;
@@ -76,20 +90,19 @@ class MyHomePageState extends State<MyHomePage> {
           if (!order.exchanged) {orderCount++},
         },
       );
-      setState(() {
-        accountBadgeCount = orderCount;
-      });
     }
     if (gifts != null) {
       gifts.forEach(
         (gift) => {
-          if (!gift.exchanged) {giftCount++}
+          if (!gift.exchanged && gift.uidto == user.uid) {giftCount++}
         },
       );
-      setState(() {
-        giftBadgeCount = giftCount;
-      });
     }
+    setState(() {
+      badges['order'] = orderCount;
+      badges['gift'] = giftCount;
+      accountBadgeCount = orderCount + giftCount;
+    });
     final cartString = prefs.getString('cart'); // SharedPrefernce에서 장바구니 로드
     if (cartString != null) {
       final Map cartMap = json.decode(cartString); // 장바구니 데이터 파싱
@@ -125,10 +138,13 @@ class MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     List<Widget?> _children = [
       SupportPage(),
-      EventListPage(),
+      NoticeListPage(
+        type: Event,
+        withAppBar: false,
+      ),
       Home(prefs),
       Cart(prefs),
-      MyInfo(prefs)
+      MyPage(prefs: prefs, badges: badges)
     ];
     return WillPopScope(
       onWillPop: () async => false,

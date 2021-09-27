@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:h4pay_flutter/Result.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 
@@ -73,5 +75,121 @@ Future<H4PayUser?> tokenCheck(String _token) async {
     return H4PayUser.fromjson(message);
   } else {
     return null;
+  }
+}
+
+//User management
+Future<bool> changePassword(
+  H4PayUser user,
+  String prevPrassword,
+  String pw2Change,
+) async {
+  final bytes_prev = utf8.encode(prevPrassword);
+  final digest_prev = sha256.convert(bytes_prev);
+  final bytes = utf8.encode(pw2Change);
+  final digest = sha256.convert(bytes);
+
+  final response = await http.post(
+    Uri.parse("${dotenv.env['API_URL']}/users/changepass"),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: json.encode({
+      'uid': user.uid,
+      'password': base64.encode(digest_prev.bytes),
+      'cpassword': base64.encode(digest.bytes)
+    }),
+  );
+  if (response.statusCode == 200) {
+    final jsonResponse = json.decode(response.body);
+    return jsonResponse['status'];
+  } else {
+    return false;
+  }
+}
+
+Future<H4PayResult> createUser(
+  String name,
+  String uid,
+  String password,
+  String userAuth,
+  String email,
+  String tel,
+  String role,
+) async {
+  bool isVerified = false;
+  switch (role) {
+    case 'A':
+      isVerified = userAuth == dotenv.env['AUTH_CODE_ADMIN_SYSTEM'];
+      break;
+    case 'AT':
+      isVerified = userAuth == dotenv.env['AUTH_CODE_ADMIN_TEACHER'];
+      break;
+    case 'T':
+      isVerified = userAuth == dotenv.env['AUTH_CODE_TEACHER'];
+      break;
+    case 'M':
+      isVerified = userAuth == dotenv.env['AUTH_CODE_MANAGER_STUDENT'];
+      break;
+    case 'S':
+      isVerified = true;
+      break;
+  }
+  if (!isVerified) {
+    return H4PayResult(success: false, data: "인증코드가 틀렸습니다.");
+  }
+
+  final bytes = utf8.encode(password);
+  final digest = sha256.convert(bytes);
+
+  final response = await http.post(
+    Uri.parse("${dotenv.env['API_URL']}/users/create"),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: json.encode({
+      'name': name,
+      'uid': uid,
+      'password': base64.encode(digest.bytes),
+      'studentid': role == 'S' ? userAuth : "",
+      'email': email,
+      'aID': '',
+      'gID': '',
+      'tel': tel,
+      'role': role,
+    }),
+  );
+  if (response.statusCode == 200) {
+    final jsonResponse = json.decode(response.body);
+    print("[API] $jsonResponse");
+    return H4PayResult(
+        success: jsonResponse['status'], data: jsonResponse['message']);
+  } else {
+    return H4PayResult(success: false, data: "서버 오류입니다.");
+  }
+}
+
+Future<H4PayResult> withdraw(
+  String uid,
+  String name,
+) async {
+  final response = await http.post(
+    Uri.parse("${dotenv.env['API_URL']}/users/withdrawal"),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: json.encode(
+      {
+        'uid': uid,
+        'name': name,
+      },
+    ),
+  );
+  if (response.statusCode == 200) {
+    final jsonResponse = json.decode(response.body);
+    return H4PayResult(
+        success: jsonResponse['status'], data: jsonResponse['message']);
+  } else {
+    return H4PayResult(success: false, data: "서버 오류입니다.");
   }
 }

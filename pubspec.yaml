@@ -40,15 +40,11 @@ dependencies:
   crypto: ^3.0.1
   localstorage:
   flutter_secure_storage: ^4.2.1
-  google_sign_in: ^5.1.0
-  sign_in_with_apple: ^3.0.0
   flutter_svg: ^0.22.0
   blur: ^3.0.0
   connectivity: ^3.0.6
-  firebase_auth: ^3.1.1
-  firebase_core:
-  firebase_auth_web: ^3.1.0
-  firebase_core_web: ^1.1.0
+  file_picker: ^4.1.1
+  package_info: ^2.0.2
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +62,8 @@ flutter:
   assets:
     - .env
     - assets/svg/support.svg
+    - assets/image/H4pay.png
+
   fonts:
     - family: Spoqa_Han_Sans
       fonts:

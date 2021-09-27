@@ -9,6 +9,7 @@ class Purchase {
   final int amount;
   final bool exchanged;
   final String paymentKey;
+  final bool? extended;
 
   Purchase({
     this.uid,
@@ -21,5 +22,6 @@ class Purchase {
     required this.amount,
     required this.exchanged,
     required this.paymentKey,
+    this.extended,
   });
 }
