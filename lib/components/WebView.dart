@@ -48,12 +48,14 @@ class WebViewExampleState extends State<WebViewExample> {
 
   @override
   Widget build(BuildContext context) {
-    final url = "http://172.30.1.1:8080";
+    final url = "https://h4pay.co.kr";
     return Scaffold(
       body: WebView(
         initialUrl:
             //"https://h4pay.co.kr/payment?amount=${widget.amount}&orderId=${widget.orderId}",
-            "$url/payment?amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}",
+            // "$url/payment?amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}",
+            Uri.encodeFull(
+                "$url/payment?amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}"),
 
         //"http://10.172.16.134:8080/payment/success/presuccess.html",
         javascriptMode: JavascriptMode.unrestricted,
@@ -62,15 +64,18 @@ class WebViewExampleState extends State<WebViewExample> {
         },
         navigationDelegate: (request) async {
           print("[WEBVIEW] ${request.url}");
-          print("[WEBVIEW] ${request.url.startsWith("$url/payment/success")}");
+          // print("[WEBVIEW] ${request.url.startsWith("$url/payment/success")}");
           final appInfo = AppInfo(url: request.url);
+          print("${appInfo.isAppLink()} | ${appInfo.url}");
           if (appInfo.isAppLink()) {
             try {
               await appInfo.getAppInfo();
+              print(appInfo.appUrl);
               if (await canLaunch(appInfo.appUrl!)) {
                 launch(appInfo.appUrl!);
                 return NavigationDecision.prevent;
               } else {
+                print(appInfo.appUrl);
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {
@@ -127,7 +132,7 @@ class WebViewExampleState extends State<WebViewExample> {
 
   Map _parseParams(String url) {
     print("[API] $url");
-    final params = url.split('/success?')[1].split("&");
+    final params = url.split('?')[1].split("&");
     var parsedParams = {};
     for (var i = 0; i < 3; i++) {
       final param = params[i].split("=");
@@ -146,18 +151,18 @@ class AppInfo {
   AppInfo({required this.url});
 
   bool isAppLink() {
-    final appScheme = Uri.parse(this.url).scheme;
-
+    appScheme = Uri.parse(this.url).scheme;
     return appScheme != 'http' &&
         appScheme != 'https' &&
-        appScheme != 'about:blank' &&
+        appScheme != 'about' &&
         appScheme != 'data';
   }
 
-  getAppInfo() {
+  getAppInfo() async {
     List<String> splittedUrl =
         this.url.replaceFirst(RegExp(r'://'), ' ').split(' ');
     this.appScheme = splittedUrl[0];
+
     if (Platform.isIOS) {
       this.appUrl =
           this.appScheme == 'itmss' ? 'https://${splittedUrl[1]}' : url;
