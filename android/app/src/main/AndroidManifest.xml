@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.example.h4pay_flutter">
   <uses-sdk android:minSdkVersion="20" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
   <queries>
     <package android:name="viva.republica.toss" />
   </queries>

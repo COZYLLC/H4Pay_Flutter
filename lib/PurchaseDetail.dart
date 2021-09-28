@@ -6,6 +6,8 @@ import 'package:h4pay_flutter/Product.dart';
 import 'package:h4pay_flutter/Purchase.dart';
 import 'package:h4pay_flutter/User.dart';
 import 'package:h4pay_flutter/Util.dart';
+import 'package:screen_brightness/screen_brightness.dart';
+import 'package:wakelock/wakelock.dart';
 
 class PurchaseDetailPage extends StatefulWidget {
   final Purchase purchase;
@@ -18,11 +20,18 @@ class PurchaseDetailPage extends StatefulWidget {
 
 class PurchaseDetailPageState extends State<PurchaseDetailPage> {
   Future<Map>? _fetchProduct;
+  double? brightness;
 
   @override
   void initState() {
     super.initState();
     _fetchProduct = _loadThings();
+    _setUpBrightness();
+  }
+
+  _setUpBrightness() async {
+    await ScreenBrightness.setScreenBrightness(1.0);
+    await Wakelock.toggle(enable: true);
   }
 
   Future<Map> _loadThings() async {
@@ -37,6 +46,12 @@ class PurchaseDetailPageState extends State<PurchaseDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("주문 상세 내역"),
+        leading: new IconButton(
+          icon: new Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context, brightness);
+          },
+        ),
       ),
       body: FutureBuilder(
         future: _fetchProduct,

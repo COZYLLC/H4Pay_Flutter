@@ -16,7 +16,8 @@ import 'package:h4pay_flutter/PurchaseList.dart';
 import 'package:h4pay_flutter/components/Button.dart';
 import 'package:h4pay_flutter/Util.dart';
 import 'package:blur/blur.dart';
-import 'package:h4pay_flutter/main.dart';
+import 'package:screen_brightness/screen_brightness.dart';
+import 'package:wakelock/wakelock.dart';
 
 class CardWidget extends StatefulWidget {
   final margin;
@@ -473,7 +474,10 @@ class PurchaseCard extends StatelessWidget {
                                     purchase: purchase,
                                   ),
                                 ),
-                              );
+                              ).then((value) async {
+                                await ScreenBrightness.resetScreenBrightness();
+                                await Wakelock.toggle(enable: false);
+                              });
                             }
                           }
                         },
