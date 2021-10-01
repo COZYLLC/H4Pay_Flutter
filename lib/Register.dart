@@ -224,7 +224,8 @@ class RegisterPageState extends State<RegisterPage> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => LoginPage(),
+                                          builder: (context) =>
+                                              LoginPage(canGoBack: false),
                                         ),
                                       );
                                     },

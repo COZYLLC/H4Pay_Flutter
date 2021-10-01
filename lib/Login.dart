@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:h4pay_flutter/Register.dart';
 import 'package:h4pay_flutter/User.dart';
 import 'package:h4pay_flutter/Util.dart';
@@ -11,8 +13,11 @@ import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 
 class LoginPage extends StatefulWidget {
+  bool canGoBack;
+  LoginPage({required this.canGoBack});
   @override
   LoginPageState createState() => LoginPageState();
 }
@@ -35,62 +40,64 @@ class LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final _idFormKey = GlobalKey<FormState>();
-    final _pwFormKey = GlobalKey<FormState>();
+    final _loginFormKey = GlobalKey<FormState>();
 
     return WillPopScope(
-      onWillPop: () async => false,
+      onWillPop: () async {
+        return widget.canGoBack;
+      },
       child: Scaffold(
         appBar: AppBar(
           title: Text("로그인"),
           centerTitle: true,
-          automaticallyImplyLeading: false,
+          automaticallyImplyLeading: widget.canGoBack,
         ),
         body: Container(
           margin: EdgeInsets.all(40),
           child: Column(
             children: [
               Form(
-                key: _idFormKey,
-                child: TextFormField(
-                  controller: _idController,
-                  decoration: InputDecoration(
-                    labelText: "아이디",
-                  ),
-                  validator: (value) {
-                    final RegExp regExp = RegExp(r'^[A-za-z0-9]{5,15}$');
-                    print("[VALIDATOR] ${regExp.hasMatch(value!)}");
-                    if (!regExp.hasMatch(value)) {
-                      return "아이디는 영소문자와 숫자를 포함해 5자 이상 19자 이하여아 합니다.";
-                    } else {
-                      return null;
-                    }
-                  },
-                  onChanged: (_) {
-                    _idFormKey.currentState!.validate();
-                  },
-                ),
-              ),
-              Form(
-                key: _pwFormKey,
-                child: TextFormField(
-                  controller: _pwController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: "비밀번호",
-                  ),
-                  validator: (value) {
-                    final RegExp regExp = RegExp(
-                        r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$');
-                    if (!regExp.hasMatch(value!)) {
-                      return "비밀번호는 영대소문자와 숫자, 특수문자를 포함해 8자 이상이어야 합니다.";
-                    } else {
-                      return null;
-                    }
-                  },
-                  onChanged: (_) {
-                    _pwFormKey.currentState!.validate();
-                  },
+                key: _loginFormKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _idController,
+                      decoration: InputDecoration(
+                        labelText: "아이디",
+                      ),
+                      validator: (value) {
+                        final RegExp regExp = RegExp(r'^[A-za-z0-9]{5,15}$');
+                        print("[VALIDATOR] ${regExp.hasMatch(value!)}");
+                        if (!regExp.hasMatch(value)) {
+                          return "아이디는 영소문자와 숫자를 포함해 5자 이상 19자 이하여아 합니다.";
+                        } else {
+                          return null;
+                        }
+                      },
+                      onChanged: (_) {
+                        _loginFormKey.currentState!.validate();
+                      },
+                    ),
+                    TextFormField(
+                      controller: _pwController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: "비밀번호",
+                      ),
+                      validator: (value) {
+                        final RegExp regExp = RegExp(
+                            r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$');
+                        if (!regExp.hasMatch(value!)) {
+                          return "비밀번호는 영대소문자와 숫자, 특수문자를 포함해 8자 이상이어야 합니다.";
+                        } else {
+                          return null;
+                        }
+                      },
+                      onChanged: (_) {
+                        _loginFormKey.currentState!.validate();
+                      },
+                    ),
+                  ],
                 ),
               ),
 /*               H4PayButton(
@@ -98,14 +105,13 @@ class LoginPageState extends State<LoginPage> {
                 onClick: _signInWithGoogle,
                 backgroundColor: Colors.lightBlue,
                 width: double.infinity,
-              ),
+              
               SignInWithAppleButton(onPressed: _signInWithApple), */
               H4PayButton(
                 text: "로그인",
                 width: double.infinity,
                 onClick: () async {
-                  _idFormKey.currentState!.validate();
-                  _pwFormKey.currentState!.validate();
+                  _loginFormKey.currentState!.validate();
                   if (await _login(_idController.text, _pwController.text)) {
                     final SharedPreferences prefs =
                         await SharedPreferences.getInstance();
@@ -128,19 +134,6 @@ class LoginPageState extends State<LoginPage> {
                       ),
                     );
                   }
-                },
-                backgroundColor: Colors.lightBlue,
-              ),
-              H4PayButton(
-                text: "회원가입",
-                width: double.infinity,
-                onClick: () async {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RegisterPage(),
-                    ),
-                  );
                 },
                 backgroundColor: Colors.lightBlue,
               ),
@@ -265,9 +258,102 @@ class IntroPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [],
+      appBar: EmptyAppBar(),
+      backgroundColor: Color(0xff434343),
+      body: Stack(
+        children: [
+          Positioned(
+            top: -(MediaQuery.of(context).size.height * 0.3),
+            left: -(MediaQuery.of(context).size.width * 1.5),
+            child: CachedNetworkImage(
+              width: MediaQuery.of(context).size.width * 2,
+              imageUrl: "http://192.168.1.2:8080/pattern.png",
+              color: Colors.grey[850]!.withOpacity(0.7),
+            ),
+          ),
+          Positioned(
+            top: -(MediaQuery.of(context).size.height * 0.6),
+            right: -(MediaQuery.of(context).size.width * 1.5),
+            child: CachedNetworkImage(
+              width: MediaQuery.of(context).size.width * 2,
+              imageUrl: "http://192.168.1.2:8080/pattern.png",
+              color: Colors.grey[850]!.withOpacity(0.7),
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(
+                vertical: MediaQuery.of(context).size.height * 0.15,
+                horizontal: MediaQuery.of(context).size.width * 0.1),
+            child: Container(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).size.height * 0.1),
+                    child: Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * 0.1),
+                      child: Image.asset(
+                        'assets/image/H4pay.png',
+                        width: MediaQuery.of(context).size.width * 0.3,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  H4PayButton(
+                    text: "로그인",
+                    width: double.infinity,
+                    onClick: () async {
+                      final SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => LoginPage(canGoBack: true)),
+                      );
+                    },
+                    backgroundColor: Colors.lightBlue,
+                  ),
+                  H4PayButton(
+                    text: "회원가입",
+                    width: double.infinity,
+                    onClick: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RegisterPage(),
+                        ),
+                      );
+                    },
+                    backgroundColor: Colors.lightBlue,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 40),
+                    child: Text(
+                      "아이디나 비밀번호를 잊어버리셨나요?",
+                      style: TextStyle(
+                        color: Colors.white,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
+}
+
+class EmptyAppBar extends StatelessWidget implements PreferredSizeWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+
+  @override
+  Size get preferredSize => Size(0.0, 0.0);
 }

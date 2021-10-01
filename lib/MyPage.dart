@@ -150,7 +150,8 @@ class MyPageState extends State<MyPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => LoginPage(),
+                                      builder: (context) =>
+                                          LoginPage(canGoBack: false),
                                     ),
                                   );
                                 },
@@ -426,7 +427,7 @@ class MyInfoPageState extends State<MyInfoPage> {
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
-                                                    LoginPage(),
+                                                    LoginPage(canGoBack: false),
                                               ),
                                             );
                                           },
@@ -492,7 +493,8 @@ class MyInfoPageState extends State<MyInfoPage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => LoginPage(),
+                                    builder: (context) =>
+                                        LoginPage(canGoBack: false),
                                   ),
                                 );
                               },

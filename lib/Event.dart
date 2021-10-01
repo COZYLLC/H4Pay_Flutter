@@ -41,7 +41,7 @@ class Event extends Notice {
       end: json['end'],
       qty: json['qty'],
       totalqty: json['totalqty'],
-      price: json['price'],
+      price: json['amount'],
       content: json['desc'],
       img: json['img'],
     );

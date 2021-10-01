@@ -5,6 +5,7 @@ import 'package:h4pay_flutter/Product.dart';
 import 'package:h4pay_flutter/Purchase.dart';
 import 'package:h4pay_flutter/components/Card.dart';
 import 'package:h4pay_flutter/User.dart';
+import 'package:collection/collection.dart';
 
 class PurchaseList extends StatefulWidget {
   final Type type;
@@ -70,11 +71,18 @@ class PurchaseListState extends State<PurchaseList> {
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               itemBuilder: (context, index) {
+                for (var i = 0; i < purchases.length; i++) {
+                  print(purchases[i].orderId);
+                }
                 return PurchaseCard(
                   purchase: purchases[index],
-                  product: products[int.parse(
-                    purchases[index].item.entries.elementAt(0).key,
-                  )],
+                  product: products.singleWhereOrNull(
+                    (element) =>
+                        element.id ==
+                        int.parse(
+                          purchases[index].item.entries.elementAt(0).key,
+                        ),
+                  )!,
                   uid: user!.uid!,
                 );
               },

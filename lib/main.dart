@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       //home: MyHomePage(title: 'H4Pay', prefs: prefs),
-      home: LoginPage(),
+      home: IntroPage(),
     );
   }
 }
@@ -61,6 +61,7 @@ class MyHomePageState extends State<MyHomePage> {
   int cartBadgeCount = 0;
   Future? _fetchStoreStatus;
   Map<String, int> badges = {'order': 0, 'gift': 0};
+  String _title = "H4Pay";
 
   final SharedPreferences prefs;
   MyHomePageState(this.prefs);
@@ -146,11 +147,13 @@ class MyHomePageState extends State<MyHomePage> {
       Cart(prefs),
       MyPage(prefs: prefs, badges: badges)
     ];
+    List<String> titles = ["지원", "선물", "H4Pay", "장바구니", "마이페이지"];
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.title),
+          title: Text(_title),
           automaticallyImplyLeading: false,
           actions: [
             TextButton(
@@ -211,6 +214,7 @@ class MyHomePageState extends State<MyHomePage> {
           onTap: (i) {
             setState(() {
               _currentIdx = i;
+              _title = titles[i];
             });
           },
         ),

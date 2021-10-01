@@ -8,6 +8,7 @@ import 'package:h4pay_flutter/User.dart';
 import 'package:h4pay_flutter/Util.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:wakelock/wakelock.dart';
+import 'package:collection/collection.dart';
 
 class PurchaseDetailPage extends StatefulWidget {
   final Purchase purchase;
@@ -73,9 +74,17 @@ class PurchaseDetailPageState extends State<PurchaseDetailPage> {
                   ReceiptText(title: "주문 번호", content: widget.purchase.orderId),
                   ReceiptText(
                     title: "상품명",
-                    content: getProductNameFromList(
+                    content: getProductName(
                       widget.purchase.item,
-                      products,
+                      products
+                          .singleWhereOrNull(
+                            (element) =>
+                                element.id ==
+                                int.parse(widget.purchase.item.entries
+                                    .elementAt(0)
+                                    .key),
+                          )!
+                          .productName,
                     ),
                   ),
                   ReceiptText(

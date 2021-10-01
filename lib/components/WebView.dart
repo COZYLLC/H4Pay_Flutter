@@ -12,17 +12,20 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebViewExample extends StatefulWidget {
-  final amount;
-  final orderId;
-  final orderName;
-  final customerName;
+  final int amount;
+  final String orderId;
+  final String orderName;
+  final String customerName;
   final Type type;
+
+  final String cashReceiptType;
   WebViewExample(
       {required this.amount,
       required this.orderId,
       required this.orderName,
       required this.customerName,
-      required this.type});
+      required this.type,
+      required this.cashReceiptType});
 
   @override
   WebViewExampleState createState() => WebViewExampleState();
@@ -48,14 +51,14 @@ class WebViewExampleState extends State<WebViewExample> {
 
   @override
   Widget build(BuildContext context) {
-    final url = "https://h4pay.co.kr";
+    final url = "http://192.168.1.253:8081";
     return Scaffold(
       body: WebView(
         initialUrl:
             //"https://h4pay.co.kr/payment?amount=${widget.amount}&orderId=${widget.orderId}",
             // "$url/payment?amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}",
             Uri.encodeFull(
-                "$url/payment?amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}"),
+                "$url/payment?cashReceipt=${widget.cashReceiptType}&amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}"),
 
         //"http://10.172.16.134:8080/payment/success/presuccess.html",
         javascriptMode: JavascriptMode.unrestricted,

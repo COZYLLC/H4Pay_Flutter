@@ -34,6 +34,7 @@ class HomeState extends State<Home> {
   int? currentTile;
   bool cartClicked = false;
   bool moving = false;
+
   Future<Map>? future;
   HomeState(this.prefs);
 
@@ -300,23 +301,24 @@ class HomeState extends State<Home> {
     final H4PayUser? user = await userFromStorage();
     if (user != null) {
       showAlertDialog(context, "발송 확인", "$userName 님에게 선물을 발송할까요?", () {
+        Navigator.pop(context);
+/*         showDropdownAlertDialog(context, "현금영수증 옵션", userName,
+            product.price * qty, _orderId, product.productName, user.name!); */
         showSnackbar(
           context,
           "$userName 님에게 선물을 전송할게요.",
           Colors.green,
           Duration(seconds: 1),
         );
-        Navigator.pop(context);
         showBottomSheet(
           context: context,
-          builder: (context) => Container(
-            child: WebViewExample(
-              type: Gift,
-              amount: product.price * qty,
-              orderId: _orderId,
-              orderName: product.productName,
-              customerName: user.name,
-            ),
+          builder: (context) => WebViewExample(
+            type: Gift,
+            amount: product.price * qty,
+            orderId: _orderId,
+            orderName: product.productName,
+            customerName: user.name!,
+            cashReceiptType: "미발급",
           ),
         );
       }, () {

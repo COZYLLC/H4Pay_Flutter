@@ -431,7 +431,7 @@ class PurchaseCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      getProductName(purchase.item, product),
+                      getProductName(purchase.item, product.productName),
                     ),
                     Text(
                       getPrettyAmountStr(purchase.amount),
@@ -610,8 +610,8 @@ class EventCard extends StatelessWidget {
             ),
           ),
           Spacer(),
-          Image.network(
-            'https://i.imgur.com/OeVfhHx.png',
+          CachedNetworkImage(
+            imageUrl: event.img,
             width: MediaQuery.of(context).size.width * 0.2,
           ),
         ],
@@ -654,8 +654,8 @@ class NoticeCard extends StatelessWidget {
             ),
           ),
           Spacer(),
-          Image.network(
-            notice.img,
+          CachedNetworkImage(
+            imageUrl: notice.img,
             width: MediaQuery.of(context).size.width * 0.2,
           ),
         ],

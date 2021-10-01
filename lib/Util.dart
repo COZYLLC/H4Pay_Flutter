@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:h4pay_flutter/Gift.dart';
 import 'package:h4pay_flutter/Order.dart';
 import 'package:h4pay_flutter/Product.dart';
 import 'package:h4pay_flutter/components/Button.dart';
+import 'package:h4pay_flutter/components/WebView.dart';
 import 'package:intl/intl.dart';
 
 final DateFormat dateFormat = new DateFormat('yyyy-MM-dd hh:mm');
@@ -25,11 +27,10 @@ String getPrettyAmountStr(int amount) {
   return "${numberFormat.format(amount)}원";
 }
 
-String getProductNameFromList(Map item, List<Product> products) {
+String getProductName(Map item, String firstProductName) {
   final int firstProductId = int.parse(
     item.entries.elementAt(0).key,
   );
-  final productName = products[firstProductId].productName;
   int totalQty = 0;
   item.forEach(
     (key, value) {
@@ -38,23 +39,9 @@ String getProductNameFromList(Map item, List<Product> products) {
       }
     },
   );
-  return totalQty == 0 ? "$productName" : "$productName 외 $totalQty 개";
-}
-
-String getProductName(Map item, Product product) {
-  final int firstProductId = int.parse(
-    item.entries.elementAt(0).key,
-  );
-  final productName = product.productName;
-  int totalQty = 0;
-  item.forEach(
-    (key, value) {
-      if (int.parse(key) != firstProductId) {
-        totalQty += value as int;
-      }
-    },
-  );
-  return totalQty == 0 ? "$productName" : "$productName 외 $totalQty 개";
+  return totalQty == 0
+      ? "$firstProductName"
+      : "$firstProductName 외 $totalQty 개";
 }
 
 void showAlertDialog(BuildContext context, String title, String content,
@@ -109,7 +96,7 @@ class OkCancelGroup extends StatelessWidget {
           child: H4PayButton(
             text: "취소",
             onClick: cancelClicked,
-            backgroundColor: Colors.blue,
+            backgroundColor: Colors.red,
           ),
         ),
       ],
@@ -161,6 +148,78 @@ class H4PayDialog extends StatelessWidget {
         content: SingleChildScrollView(child: content),
         actions: actions);
   }
+}
+
+showDropdownAlertDialog(BuildContext context, String title, String userName,
+    int amount, String orderId, String orderName, String customerName) async {
+  await showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (BuildContext context2) {
+      List<String> cashReceipts = ["미발급", "소득공제", "지출증빙"];
+      String cashReceiptType = "미발급";
+      return AlertDialog(
+        title: Text("현금영수증 옵션"),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(23.0),
+          ),
+        ),
+        content: StatefulBuilder(
+          builder: (context3, setState) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              key: GlobalKey(),
+              children: [
+                DropdownButton(
+                  value: cashReceiptType,
+                  icon: Icon(Icons.keyboard_arrow_down),
+                  items: cashReceipts.map((String items) {
+                    return DropdownMenuItem(
+                      value: items,
+                      child: Text(items),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      cashReceiptType = value as String;
+                    });
+                  },
+                ),
+                H4PayButton(
+                  width: double.infinity,
+                  text: "확인",
+                  onClick: () {
+                    showSnackbar(
+                      context,
+                      "$userName 님에게 선물을 전송할게요.",
+                      Colors.green,
+                      Duration(seconds: 1),
+                    );
+                    Navigator.pop(context);
+                    print(
+                        "$amount | $orderId | $orderName | $customerName | $cashReceiptType");
+                    showBottomSheet(
+                      context: context,
+                      builder: (context) => WebViewExample(
+                        type: Gift,
+                        amount: amount,
+                        orderId: orderId,
+                        orderName: orderName,
+                        customerName: customerName,
+                        cashReceiptType: cashReceiptType,
+                      ),
+                    );
+                  },
+                  backgroundColor: Colors.blue,
+                )
+              ],
+            );
+          },
+        ),
+      );
+    },
+  );
 }
 
 navigateTo(Widget page, BuildContext context) {

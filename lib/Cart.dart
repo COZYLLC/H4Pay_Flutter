@@ -1,9 +1,7 @@
 import 'dart:convert';
 
-import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:h4pay_flutter/Gift.dart';
 import 'package:h4pay_flutter/Order.dart';
 import 'package:h4pay_flutter/Product.dart';
 import 'package:h4pay_flutter/User.dart';
@@ -14,7 +12,7 @@ import 'package:h4pay_flutter/components/WebView.dart';
 import 'package:h4pay_flutter/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:collection/collection.dart';
 
 int countAllItemsInCart(Map cartMap) {
   int itemCount = 0;
@@ -30,7 +28,10 @@ int calculateTotalPrice(Map cartMap, List<Product> products) {
   num price = 0;
   cartMap.forEach(
     (key, value) {
-      price += products[int.parse(key)].price * value;
+      price += products
+              .singleWhereOrNull((element) => element.id == int.parse(key))!
+              .price *
+          value;
     },
   );
   return price.toInt();
@@ -53,6 +54,8 @@ class CartState extends State<Cart> {
   Map cartMap = {};
   List<Product>? products;
   Future<List<Product>?>? _fetchProduct;
+  List<String> cashReceipts = ["미발급", "소득공제", "지출증빙"];
+  String cashReceiptType = "미발급";
 
   void updateCart() {
     prefs.setString('cart', json.encode(cartMap));
@@ -149,6 +152,27 @@ class CartState extends State<Cart> {
                               ),
                             ),
                           ),
+/*                           Row(
+                            children: [
+                              Text("현금영수증 옵션"),
+                              Container(width: 10),
+                              DropdownButton(
+                                value: cashReceiptType,
+                                icon: Icon(Icons.keyboard_arrow_down),
+                                items: cashReceipts.map((String items) {
+                                  return DropdownMenuItem(
+                                    value: items,
+                                    child: Text(items),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    cashReceiptType = value as String;
+                                  });
+                                },
+                              ),
+                            ],
+                          ), */
                           H4PayButton(
                             text: "결제하기",
                             onClick: _payment,
@@ -219,13 +243,13 @@ class CartState extends State<Cart> {
         builder: (context) => Container(
           //height: MediaQuery.of(context).size.height,
           child: WebViewExample(
-            type: Order,
-            amount: this.totalPrice,
-            orderId: _orderId,
-            orderName:
-                getProductNameFromList(tempPurchase['item'] as Map, products!),
-            customerName: user.name,
-          ),
+              type: Order,
+              amount: this.totalPrice,
+              orderId: _orderId,
+              orderName: getProductName(
+                  tempPurchase['item'] as Map, products![0].productName),
+              customerName: user.name!,
+              cashReceiptType: cashReceiptType),
         ),
       ).closed.whenComplete(() => loadCart());
     } else {
