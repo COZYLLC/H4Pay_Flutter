@@ -214,7 +214,7 @@ class SupportFormPageState extends State<SupportFormPage> {
                                   });
                                 }
                               },
-                              backgroundColor: Colors.blue,
+                              backgroundColor: Theme.of(context).primaryColor,
                               width: MediaQuery.of(context).size.width * 0.3,
                               height: constraints.maxHeight,
                             ),
@@ -258,7 +258,8 @@ class SupportFormPageState extends State<SupportFormPage> {
                                     Navigator.pop(context);
                                     Navigator.pop(context);
                                   },
-                                  backgroundColor: Colors.blue,
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
                                   width: double.infinity,
                                 )
                               ],
@@ -267,7 +268,7 @@ class SupportFormPageState extends State<SupportFormPage> {
                         );
                       }
                     },
-                    backgroundColor: Colors.blue,
+                    backgroundColor: Theme.of(context).primaryColor,
                     width: double.infinity,
                   ),
                 ],

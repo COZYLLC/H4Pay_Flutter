@@ -5,6 +5,7 @@ class H4PayButton extends StatelessWidget {
   final String text;
   final onClick;
   final Color backgroundColor;
+  final Color? textColor;
   final double? width;
   final double? height;
 
@@ -13,6 +14,7 @@ class H4PayButton extends StatelessWidget {
       required this.text,
       required this.onClick,
       required this.backgroundColor,
+      this.textColor,
       this.width,
       this.height})
       : super(key: key);
@@ -21,7 +23,10 @@ class H4PayButton extends StatelessWidget {
       width: width,
       height: height,
       child: ElevatedButton(
-        child: Text(this.text),
+        child: Text(
+          this.text,
+          style: TextStyle(color: textColor),
+        ),
         onPressed: this.onClick,
         style: ButtonStyle(
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(

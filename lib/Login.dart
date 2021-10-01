@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:h4pay_flutter/Register.dart';
+import 'package:h4pay_flutter/Result.dart';
 import 'package:h4pay_flutter/User.dart';
 import 'package:h4pay_flutter/Util.dart';
 import 'package:h4pay_flutter/components/Button.dart';
@@ -77,6 +78,7 @@ class LoginPageState extends State<LoginPage> {
                       onChanged: (_) {
                         _loginFormKey.currentState!.validate();
                       },
+                      textInputAction: TextInputAction.next,
                     ),
                     TextFormField(
                       controller: _pwController,
@@ -96,6 +98,7 @@ class LoginPageState extends State<LoginPage> {
                       onChanged: (_) {
                         _loginFormKey.currentState!.validate();
                       },
+                      textInputAction: TextInputAction.done,
                     ),
                   ],
                 ),
@@ -103,7 +106,7 @@ class LoginPageState extends State<LoginPage> {
 /*               H4PayButton(
                 text: "googleLogin",
                 onClick: _signInWithGoogle,
-                backgroundColor: Colors.lightBlue,
+                backgroundColor: Theme.of(context).primaryColor,
                 width: double.infinity,
               
               SignInWithAppleButton(onPressed: _signInWithApple), */
@@ -135,7 +138,7 @@ class LoginPageState extends State<LoginPage> {
                     );
                   }
                 },
-                backgroundColor: Colors.lightBlue,
+                backgroundColor: Theme.of(context).primaryColor,
               ),
             ],
           ),
@@ -255,94 +258,112 @@ class LoginPageState extends State<LoginPage> {
 }
 
 class IntroPage extends StatelessWidget {
+  bool canGoBack;
+  IntroPage({required this.canGoBack});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: EmptyAppBar(),
-      backgroundColor: Color(0xff434343),
-      body: Stack(
-        children: [
-          Positioned(
-            top: -(MediaQuery.of(context).size.height * 0.3),
-            left: -(MediaQuery.of(context).size.width * 1.5),
-            child: CachedNetworkImage(
-              width: MediaQuery.of(context).size.width * 2,
-              imageUrl: "http://192.168.1.2:8080/pattern.png",
-              color: Colors.grey[850]!.withOpacity(0.7),
-            ),
-          ),
-          Positioned(
-            top: -(MediaQuery.of(context).size.height * 0.6),
-            right: -(MediaQuery.of(context).size.width * 1.5),
-            child: CachedNetworkImage(
-              width: MediaQuery.of(context).size.width * 2,
-              imageUrl: "http://192.168.1.2:8080/pattern.png",
-              color: Colors.grey[850]!.withOpacity(0.7),
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(
-                vertical: MediaQuery.of(context).size.height * 0.15,
-                horizontal: MediaQuery.of(context).size.width * 0.1),
-            child: Container(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    margin: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).size.height * 0.1),
-                    child: Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * 0.1),
-                      child: Image.asset(
-                        'assets/image/H4pay.png',
-                        width: MediaQuery.of(context).size.width * 0.3,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  H4PayButton(
-                    text: "로그인",
-                    width: double.infinity,
-                    onClick: () async {
-                      final SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => LoginPage(canGoBack: true)),
-                      );
-                    },
-                    backgroundColor: Colors.lightBlue,
-                  ),
-                  H4PayButton(
-                    text: "회원가입",
-                    width: double.infinity,
-                    onClick: () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RegisterPage(),
-                        ),
-                      );
-                    },
-                    backgroundColor: Colors.lightBlue,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 40),
-                    child: Text(
-                      "아이디나 비밀번호를 잊어버리셨나요?",
-                      style: TextStyle(
-                        color: Colors.white,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  )
-                ],
+    return WillPopScope(
+      onWillPop: () async {
+        return canGoBack;
+      },
+      child: Scaffold(
+        appBar: EmptyAppBar(),
+        backgroundColor: Color(0xff434343),
+        body: Stack(
+          children: [
+            Positioned(
+              top: -(MediaQuery.of(context).size.height * 0.3),
+              left: -(MediaQuery.of(context).size.width * 1.5),
+              child: CachedNetworkImage(
+                width: MediaQuery.of(context).size.width * 2,
+                imageUrl: "http://192.168.1.2:8080/pattern.png",
+                color: Colors.grey[850]!.withOpacity(0.7),
               ),
             ),
-          ),
-        ],
+            Positioned(
+              top: -(MediaQuery.of(context).size.height * 0.6),
+              right: -(MediaQuery.of(context).size.width * 1.5),
+              child: CachedNetworkImage(
+                width: MediaQuery.of(context).size.width * 2,
+                imageUrl: "http://192.168.1.2:8080/pattern.png",
+                color: Colors.grey[850]!.withOpacity(0.7),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(
+                  vertical: MediaQuery.of(context).size.height * 0.15,
+                  horizontal: MediaQuery.of(context).size.width * 0.1),
+              child: Container(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).size.height * 0.1),
+                      child: Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * 0.1),
+                        child: Image.asset(
+                          'assets/image/H4pay.png',
+                          width: MediaQuery.of(context).size.width * 0.3,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    H4PayButton(
+                      text: "로그인",
+                      width: double.infinity,
+                      onClick: () async {
+                        final SharedPreferences prefs =
+                            await SharedPreferences.getInstance();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => LoginPage(canGoBack: true)),
+                        );
+                      },
+                      backgroundColor: Colors.white,
+                      textColor: Colors.black,
+                    ),
+                    H4PayButton(
+                      text: "회원가입",
+                      width: double.infinity,
+                      onClick: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RegisterPage(),
+                          ),
+                        );
+                      },
+                      backgroundColor: Color(0xff4F83D6),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 40),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AccountFindPage(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          "아이디나 비밀번호를 잊어버리셨나요?",
+                          style: TextStyle(
+                            color: Colors.white,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -356,4 +377,187 @@ class EmptyAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => Size(0.0, 0.0);
+}
+
+class AccountFindPage extends StatefulWidget {
+  @override
+  AccountFindPageState createState() => AccountFindPageState();
+}
+
+class AccountFindPageState extends State<AccountFindPage> {
+  final GlobalKey<FormState> _findIdFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _findPwFormKey = GlobalKey<FormState>();
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("계정 찾기"),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(23),
+        child: Column(
+          children: [
+            Text("아이디 찾기"),
+            Form(
+              key: _findIdFormKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(labelText: "이름"),
+                    textInputAction: TextInputAction.next,
+                    validator: (value) {
+                      final RegExp regExp = RegExp(r'^[가-힣]{2,8}$');
+                      return regExp.hasMatch(value!) ? null : "이름이 올바르지 않습니다.";
+                    },
+                  ),
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(labelText: "이메일"),
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.done,
+                    validator: (value) {
+                      final RegExp regExp = RegExp(
+                          r'([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$');
+                      return regExp.hasMatch(value!) ? null : "이메일이 올바르지 않습니다.";
+                    },
+                  ),
+                ],
+              ),
+            ),
+            H4PayButton(
+              text: "찾기",
+              onClick: () async {
+                if (_findIdFormKey.currentState!.validate()) {
+                  // 입력값이 정상이면
+                  final H4PayResult findResult = await _findId(
+                    _nameController.text,
+                    _emailController.text,
+                  );
+                  showSnackbar(
+                      context,
+                      findResult.data,
+                      findResult.success ? Colors.green : Colors.red,
+                      Duration(seconds: 1));
+                }
+              },
+              backgroundColor: Color(0xff5B82D1),
+              width: double.infinity,
+            ),
+            Container(
+              height: MediaQuery.of(context).size.height * 0.1,
+            ),
+            Text("비밀번호 찾기"),
+            Form(
+              key: _findPwFormKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(labelText: "이름"),
+                    textInputAction: TextInputAction.next,
+                    validator: (value) {
+                      final RegExp regExp = RegExp(r'^[가-힣]{2,8}$');
+                      return regExp.hasMatch(value!) ? null : "이름이 올바르지 않습니다.";
+                    },
+                  ),
+                  TextFormField(
+                    controller: _idController,
+                    decoration: InputDecoration(labelText: "아이디"),
+                    textInputAction: TextInputAction.next,
+                    validator: (value) {
+                      final RegExp regExp = RegExp(r'^[A-za-z0-9]{5,15}$');
+                      return regExp.hasMatch(value!) ? null : "아이디가 올바르지 않습니다.";
+                    },
+                  ),
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(labelText: "이메일"),
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.done,
+                    validator: (value) {
+                      final RegExp regExp = RegExp(
+                          r'([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$');
+                      return regExp.hasMatch(value!) ? null : "이메일이 올바르지 않습니다.";
+                    },
+                  ),
+                ],
+              ),
+            ),
+            H4PayButton(
+              text: "찾기",
+              onClick: () async {
+                if (_findPwFormKey.currentState!.validate()) {
+                  // 입력값이 정상이면
+                  final H4PayResult findResult = await _findPw(
+                      _nameController.text,
+                      _emailController.text,
+                      _idController.text);
+                  showSnackbar(
+                      context,
+                      findResult.data,
+                      findResult.success ? Colors.green : Colors.red,
+                      Duration(seconds: 1));
+                }
+              },
+              backgroundColor: Color(0xff5B82D1),
+              width: double.infinity,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<H4PayResult> _findId(String name, String email) async {
+    final response = await http.post(
+      Uri.parse("${dotenv.env['API_URL']}/users/find/uid"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: json.encode({
+        "name": name,
+        "email": email,
+      }),
+    );
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return H4PayResult(
+        success: jsonResponse['status'],
+        data: jsonResponse['message'],
+      );
+    } else {
+      return H4PayResult(
+        success: false,
+        data: "서버 오류입니다.",
+      );
+    }
+  }
+
+  Future<H4PayResult> _findPw(String name, String email, String uid) async {
+    final response = await http.post(
+      Uri.parse("${dotenv.env['API_URL']}/users/find/password"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: json.encode({"name": name, "email": email, "uid": uid}),
+    );
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return H4PayResult(
+        success: jsonResponse['status'],
+        data: jsonResponse['message'],
+      );
+    } else {
+      return H4PayResult(
+        success: false,
+        data: "서버 오류입니다.",
+      );
+    }
+  }
 }

@@ -85,7 +85,7 @@ class OkCancelGroup extends StatelessWidget {
           child: H4PayButton(
             text: "확인",
             onClick: okClicked,
-            backgroundColor: Colors.blue,
+            backgroundColor: Colors.green,
           ),
         ),
         Spacer(
@@ -211,7 +211,7 @@ showDropdownAlertDialog(BuildContext context, String title, String userName,
                       ),
                     );
                   },
-                  backgroundColor: Colors.blue,
+                  backgroundColor: Theme.of(context).primaryColor,
                 )
               ],
             );

@@ -94,7 +94,7 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
                                 int count = 0;
                                 Navigator.pop(context);
                               },
-                              backgroundColor: Colors.blue,
+                              backgroundColor: Theme.of(context).primaryColor,
                             ),
                           ),
                           Container(width: 10),
@@ -112,7 +112,7 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
                                   ),
                                 );
                               },
-                              backgroundColor: Colors.blue,
+                              backgroundColor: Theme.of(context).primaryColor,
                             ),
                           ),
                         ],

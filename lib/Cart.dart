@@ -176,7 +176,7 @@ class CartState extends State<Cart> {
                           H4PayButton(
                             text: "결제하기",
                             onClick: _payment,
-                            backgroundColor: Colors.blue,
+                            backgroundColor: Theme.of(context).primaryColor,
                             width: double.infinity,
                           )
                         ],

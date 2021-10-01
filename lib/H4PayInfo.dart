@@ -162,7 +162,8 @@ class H4PayInfoPageState extends State {
                                     onClick: () {
                                       Navigator.pop(context);
                                     },
-                                    backgroundColor: Colors.blue,
+                                    backgroundColor:
+                                        Theme.of(context).primaryColor,
                                     width: double.infinity,
                                   )
                                 ],

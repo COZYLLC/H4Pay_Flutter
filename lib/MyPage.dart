@@ -70,7 +70,7 @@ class MyPageState extends State<MyPage> {
                               ),
                             );
                           },
-                          backgroundColor: Colors.blue,
+                          backgroundColor: Theme.of(context).primaryColor,
                         ),
                       ],
                     ),
@@ -150,8 +150,9 @@ class MyPageState extends State<MyPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          LoginPage(canGoBack: false),
+                                      builder: (context) => IntroPage(
+                                        canGoBack: false,
+                                      ),
                                     ),
                                   );
                                 },
@@ -426,12 +427,14 @@ class MyInfoPageState extends State<MyInfoPage> {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) =>
-                                                    LoginPage(canGoBack: false),
-                                              ),
+                                                  builder: (context) =>
+                                                      IntroPage(
+                                                        canGoBack: false,
+                                                      )),
                                             );
                                           },
-                                          backgroundColor: Colors.blue,
+                                          backgroundColor:
+                                              Theme.of(context).primaryColor,
                                           width: double.infinity,
                                         )
                                       ],
@@ -450,7 +453,7 @@ class MyInfoPageState extends State<MyInfoPage> {
                               }
                             }
                           },
-                          backgroundColor: Colors.blue,
+                          backgroundColor: Theme.of(context).primaryColor,
                           width: double.infinity,
                         ),
                       ],
@@ -493,12 +496,12 @@ class MyInfoPageState extends State<MyInfoPage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        LoginPage(canGoBack: false),
-                                  ),
+                                      builder: (context) => IntroPage(
+                                            canGoBack: false,
+                                          )),
                                 );
                               },
-                              backgroundColor: Colors.blue,
+                              backgroundColor: Theme.of(context).primaryColor,
                               width: double.infinity,
                             )
                           ],

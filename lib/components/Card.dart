@@ -567,7 +567,7 @@ class PurchaseCard extends StatelessWidget {
                               backgroundColor:
                                   purchase.extended! || purchase.uidfrom == uid
                                       ? Colors.grey[400]!
-                                      : Colors.blue,
+                                      : Theme.of(context).primaryColor,
                               width: MediaQuery.of(context).size.width * 0.4,
                             )
                     ],
@@ -690,7 +690,7 @@ void showNoticeCard(BuildContext context, Notice notice) {
           onClick: () {
             Navigator.pop(context);
           },
-          backgroundColor: Colors.blue,
+          backgroundColor: Theme.of(context).primaryColor,
           width: double.infinity,
         )
       ],
@@ -722,7 +722,7 @@ void showEventCard(BuildContext context, Event event) {
           onClick: () {
             Navigator.pop(context);
           },
-          backgroundColor: Colors.blue,
+          backgroundColor: Theme.of(context).primaryColor,
           width: double.infinity,
         )
       ],

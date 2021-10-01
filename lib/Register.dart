@@ -229,7 +229,8 @@ class RegisterPageState extends State<RegisterPage> {
                                         ),
                                       );
                                     },
-                                    backgroundColor: Colors.blue,
+                                    backgroundColor:
+                                        Theme.of(context).primaryColor,
                                     width: double.infinity,
                                   )
                                 ],
@@ -248,7 +249,7 @@ class RegisterPageState extends State<RegisterPage> {
                         }
                       }
                     },
-                    backgroundColor: Colors.blue,
+                    backgroundColor: Theme.of(context).primaryColor,
                     width: double.infinity,
                   )
                 ],

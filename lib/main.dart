@@ -34,10 +34,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         fontFamily: 'Spoqa_Han_Sans',
-        primarySwatch: Colors.blue,
+        primaryColor: Color(0xff5B82D1),
       ),
       //home: MyHomePage(title: 'H4Pay', prefs: prefs),
-      home: IntroPage(),
+      home: IntroPage(
+        canGoBack: false,
+      ),
     );
   }
 }
@@ -211,6 +213,7 @@ class MyHomePageState extends State<MyHomePage> {
           ],
           currentIndex: _currentIdx,
           backgroundColor: Colors.white,
+          selectedColor: Theme.of(context).primaryColor,
           onTap: (i) {
             setState(() {
               _currentIdx = i;
