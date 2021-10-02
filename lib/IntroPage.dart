@@ -38,23 +38,41 @@ class IntroPageState extends State<IntroPage> {
     super.initState();
     connectionCheck().then((value) {
       if (!value) {
-        showCustomAlertDialog(
-          context,
-          "서버 오류",
-          [
-            Text("서버와 연결할 수 없습니다.\n앱을 종료합니다."),
-          ],
-          [
-            H4PayButton(
-                text: "확인",
-                onClick: () {
-                  exit(0);
-                },
-                backgroundColor: Colors.red,
-                width: double.infinity)
-          ],
-          false,
-        );
+        if (dotenv.env['TEST_MODE'] == "TRUE") {
+          showCustomAlertDialog(
+            context,
+            "서버 오류",
+            [Text("서버와 연결할 수 없습니다. 개발자 모드이므로 IP 변경을 시도합니다.")],
+            [
+              H4PayButton(
+                  text: "확인",
+                  onClick: () {
+                    Navigator.pop(context);
+                    showIpChangeDialog();
+                  },
+                  backgroundColor: Theme.of(context).primaryColor),
+            ],
+            false,
+          );
+        } else {
+          showCustomAlertDialog(
+            context,
+            "서버 오류",
+            [
+              Text("서버와 연결할 수 없습니다.\n앱을 종료합니다."),
+            ],
+            [
+              H4PayButton(
+                  text: "확인",
+                  onClick: () {
+                    exit(0);
+                  },
+                  backgroundColor: Colors.red,
+                  width: double.infinity)
+            ],
+            false,
+          );
+        }
       }
     });
   }
@@ -179,51 +197,7 @@ class IntroPageState extends State<IntroPage> {
                     ),
                     dotenv.env['TEST_MODE'] == "TRUE"
                         ? InkWell(
-                            onTap: () {
-                              showCustomAlertDialog(
-                                  context,
-                                  "서버 URL 변경",
-                                  [
-                                    Text(
-                                        "서버 URL을 프로토콜, 포트, Route와 함께 입력해주세요. ex) https://yoon-lab.xyz:23408/api"),
-                                    Form(
-                                      key: _formKey,
-                                      child: TextFormField(
-                                        controller: _ipController,
-                                        validator: (value) {
-                                          return value!.isNotEmpty
-                                              ? null
-                                              : "URL을 입력해주세요.";
-                                        },
-                                      ),
-                                    )
-                                  ],
-                                  [
-                                    H4PayButton(
-                                      text: "확인",
-                                      onClick: () async {
-                                        if (_formKey.currentState!.validate()) {
-                                          Navigator.pop(context);
-                                          showSnackbar(
-                                            context,
-                                            "IP '${_ipController.text}' 로 서버 URL을 설정합니다.",
-                                            Colors.green,
-                                            Duration(seconds: 1),
-                                          );
-                                          final _prefs = await SharedPreferences
-                                              .getInstance();
-                                          _prefs.setString(
-                                            'API_URL',
-                                            _ipController.text,
-                                          );
-                                        }
-                                      },
-                                      backgroundColor:
-                                          Theme.of(context).primaryColor,
-                                    )
-                                  ],
-                                  true);
-                            },
+                            onTap: showIpChangeDialog,
                             child: Text(
                               "서버 IP 변경",
                               style: TextStyle(
@@ -241,5 +215,59 @@ class IntroPageState extends State<IntroPage> {
         ),
       ),
     );
+  }
+
+  showIpChangeDialog() {
+    showCustomAlertDialog(
+        context,
+        "서버 URL 변경",
+        [
+          Text(
+              "서버 URL을 프로토콜, 포트, Route와 함께 입력해주세요. ex) https://yoon-lab.xyz:23408/api"),
+          Form(
+            key: _formKey,
+            child: TextFormField(
+              controller: _ipController,
+              validator: (value) {
+                return value!.isNotEmpty ? null : "URL을 입력해주세요.";
+              },
+            ),
+          )
+        ],
+        [
+          H4PayButton(
+            text: "확인",
+            onClick: () async {
+              FocusScope.of(context).requestFocus(FocusNode());
+              if (_formKey.currentState!.validate()) {
+                final _prefs = await SharedPreferences.getInstance();
+                _prefs.setString(
+                  'API_URL',
+                  _ipController.text,
+                );
+                API_URL = _ipController.text;
+                final connStatus = await connectionCheck();
+                if (connStatus) {
+                  Navigator.pop(context);
+                  showSnackbar(
+                    context,
+                    "IP '${_ipController.text}' 로 서버 URL을 설정합니다.",
+                    Colors.green,
+                    Duration(seconds: 1),
+                  );
+                } else {
+                  showSnackbar(
+                    context,
+                    "IP '${_ipController.text}' 로 연결을 시도했지만 잘 안 되는 것 같네요...",
+                    Colors.red,
+                    Duration(seconds: 1),
+                  );
+                }
+              }
+            },
+            backgroundColor: Theme.of(context).primaryColor,
+          )
+        ],
+        true);
   }
 }
