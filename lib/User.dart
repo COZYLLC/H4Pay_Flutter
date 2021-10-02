@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:h4pay_flutter/Result.dart';
+import 'package:h4pay_flutter/Setting.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 
@@ -65,7 +66,7 @@ Future<H4PayUser?> userFromStorage() async {
 
 Future<H4PayUser?> tokenCheck(String _token) async {
   final response = await http.post(
-    Uri.parse("${dotenv.env['API_URL']}/users/tokencheck"),
+    Uri.parse("$API_URL/users/tokencheck"),
     headers: {'x-access-token': _token},
   );
   if (response.statusCode == 200) {
@@ -90,7 +91,7 @@ Future<bool> changePassword(
   final digest = sha256.convert(bytes);
 
   final response = await http.post(
-    Uri.parse("${dotenv.env['API_URL']}/users/changepass"),
+    Uri.parse("$API_URL/users/changepass"),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
@@ -143,7 +144,7 @@ Future<H4PayResult> createUser(
   final digest = sha256.convert(bytes);
 
   final response = await http.post(
-    Uri.parse("${dotenv.env['API_URL']}/users/create"),
+    Uri.parse("$API_URL/users/create"),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
@@ -174,7 +175,7 @@ Future<H4PayResult> withdraw(
   String name,
 ) async {
   final response = await http.post(
-    Uri.parse("${dotenv.env['API_URL']}/users/withdrawal"),
+    Uri.parse("$API_URL/users/withdrawal"),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },

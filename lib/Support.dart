@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay_flutter/Notice.dart';
 import 'package:h4pay_flutter/NoticeList.dart';
 import 'package:h4pay_flutter/Result.dart';
+import 'package:h4pay_flutter/Setting.dart';
 import 'package:h4pay_flutter/Success.dart';
 import 'package:h4pay_flutter/User.dart';
 import 'package:h4pay_flutter/Util.dart';
@@ -285,7 +286,7 @@ class SupportFormPageState extends State<SupportFormPage> {
     var stream = new http.ByteStream(DelegatingStream.typed(img.openRead()));
     var length = await img.length();
 
-    var uri = Uri.parse("${dotenv.env['API_URL']}/upload");
+    var uri = Uri.parse("$API_URL/upload");
 
     var request = new http.MultipartRequest("POST", uri);
     var multipartFile = new http.MultipartFile('img', stream, length,

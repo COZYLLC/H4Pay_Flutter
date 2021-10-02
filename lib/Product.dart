@@ -1,7 +1,9 @@
 import 'package:async/async.dart';
+import 'package:h4pay_flutter/Setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Product {
   final int id;
@@ -35,7 +37,7 @@ class Product {
 Future<List<Product>?> fetchProduct(String from) async {
   print(from);
   final response = await http.get(
-    Uri.parse('${dotenv.env['API_URL']}/product'),
+    Uri.parse('$API_URL/product'),
   );
   if (response.statusCode == 200) {
     print("request go");

@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:h4pay_flutter/Gift.dart';
 import 'package:h4pay_flutter/H4PayInfo.dart';
+import 'package:h4pay_flutter/IntroPage.dart';
 import 'package:h4pay_flutter/Login.dart';
 import 'package:h4pay_flutter/Order.dart';
 import 'package:h4pay_flutter/PurchaseList.dart';

@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:h4pay_flutter/Register.dart';
 import 'package:h4pay_flutter/Result.dart';
+import 'package:h4pay_flutter/Setting.dart';
 import 'package:h4pay_flutter/User.dart';
 import 'package:h4pay_flutter/Util.dart';
 import 'package:h4pay_flutter/components/Button.dart';
@@ -192,8 +193,9 @@ class LoginPageState extends State<LoginPage> {
   }
 
   Future<bool> _googleLogin(String _idToken) async {
+       final _prefs = await SharedPreferences.getInstance();
     final response = await http.post(
-      Uri.parse("${dotenv.env['API_URL']}/users/auth/google"),
+      Uri.parse("$API_URL/users/auth/google"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -229,8 +231,9 @@ class LoginPageState extends State<LoginPage> {
   Future<bool> _login(String id, String pw) async {
     final bytes = utf8.encode(pw);
     final digest = sha256.convert(bytes);
+    final _prefs = await SharedPreferences.getInstance();
     final response = await http.post(
-      Uri.parse("${dotenv.env['API_URL']}/users/login"),
+      Uri.parse("$API_URL/users/login"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -255,128 +258,6 @@ class LoginPageState extends State<LoginPage> {
       return false;
     }
   }
-}
-
-class IntroPage extends StatelessWidget {
-  bool canGoBack;
-  IntroPage({required this.canGoBack});
-  @override
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        return canGoBack;
-      },
-      child: Scaffold(
-        appBar: EmptyAppBar(),
-        backgroundColor: Color(0xff434343),
-        body: Stack(
-          children: [
-            Positioned(
-              top: -(MediaQuery.of(context).size.height * 0.3),
-              left: -(MediaQuery.of(context).size.width * 1.5),
-              child: CachedNetworkImage(
-                width: MediaQuery.of(context).size.width * 2,
-                imageUrl: "http://192.168.1.2:8080/pattern.png",
-                color: Colors.grey[850]!.withOpacity(0.7),
-              ),
-            ),
-            Positioned(
-              top: -(MediaQuery.of(context).size.height * 0.6),
-              right: -(MediaQuery.of(context).size.width * 1.5),
-              child: CachedNetworkImage(
-                width: MediaQuery.of(context).size.width * 2,
-                imageUrl: "http://192.168.1.2:8080/pattern.png",
-                color: Colors.grey[850]!.withOpacity(0.7),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(
-                  vertical: MediaQuery.of(context).size.height * 0.15,
-                  horizontal: MediaQuery.of(context).size.width * 0.1),
-              child: Container(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).size.height * 0.1),
-                      child: Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.height * 0.1),
-                        child: Image.asset(
-                          'assets/image/H4pay.png',
-                          width: MediaQuery.of(context).size.width * 0.3,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    H4PayButton(
-                      text: "로그인",
-                      width: double.infinity,
-                      onClick: () async {
-                        final SharedPreferences prefs =
-                            await SharedPreferences.getInstance();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => LoginPage(canGoBack: true)),
-                        );
-                      },
-                      backgroundColor: Colors.white,
-                      textColor: Colors.black,
-                    ),
-                    H4PayButton(
-                      text: "회원가입",
-                      width: double.infinity,
-                      onClick: () async {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RegisterPage(),
-                          ),
-                        );
-                      },
-                      backgroundColor: Color(0xff4F83D6),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 40),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AccountFindPage(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          "아이디나 비밀번호를 잊어버리셨나요?",
-                          style: TextStyle(
-                            color: Colors.white,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class EmptyAppBar extends StatelessWidget implements PreferredSizeWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-
-  @override
-  Size get preferredSize => Size(0.0, 0.0);
 }
 
 class AccountFindPage extends StatefulWidget {
@@ -515,8 +396,9 @@ class AccountFindPageState extends State<AccountFindPage> {
   }
 
   Future<H4PayResult> _findId(String name, String email) async {
+    final _prefs = await SharedPreferences.getInstance();
     final response = await http.post(
-      Uri.parse("${dotenv.env['API_URL']}/users/find/uid"),
+      Uri.parse("$API_URL/users/find/uid"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -540,8 +422,9 @@ class AccountFindPageState extends State<AccountFindPage> {
   }
 
   Future<H4PayResult> _findPw(String name, String email, String uid) async {
+    final _prefs = await SharedPreferences.getInstance();
     final response = await http.post(
-      Uri.parse("${dotenv.env['API_URL']}/users/find/password"),
+      Uri.parse("$API_URL/users/find/password"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

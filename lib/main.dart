@@ -5,13 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay_flutter/Cart.dart';
 import 'package:h4pay_flutter/Event.dart';
+import 'package:h4pay_flutter/IntroPage.dart';
 import 'package:h4pay_flutter/NoticeList.dart';
 import 'package:h4pay_flutter/Gift.dart';
 import 'package:h4pay_flutter/Home.dart';
-import 'package:h4pay_flutter/Login.dart';
 import 'package:h4pay_flutter/MyPage.dart';
 import 'package:h4pay_flutter/Order.dart';
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
+import 'package:h4pay_flutter/Setting.dart';
 import 'package:h4pay_flutter/Support.dart';
 import 'package:h4pay_flutter/User.dart';
 import 'package:h4pay_flutter/Util.dart';
@@ -21,7 +22,16 @@ import 'package:http/http.dart' as http;
 Future main() async {
   await dotenv.load(fileName: ".env");
   SharedPreferences prefs = await SharedPreferences.getInstance();
+  loadApiUrl(prefs);
   runApp(MyApp(prefs));
+}
+
+loadApiUrl(SharedPreferences prefs) {
+  if (prefs.getString("API_URL") == null) {
+    prefs.setString('API_URL', dotenv.env['API_URL']!);
+  } else {
+    API_URL = prefs.getString("API_URL");
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -116,8 +126,7 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   Future<String> fetchStoreState() async {
-    final response =
-        await http.get(Uri.parse('${dotenv.env['API_URL']}/store'));
+    final response = await http.get(Uri.parse('$API_URL/store'));
     if (response.statusCode == 200) {
       bool state = jsonDecode(response.body)['isOpened'];
       if (state) {

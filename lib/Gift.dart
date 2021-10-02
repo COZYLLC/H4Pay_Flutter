@@ -1,5 +1,6 @@
 import 'package:h4pay_flutter/Purchase.dart';
 import 'package:h4pay_flutter/Result.dart';
+import 'package:h4pay_flutter/Setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -52,7 +53,7 @@ class Gift extends Purchase {
     );
     print("[API] ${jsonBody} Creating");
     final response = await http.post(
-      Uri.parse("${dotenv.env['API_URL']}/gift/create"),
+      Uri.parse("$API_URL/gift/create"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -84,7 +85,7 @@ class Gift extends Purchase {
 
   Future<H4PayResult> extend() async {
     final response = await http.post(
-      Uri.parse('${dotenv.env['API_URL']}/gift/${this.orderId}/extend'),
+      Uri.parse('$API_URL/gift/${this.orderId}/extend'),
     );
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
@@ -97,9 +98,8 @@ class Gift extends Purchase {
 }
 
 Future<List<Gift>?> fetchGift(_uid) async {
-  final response = await http.post(
-      Uri.parse('${dotenv.env['API_URL']}/gift/recipientlist'),
-      body: {"uid": _uid});
+  final response = await http
+      .post(Uri.parse('$API_URL/gift/recipientlist'), body: {"uid": _uid});
   if (response.statusCode == 200) {
     final jsonResponse = jsonDecode(response.body);
     if (jsonResponse['status']) {
@@ -114,9 +114,8 @@ Future<List<Gift>?> fetchGift(_uid) async {
 }
 
 Future<List<Gift>?> fetchSentGift(_uid) async {
-  final response = await http.post(
-      Uri.parse('${dotenv.env['API_URL']}/gift/findbysenderuid'),
-      body: {"uid": _uid});
+  final response = await http
+      .post(Uri.parse('$API_URL/gift/findbysenderuid'), body: {"uid": _uid});
   if (response.statusCode == 200) {
     final jsonResponse = jsonDecode(response.body);
     if (jsonResponse['status']) {
@@ -136,14 +135,14 @@ Future<H4PayResult> checkUserValid(String studentId) async {
   ];
   print("[API] {'users': ${jsonEncode(studentList)}");
   final validResponse = await http.post(
-    Uri.parse('${dotenv.env['API_URL']}/gift/uservalid'),
+    Uri.parse('$API_URL/gift/uservalid'),
     body: {'users': jsonEncode(studentList)},
   );
   if (validResponse.statusCode == 200) {
     final jsonResponse = jsonDecode(validResponse.body);
     if (jsonResponse['status']) {
       final nameResponse = await http.post(
-        Uri.parse('${dotenv.env['API_URL']}/gift/namefromstid'),
+        Uri.parse('$API_URL/gift/namefromstid'),
         body: {"users": jsonEncode(studentList)},
       );
       if (nameResponse.statusCode == 200) {

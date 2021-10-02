@@ -1,6 +1,7 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay_flutter/Purchase.dart';
 import 'package:h4pay_flutter/Result.dart';
+import 'package:h4pay_flutter/Setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -44,7 +45,7 @@ class Order extends Purchase {
     );
     print("[API] ${jsonBody}");
     final response = await http.post(
-      Uri.parse("${dotenv.env['API_URL']}/orders/create"),
+      Uri.parse("$API_URL/orders/create"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -96,9 +97,9 @@ String genOrderId() {
 }
 
 Future<List<Order>?> fetchOrder(_uid) async {
-  print(dotenv.env['API_URL']);
+  print(API_URL);
   final response = await http.get(
-    Uri.parse('${dotenv.env['API_URL']}/orders/fromuid/$_uid'),
+    Uri.parse('$API_URL/orders/fromuid/$_uid'),
   );
   if (response.statusCode == 200) {
     final jsonResponse = jsonDecode(response.body);
@@ -114,9 +115,9 @@ Future<List<Order>?> fetchOrder(_uid) async {
 }
 
 Future<bool> cancelOrder(String orderId) async {
-  print(dotenv.env['API_URL']);
+  print(API_URL);
   final response = await http.get(
-    Uri.parse('${dotenv.env['API_URL']}/orders/cancel/${orderId}'),
+    Uri.parse('$API_URL/orders/cancel/${orderId}'),
   );
   if (response.statusCode == 200) {
     final jsonResponse = jsonDecode(response.body);

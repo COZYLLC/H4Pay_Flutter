@@ -1,6 +1,8 @@
+import 'package:h4pay_flutter/Setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Notice {
   final String id;
@@ -30,7 +32,7 @@ class Notice {
 
 Future<List<Notice>?> fetchNotice() async {
   final response = await http.get(
-    Uri.parse('${dotenv.env['API_URL']}/notice'),
+    Uri.parse('$API_URL/notice'),
   );
   if (response.statusCode == 200) {
     print("request go");

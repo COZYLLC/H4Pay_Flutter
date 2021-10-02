@@ -1,4 +1,5 @@
 import 'package:h4pay_flutter/Notice.dart';
+import 'package:h4pay_flutter/Setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -50,7 +51,7 @@ class Event extends Notice {
 
 Future<List<Event>?> fetchEvent() async {
   final response = await http.get(
-    Uri.parse('${dotenv.env['API_URL']}/event'),
+    Uri.parse('$API_URL/event'),
   );
   if (response.statusCode == 200) {
     print("request go");
@@ -68,7 +69,7 @@ Future<List<Event>?> fetchEvent() async {
 
 Future<List<Event>?> fetchMatchEvent(String uid) async {
   final response = await http.get(
-    Uri.parse('${dotenv.env['API_URL']}/event/$uid/match'),
+    Uri.parse('$API_URL/event/$uid/match'),
   );
   if (response.statusCode == 200) {
     print("request go");
