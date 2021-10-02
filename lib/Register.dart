@@ -1,14 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:h4pay_flutter/Login.dart';
-import 'package:h4pay_flutter/Result.dart';
-import 'package:h4pay_flutter/Success.dart';
-import 'package:h4pay_flutter/User.dart';
-import 'package:h4pay_flutter/Util.dart';
-import 'package:h4pay_flutter/components/Button.dart';
-import 'package:h4pay_flutter/components/WebView.dart';
-import 'package:h4pay_flutter/main.dart';
-import 'package:h4pay_flutter/mp.dart';
+import 'package:h4pay/Login.dart';
+import 'package:h4pay/Result.dart';
+import 'package:h4pay/Success.dart';
+import 'package:h4pay/User.dart';
+import 'package:h4pay/Util.dart';
+import 'package:h4pay/components/Button.dart';
+import 'package:h4pay/components/WebView.dart';
+import 'package:h4pay/main.dart';
+import 'package:h4pay/mp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 

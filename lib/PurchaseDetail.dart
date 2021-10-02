@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:barcode_widget/barcode_widget.dart';
-import 'package:h4pay_flutter/Payment.dart';
-import 'package:h4pay_flutter/Product.dart';
-import 'package:h4pay_flutter/Purchase.dart';
-import 'package:h4pay_flutter/User.dart';
-import 'package:h4pay_flutter/Util.dart';
+import 'package:h4pay/Payment.dart';
+import 'package:h4pay/Product.dart';
+import 'package:h4pay/Purchase.dart';
+import 'package:h4pay/User.dart';
+import 'package:h4pay/Util.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:collection/collection.dart';
