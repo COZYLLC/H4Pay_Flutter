@@ -4,7 +4,7 @@
   <queries>
     <package android:name="viva.republica.toss" />
   </queries>
-  <application android:label="h4pay_flutter" android:icon="@mipmap/ic_launcher" android:usesCleartextTraffic="true" android:allowBackup="false">
+  <application android:label="h4pay_flutter" android:icon="@mipmap/launcher_icon" android:usesCleartextTraffic="true" android:allowBackup="false">
     <activity android:name=".MainActivity" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
       <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user

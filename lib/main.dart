@@ -16,6 +16,7 @@ import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Support.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/Util.dart';
+import 'package:h4pay/creatematerialcolor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         fontFamily: 'Spoqa_Han_Sans',
+        primarySwatch: createMaterialColor(Color(0xff5B82D1)),
         primaryColor: Color(0xff5B82D1),
       ),
       //home: MyHomePage(title: 'H4Pay', prefs: prefs),
@@ -163,6 +165,40 @@ class MyHomePageState extends State<MyHomePage> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
+        // appBar: AppBar(
+        //   backgroundColor: Colors.transparent,
+        //   shadowColor: Colors.transparent,
+        //   automaticallyImplyLeading: false,
+        //   centerTitle: false,
+        //   title: Text(
+        //     _title,
+        //     style: TextStyle(
+        //       color: Colors.black,
+        //       fontSize: 30,
+        //       fontWeight: FontWeight.bold,
+        //     ),
+        //   ),
+        //   actions: [
+        //     Padding(
+        //       padding: EdgeInsets.all(10),
+        //       child: Align(
+        //         child: FutureBuilder(
+        //           future: _fetchStoreStatus,
+        //           builder: (context, snapshot) {
+        //             if (snapshot.hasData) {
+        //               return Text(
+        //                 snapshot.data.toString(),
+        //                 style: TextStyle(color: Colors.black, fontSize: 20),
+        //               );
+        //             } else {
+        //               return CircularProgressIndicator();
+        //             }
+        //           },
+        //         ),
+        //       ),
+        //     ),
+        //   ],
+        // ),
         appBar: AppBar(
           title: Text(_title),
           automaticallyImplyLeading: false,
