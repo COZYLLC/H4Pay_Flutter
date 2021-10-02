@@ -2,15 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:h4pay_flutter/Gift.dart';
-import 'package:h4pay_flutter/Order.dart';
-import 'package:h4pay_flutter/Purchase.dart';
-import 'package:h4pay_flutter/PurchaseDetail.dart';
-import 'package:h4pay_flutter/Result.dart';
-import 'package:h4pay_flutter/User.dart';
-import 'package:h4pay_flutter/components/Button.dart';
-import 'package:h4pay_flutter/main.dart';
-import 'package:h4pay_flutter/Util.dart';
+import 'package:h4pay/Gift.dart';
+import 'package:h4pay/Order.dart';
+import 'package:h4pay/Purchase.dart';
+import 'package:h4pay/PurchaseDetail.dart';
+import 'package:h4pay/Result.dart';
+import 'package:h4pay/User.dart';
+import 'package:h4pay/components/Button.dart';
+import 'package:h4pay/main.dart';
+import 'package:h4pay/Util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animated_check/animated_check.dart';
 

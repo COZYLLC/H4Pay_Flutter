@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:h4pay_flutter/Gift.dart';
-import 'package:h4pay_flutter/Order.dart';
-import 'package:h4pay_flutter/Product.dart';
-import 'package:h4pay_flutter/components/Button.dart';
-import 'package:h4pay_flutter/components/WebView.dart';
+import 'package:h4pay/Gift.dart';
+import 'package:h4pay/Order.dart';
+import 'package:h4pay/Product.dart';
+import 'package:h4pay/components/Button.dart';
+import 'package:h4pay/components/WebView.dart';
 import 'package:intl/intl.dart';
 
 final DateFormat dateFormat = new DateFormat('yyyy-MM-dd hh:mm');

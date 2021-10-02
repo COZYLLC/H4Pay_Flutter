@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay_flutter/Gift.dart';
-import 'package:h4pay_flutter/Order.dart';
-import 'package:h4pay_flutter/Product.dart';
-import 'package:h4pay_flutter/Purchase.dart';
-import 'package:h4pay_flutter/components/Card.dart';
-import 'package:h4pay_flutter/User.dart';
+import 'package:h4pay/Gift.dart';
+import 'package:h4pay/Order.dart';
+import 'package:h4pay/Product.dart';
+import 'package:h4pay/Purchase.dart';
+import 'package:h4pay/components/Card.dart';
+import 'package:h4pay/User.dart';
 import 'package:collection/collection.dart';
 
 class PurchaseList extends StatefulWidget {

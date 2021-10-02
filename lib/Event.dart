@@ -1,5 +1,5 @@
-import 'package:h4pay_flutter/Notice.dart';
-import 'package:h4pay_flutter/Setting.dart';
+import 'package:h4pay/Notice.dart';
+import 'package:h4pay/Setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';

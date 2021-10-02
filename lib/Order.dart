@@ -1,7 +1,7 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:h4pay_flutter/Purchase.dart';
-import 'package:h4pay_flutter/Result.dart';
-import 'package:h4pay_flutter/Setting.dart';
+import 'package:h4pay/Purchase.dart';
+import 'package:h4pay/Result.dart';
+import 'package:h4pay/Setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 

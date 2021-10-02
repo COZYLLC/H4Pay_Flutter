@@ -1,19 +1,19 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:h4pay_flutter/Gift.dart';
-import 'package:h4pay_flutter/H4PayInfo.dart';
-import 'package:h4pay_flutter/IntroPage.dart';
-import 'package:h4pay_flutter/Login.dart';
-import 'package:h4pay_flutter/Order.dart';
-import 'package:h4pay_flutter/PurchaseList.dart';
-import 'package:h4pay_flutter/Result.dart';
-import 'package:h4pay_flutter/Success.dart';
-import 'package:h4pay_flutter/Support.dart';
-import 'package:h4pay_flutter/User.dart';
-import 'package:h4pay_flutter/Util.dart';
-import 'package:h4pay_flutter/components/Button.dart';
-import 'package:h4pay_flutter/main.dart';
+import 'package:h4pay/Gift.dart';
+import 'package:h4pay/H4PayInfo.dart';
+import 'package:h4pay/IntroPage.dart';
+import 'package:h4pay/Login.dart';
+import 'package:h4pay/Order.dart';
+import 'package:h4pay/PurchaseList.dart';
+import 'package:h4pay/Result.dart';
+import 'package:h4pay/Success.dart';
+import 'package:h4pay/Support.dart';
+import 'package:h4pay/User.dart';
+import 'package:h4pay/Util.dart';
+import 'package:h4pay/components/Button.dart';
+import 'package:h4pay/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MyPage extends StatefulWidget {

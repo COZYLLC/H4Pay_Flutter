@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:h4pay_flutter/Event.dart';
-import 'package:h4pay_flutter/Notice.dart';
-import 'package:h4pay_flutter/PurchaseList.dart';
-import 'package:h4pay_flutter/components/Card.dart';
+import 'package:h4pay/Event.dart';
+import 'package:h4pay/Notice.dart';
+import 'package:h4pay/PurchaseList.dart';
+import 'package:h4pay/components/Card.dart';
 
 class NoticeListPage extends StatelessWidget {
   final Type type;

@@ -4,10 +4,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:h4pay_flutter/Cart.dart';
-import 'package:h4pay_flutter/Order.dart';
-import 'package:h4pay_flutter/Payment.dart';
-import 'package:h4pay_flutter/main.dart';
+import 'package:h4pay/Cart.dart';
+import 'package:h4pay/Order.dart';
+import 'package:h4pay/Payment.dart';
+import 'package:h4pay/main.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
