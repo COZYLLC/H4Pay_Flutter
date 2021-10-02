@@ -158,7 +158,7 @@ class MyHomePageState extends State<MyHomePage> {
       Cart(prefs),
       MyPage(prefs: prefs, badges: badges)
     ];
-    List<String> titles = ["지원", "선물", "H4Pay", "장바구니", "마이페이지"];
+    List<String> titles = ["지원", "이벤트", "H4Pay", "장바구니", "마이페이지"];
 
     return WillPopScope(
       onWillPop: () async => false,

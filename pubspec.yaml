@@ -66,6 +66,7 @@ flutter:
     - .env
     - assets/svg/support.svg
     - assets/image/H4pay.png
+    - assets/image/pattern.png
 
   fonts:
     - family: Spoqa_Han_Sans

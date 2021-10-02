@@ -9,6 +9,7 @@ import 'package:h4pay_flutter/Register.dart';
 import 'package:h4pay_flutter/Setting.dart';
 import 'package:h4pay_flutter/Util.dart';
 import 'package:h4pay_flutter/components/Button.dart';
+import 'package:h4pay_flutter/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EmptyAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -36,6 +37,7 @@ class IntroPageState extends State<IntroPage> {
   @override
   void initState() {
     super.initState();
+    //loadApiUrl(prefs);
     connectionCheck().then((value) {
       if (!value) {
         if (dotenv.env['TEST_MODE'] == "TRUE") {
@@ -111,18 +113,18 @@ class IntroPageState extends State<IntroPage> {
             Positioned(
               top: -(MediaQuery.of(context).size.height * 0.3),
               left: -(MediaQuery.of(context).size.width * 1.5),
-              child: CachedNetworkImage(
+              child: Image.asset(
+                "assets/image/pattern.png",
                 width: MediaQuery.of(context).size.width * 2,
-                imageUrl: "http://192.168.1.2:8080/pattern.png",
                 color: Colors.grey[850]!.withOpacity(0.7),
               ),
             ),
             Positioned(
               top: -(MediaQuery.of(context).size.height * 0.6),
               right: -(MediaQuery.of(context).size.width * 1.5),
-              child: CachedNetworkImage(
+              child: Image.asset(
+                "assets/image/pattern.png",
                 width: MediaQuery.of(context).size.width * 2,
-                imageUrl: "http://192.168.1.2:8080/pattern.png",
                 color: Colors.grey[850]!.withOpacity(0.7),
               ),
             ),
@@ -175,23 +177,21 @@ class IntroPageState extends State<IntroPage> {
                       },
                       backgroundColor: Color(0xff4F83D6),
                     ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 40),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AccountFindPage(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          "아이디나 비밀번호를 잊어버리셨나요?",
-                          style: TextStyle(
-                            color: Colors.white,
-                            decoration: TextDecoration.underline,
+                    Spacer(),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AccountFindPage(),
                           ),
+                        );
+                      },
+                      child: Text(
+                        "아이디나 비밀번호를 잊어버리셨나요?",
+                        style: TextStyle(
+                          color: Colors.white,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
