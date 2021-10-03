@@ -6,6 +6,7 @@ import 'package:h4pay/Result.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Success.dart';
 import 'package:h4pay/User.dart';
+import 'package:h4pay/main.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -122,7 +123,11 @@ class SupportFormPageState extends State<SupportFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("문의하기")),
+      appBar: H4PayAppbar(
+        title: "문의하기",
+        height: 56.0,
+        canGoBack: true,
+      ),
       resizeToAvoidBottomInset: false,
       body: SingleChildScrollView(
         padding: EdgeInsets.all(18),

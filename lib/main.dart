@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Cart.dart';
 import 'package:h4pay/Event.dart';
@@ -42,15 +43,72 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        fontFamily: 'Spoqa_Han_Sans',
-        primarySwatch: createMaterialColor(Color(0xff5B82D1)),
-        primaryColor: Color(0xff5B82D1),
+    return AnnotatedRegion(
+      child: MaterialApp(
+        theme: ThemeData(
+          fontFamily: 'Spoqa_Han_Sans',
+          primarySwatch: createMaterialColor(Color(0xff5B82D1)),
+          primaryColor: Color(0xff5B82D1),
+        ),
+        //home: MyHomePage(title: 'H4Pay', prefs: prefs),
+        home: IntroPage(
+          canGoBack: false,
+        ),
       ),
-      //home: MyHomePage(title: 'H4Pay', prefs: prefs),
-      home: IntroPage(
-        canGoBack: false,
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+      ),
+    );
+  }
+}
+
+class H4PayAppbar extends StatefulWidget implements PreferredSizeWidget {
+  final String title;
+  final List<Widget>? actions;
+  final double height;
+  final bool canGoBack;
+  final Function()? backPressed;
+  H4PayAppbar(
+      {Key? key,
+      required this.title,
+      this.actions,
+      required this.height,
+      required this.canGoBack,
+      this.backPressed});
+
+  @override
+  H4PayAppbarState createState() => H4PayAppbarState();
+
+  @override
+  Size get preferredSize => Size(0, this.height);
+}
+
+class H4PayAppbarState extends State<H4PayAppbar> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 0, top: 10),
+      child: AppBar(
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        automaticallyImplyLeading: widget.canGoBack,
+        centerTitle: false,
+        leading: widget.canGoBack
+            ? IconButton(
+                icon: new Icon(Icons.arrow_back),
+                onPressed: widget.backPressed,
+                color: Colors.black,
+              )
+            : null,
+        title: Text(
+          widget.title,
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: widget.actions,
       ),
     );
   }
@@ -73,12 +131,26 @@ class MyHomePageState extends State<MyHomePage> {
   int giftBadgeCount = 0;
   int accountBadgeCount = 0;
   int cartBadgeCount = 0;
-  Future? _fetchStoreStatus;
   Map<String, int> badges = {'order': 0, 'gift': 0};
   String _title = "H4Pay";
+  Future? _fetchStoreStatus;
 
   final SharedPreferences prefs;
   MyHomePageState(this.prefs);
+
+  Future<String> fetchStoreState() async {
+    final response = await http.get(Uri.parse('$API_URL/store'));
+    if (response.statusCode == 200) {
+      bool state = jsonDecode(response.body)['isOpened'];
+      if (state) {
+        return 'OPEN';
+      } else {
+        return 'CLOSED';
+      }
+    } else {
+      throw Exception('Failed to fetch store state.');
+    }
+  }
 
   Future updateBadges() async {
     // calculate cart items, orders, gifts and set badge states.
@@ -127,20 +199,6 @@ class MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<String> fetchStoreState() async {
-    final response = await http.get(Uri.parse('$API_URL/store'));
-    if (response.statusCode == 200) {
-      bool state = jsonDecode(response.body)['isOpened'];
-      if (state) {
-        return 'OPEN';
-      } else {
-        return 'CLOSED';
-      }
-    } else {
-      throw Exception('Failed to fetch store state.');
-    }
-  }
-
   @override
   void initState() {
     super.initState();
@@ -165,73 +223,34 @@ class MyHomePageState extends State<MyHomePage> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
-        // appBar: AppBar(
-        //   backgroundColor: Colors.transparent,
-        //   shadowColor: Colors.transparent,
-        //   automaticallyImplyLeading: false,
-        //   centerTitle: false,
-        //   title: Text(
-        //     _title,
-        //     style: TextStyle(
-        //       color: Colors.black,
-        //       fontSize: 30,
-        //       fontWeight: FontWeight.bold,
-        //     ),
-        //   ),
-        //   actions: [
-        //     Padding(
-        //       padding: EdgeInsets.all(10),
-        //       child: Align(
-        //         child: FutureBuilder(
-        //           future: _fetchStoreStatus,
-        //           builder: (context, snapshot) {
-        //             if (snapshot.hasData) {
-        //               return Text(
-        //                 snapshot.data.toString(),
-        //                 style: TextStyle(color: Colors.black, fontSize: 20),
-        //               );
-        //             } else {
-        //               return CircularProgressIndicator();
-        //             }
-        //           },
-        //         ),
-        //       ),
-        //     ),
-        //   ],
-        // ),
-        appBar: AppBar(
-          title: Text(_title),
-          automaticallyImplyLeading: false,
+        appBar: H4PayAppbar(
+          title: _title,
+          height: 56.0,
           actions: [
-            TextButton(
-              onPressed: () {
-                print('Pressed Home');
-              },
-              child: FutureBuilder(
-                future: _fetchStoreStatus,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return Text(
-                      snapshot.data.toString(),
-                      style: TextStyle(color: Colors.white),
-                    );
-                  } else {
-                    return CircularProgressIndicator();
-                  }
-                },
+            Padding(
+              padding: EdgeInsets.all(10),
+              child: Align(
+                child: FutureBuilder(
+                  future: _fetchStoreStatus,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return Text(
+                        snapshot.data.toString(),
+                        style: TextStyle(color: Colors.black, fontSize: 20),
+                      );
+                    } else {
+                      return CircularProgressIndicator();
+                    }
+                  },
+                ),
               ),
-            )
+            ),
           ],
+          canGoBack: false,
         ),
         body: Stack(
           children: [
             _children[_currentIdx]!,
-/*           AlertCard(
-            icon: Icon(Icons.shopping_bag, color: Colors.white, size: 40),
-            text: "장바구니에 추가되었습니다!",
-            textColor: Colors.white,
-            backgroundColor: Colors.green,
-          ), */
           ],
         ),
         bottomNavigationBar: CustomNavigationBar(

@@ -5,6 +5,7 @@ import 'package:h4pay/Util.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/components/WebView.dart';
+import 'package:h4pay/main.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info/package_info.dart';
 
@@ -123,9 +124,7 @@ class H4PayInfoPageState extends State {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("H4Pay 정보 보기"),
-      ),
+      appBar: H4PayAppbar(title: "H4Pay 정보", height: 56.0, canGoBack: true),
       body: FutureBuilder(
         future: _fetchInfos(),
         builder: (context, snapshot) {

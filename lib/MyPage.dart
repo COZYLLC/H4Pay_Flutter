@@ -309,9 +309,7 @@ class MyInfoPageState extends State<MyInfoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text("내 정보"),
-      ),
+      appBar: H4PayAppbar(title: "내 정보", height: 56.0, canGoBack: true),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(18),
         child: Column(

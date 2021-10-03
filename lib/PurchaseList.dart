@@ -6,6 +6,7 @@ import 'package:h4pay/Purchase.dart';
 import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/User.dart';
 import 'package:collection/collection.dart';
+import 'package:h4pay/main.dart';
 
 class PurchaseList extends StatefulWidget {
   final Type type;
@@ -121,8 +122,11 @@ class ListPageState extends State<ListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: widget.withAppBar == true && widget.appBarTitle != null
-          ? AppBar(
-              title: Text(widget.appBarTitle!),
+          ? H4PayAppbar(
+              title: widget.appBarTitle!,
+              height: 56.0,
+              canGoBack: true,
+              backPressed: () {},
             )
           : null,
       body: LayoutBuilder(builder: (context, constraints) {

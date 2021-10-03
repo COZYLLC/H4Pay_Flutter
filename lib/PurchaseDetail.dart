@@ -6,6 +6,7 @@ import 'package:h4pay/Product.dart';
 import 'package:h4pay/Purchase.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/Util.dart';
+import 'package:h4pay/main.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:collection/collection.dart';
@@ -45,14 +46,13 @@ class PurchaseDetailPageState extends State<PurchaseDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("주문 상세 내역"),
-        leading: new IconButton(
-          icon: new Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context, brightness);
-          },
-        ),
+      appBar: H4PayAppbar(
+        title: "주문 상세 내역",
+        height: 56.0,
+        backPressed: () {
+          Navigator.pop(context, brightness);
+        },
+        canGoBack: true,
       ),
       body: FutureBuilder(
         future: _fetchProduct,

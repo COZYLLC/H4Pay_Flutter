@@ -1,6 +1,7 @@
 import 'package:animated_check/animated_check.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:h4pay/main.dart';
 
 class SuccessAnimation extends StatefulWidget {
   @override
@@ -54,11 +55,10 @@ class SuccessPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return WillPopScope(
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              title,
-            ),
-            automaticallyImplyLeading: canGoBack,
+          appBar: H4PayAppbar(
+            title: title,
+            height: 56.0,
+            canGoBack: this.canGoBack,
           ),
           body: Container(
             padding: EdgeInsets.all(30),

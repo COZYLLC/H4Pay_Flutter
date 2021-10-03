@@ -45,11 +45,8 @@ class LoginPageState extends State<LoginPage> {
         return widget.canGoBack;
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text("로그인"),
-          centerTitle: true,
-          automaticallyImplyLeading: widget.canGoBack,
-        ),
+        appBar: H4PayAppbar(
+            title: "로그인", height: 56.0, canGoBack: widget.canGoBack),
         body: Container(
           margin: EdgeInsets.all(40),
           child: Column(
@@ -277,8 +274,10 @@ class AccountFindPageState extends State<AccountFindPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("계정 찾기"),
+      appBar: H4PayAppbar(
+        title: "계정 찾기",
+        height: 56.0,
+        canGoBack: true,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(23),

@@ -462,114 +462,123 @@ class PurchaseCard extends StatelessWidget {
                     // 모두
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      H4PayButton(
-                        text: "사용 하기",
-                        onClick: () {
-                          if (!checkExpire(purchase.expire)) {
-                            if (!isGift || isReceiver) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PurchaseDetailPage(
-                                    purchase: purchase,
+                      Expanded(
+                        flex: 8,
+                        child: H4PayButton(
+                          text: "사용 하기",
+                          onClick: () {
+                            if (!checkExpire(purchase.expire)) {
+                              if (!isGift || isReceiver) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PurchaseDetailPage(
+                                      purchase: purchase,
+                                    ),
                                   ),
-                                ),
-                              ).then((value) async {
-                                await ScreenBrightness.resetScreenBrightness();
-                                await Wakelock.toggle(enable: false);
-                              });
-                            }
-                          }
-                        },
-                        backgroundColor: !isGift || isReceiver
-                            ? Theme.of(context).primaryColor
-                            : Colors.grey[400]!,
-                        width: MediaQuery.of(context).size.width * 0.4,
-                      ),
-                      !isGift // 일반선물
-                          ? H4PayButton(
-                              text: "주문 취소",
-                              width: MediaQuery.of(context).size.width * 0.4,
-                              onClick: () {
-                                showAlertDialog(context, "주문 취소",
-                                    "주문을 취소하시겠습니까?\n결제한 금액은 환불됩니다.", () async {
-                                  final isCanceled =
-                                      await cancelOrder(purchase.orderId);
-                                  if (isCanceled) {
-                                    showSnackbar(
-                                      context,
-                                      "취소 처리 되었습니다.",
-                                      Colors.green,
-                                      Duration(
-                                        seconds: 1,
-                                      ),
-                                    );
-                                    PurchaseListState? parentState =
-                                        context.findAncestorStateOfType<
-                                            PurchaseListState>();
-                                    parentState!.setState(() {
-                                      parentState.componentKey++;
-                                    });
-                                  } else {
-                                    showSnackbar(
-                                      context,
-                                      "취소 처리에 실패했습니다.",
-                                      Colors.red,
-                                      Duration(
-                                        seconds: 1,
-                                      ),
-                                    );
-                                  }
-                                  Navigator.pop(context, "OK");
-                                }, () {
-                                  Navigator.pop(context, "Cancel");
+                                ).then((value) async {
+                                  await ScreenBrightness
+                                      .resetScreenBrightness();
+                                  await Wakelock.toggle(enable: false);
                                 });
-                              },
-                              backgroundColor: Colors.red,
-                            )
-                          : H4PayButton(
-                              text: "기간 연장",
-                              onClick: () {
-                                if (!purchase.extended! &&
-                                    purchase.uidfrom != uid) {
-                                  showAlertDialog(context, "기간 연장",
-                                      "기간을 연장하면 환불이 불가합니다.\n정말로 기간을 연장하시겠습니까?",
+                              }
+                            }
+                          },
+                          backgroundColor: !isGift || isReceiver
+                              ? Theme.of(context).primaryColor
+                              : Colors.grey[400]!,
+                          width: MediaQuery.of(context).size.width * 0.4,
+                        ),
+                      ),
+                      Expanded(child: Container(), flex: 1),
+                      Expanded(
+                        flex: 8,
+                        child: !isGift // 일반선물
+                            ? H4PayButton(
+                                text: "주문 취소",
+                                width: MediaQuery.of(context).size.width * 0.4,
+                                onClick: () {
+                                  showAlertDialog(context, "주문 취소",
+                                      "주문을 취소하시겠습니까?\n결제한 금액은 환불됩니다.",
                                       () async {
-                                    final extendRes =
-                                        await (purchase as Gift).extend();
-                                    if (extendRes.success) {
+                                    final isCanceled =
+                                        await cancelOrder(purchase.orderId);
+                                    if (isCanceled) {
+                                      showSnackbar(
+                                        context,
+                                        "취소 처리 되었습니다.",
+                                        Colors.green,
+                                        Duration(
+                                          seconds: 1,
+                                        ),
+                                      );
                                       PurchaseListState? parentState =
                                           context.findAncestorStateOfType<
                                               PurchaseListState>();
                                       parentState!.setState(() {
                                         parentState.componentKey++;
                                       });
-                                      showSnackbar(
-                                        context,
-                                        "기간 연장이 완료되었습니다!",
-                                        Colors.green,
-                                        Duration(seconds: 1),
-                                      );
                                     } else {
                                       showSnackbar(
                                         context,
-                                        extendRes.data,
+                                        "취소 처리에 실패했습니다.",
                                         Colors.red,
-                                        Duration(seconds: 1),
+                                        Duration(
+                                          seconds: 1,
+                                        ),
                                       );
                                     }
-                                    Navigator.pop(context);
+                                    Navigator.pop(context, "OK");
                                   }, () {
-                                    Navigator.pop(context);
+                                    Navigator.pop(context, "Cancel");
                                   });
-                                }
-                              },
-                              backgroundColor:
-                                  purchase.extended! || purchase.uidfrom == uid
-                                      ? Colors.grey[400]!
-                                      : Theme.of(context).primaryColor,
-                              width: MediaQuery.of(context).size.width * 0.4,
-                            )
+                                },
+                                backgroundColor: Colors.red,
+                              )
+                            : H4PayButton(
+                                text: "기간 연장",
+                                onClick: () {
+                                  if (!purchase.extended! &&
+                                      purchase.uidfrom != uid) {
+                                    showAlertDialog(context, "기간 연장",
+                                        "기간을 연장하면 환불이 불가합니다.\n정말로 기간을 연장하시겠습니까?",
+                                        () async {
+                                      final extendRes =
+                                          await (purchase as Gift).extend();
+                                      if (extendRes.success) {
+                                        PurchaseListState? parentState =
+                                            context.findAncestorStateOfType<
+                                                PurchaseListState>();
+                                        parentState!.setState(() {
+                                          parentState.componentKey++;
+                                        });
+                                        showSnackbar(
+                                          context,
+                                          "기간 연장이 완료되었습니다!",
+                                          Colors.green,
+                                          Duration(seconds: 1),
+                                        );
+                                      } else {
+                                        showSnackbar(
+                                          context,
+                                          extendRes.data,
+                                          Colors.red,
+                                          Duration(seconds: 1),
+                                        );
+                                      }
+                                      Navigator.pop(context);
+                                    }, () {
+                                      Navigator.pop(context);
+                                    });
+                                  }
+                                },
+                                backgroundColor: purchase.extended! ||
+                                        purchase.uidfrom == uid
+                                    ? Colors.grey[400]!
+                                    : Theme.of(context).primaryColor,
+                                width: MediaQuery.of(context).size.width * 0.4,
+                              ),
+                      ),
                     ],
                   )
                 : Container(),

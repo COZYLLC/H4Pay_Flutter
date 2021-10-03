@@ -10,6 +10,7 @@ import 'package:h4pay/Result.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/Util.dart';
+import 'package:h4pay/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animated_check/animated_check.dart';
 
@@ -49,9 +50,10 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
             final Purchase? purchase = snapshot.data as Purchase;
 
             return Scaffold(
-              appBar: AppBar(
-                title: Text("결제 완료"),
-                automaticallyImplyLeading: false,
+              appBar: H4PayAppbar(
+                title: "결제 완료",
+                height: 56.0,
+                canGoBack: false,
               ),
               body: Align(
                 alignment: Alignment.center,
