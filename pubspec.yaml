@@ -49,6 +49,7 @@ dependencies:
   wakelock: ^0.5.6
   flutter_svg_provider: ^0.1.10
   uni_links: ^0.5.1
+  flutter_launcher_icons:
 
 dev_dependencies:
   flutter_test:
@@ -80,3 +81,9 @@ flutter:
           weight: 500
         - asset: assets/font/SpoqaHanSansNeo-Bold.otf
           weight: 700
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/icon/appIcon.png"

@@ -94,11 +94,12 @@ class HomeState extends State<Home> {
                                 margin: EdgeInsets.fromLTRB(5, 12, 5, 0),
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
-                                      image: NetworkImage(
-                                        i.img,
-                                      ),
-                                      fit: BoxFit.fitHeight),
-                                  color: Colors.amber,
+                                    image: NetworkImage(
+                                      i.img,
+                                    ),
+                                    fit: BoxFit.fitHeight,
+                                  ),
+                                  color: Theme.of(context).primaryColor,
                                   borderRadius: BorderRadius.circular(23),
                                   boxShadow: [
                                     BoxShadow(

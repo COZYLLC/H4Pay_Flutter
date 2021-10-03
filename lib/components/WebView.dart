@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Cart.dart';
 import 'package:h4pay/Order.dart';
 import 'package:h4pay/Payment.dart';
@@ -51,15 +52,11 @@ class WebViewExampleState extends State<WebViewExample> {
 
   @override
   Widget build(BuildContext context) {
-    final url = "http://192.168.1.253:8081";
+    final url = "https://h4pay.co.kr";
     return Scaffold(
       body: WebView(
-        initialUrl:
-            //"https://h4pay.co.kr/payment?amount=${widget.amount}&orderId=${widget.orderId}",
-            // "$url/payment?amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}",
-            Uri.encodeFull(
-                "$url/payment?cashReceipt=${widget.cashReceiptType}&amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}"),
-
+        initialUrl: Uri.encodeFull(
+            "$url/payment?cashReceipt=${widget.cashReceiptType}&amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}&development=${dotenv.env['TEST_MODE']}"),
         //"http://10.172.16.134:8080/payment/success/presuccess.html",
         javascriptMode: JavascriptMode.unrestricted,
         onWebViewCreated: (WebViewController webViewController) {
