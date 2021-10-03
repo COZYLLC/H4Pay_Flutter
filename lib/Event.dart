@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:h4pay/Notice.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Event extends Notice {
   final String id;
@@ -50,37 +51,53 @@ class Event extends Notice {
 }
 
 Future<List<Event>?> fetchEvent() async {
-  final response = await http.get(
-    Uri.parse('$API_URL/event'),
-  );
-  if (response.statusCode == 200) {
-    print("request go");
-    final jsonResponse = jsonDecode(response.body);
-    if (jsonResponse['status']) {
-      List events = jsonDecode(response.body)['result'];
-      return events.map((e) => Event.fromList(e)).toList();
+  try {
+    final response = await http
+        .get(
+      Uri.parse('$API_URL/event'),
+    )
+        .timeout(Duration(seconds: 3), onTimeout: () {
+      throw TimeoutException("timed out...");
+    });
+    if (response.statusCode == 200) {
+      print("request go");
+      final jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['status']) {
+        List events = jsonDecode(response.body)['result'];
+        return events.map((e) => Event.fromList(e)).toList();
+      } else {
+        return null;
+      }
     } else {
-      return null;
+      throw Exception('Failed to fetch product.');
     }
-  } else {
-    throw Exception('Failed to fetch product.');
+  } catch (e) {
+    return null;
   }
 }
 
 Future<List<Event>?> fetchMatchEvent(String uid) async {
-  final response = await http.get(
-    Uri.parse('$API_URL/event/$uid/match'),
-  );
-  if (response.statusCode == 200) {
-    print("request go");
-    final jsonResponse = jsonDecode(response.body);
-    if (jsonResponse['status']) {
-      List products = jsonDecode(response.body)['result'];
-      return products.map((e) => Event.fromList(e)).toList();
+  try {
+    final response = await http
+        .get(
+      Uri.parse('$API_URL/event/$uid/match'),
+    )
+        .timeout(Duration(seconds: 3), onTimeout: () {
+      throw TimeoutException("timed out...");
+    });
+    if (response.statusCode == 200) {
+      print("request go");
+      final jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['status']) {
+        List products = jsonDecode(response.body)['result'];
+        return products.map((e) => Event.fromList(e)).toList();
+      } else {
+        return null;
+      }
     } else {
-      return null;
+      throw Exception('Failed to fetch product.');
     }
-  } else {
-    throw Exception('Failed to fetch product.');
+  } catch (e) {
+    return null;
   }
 }

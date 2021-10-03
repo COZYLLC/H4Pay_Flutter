@@ -7,10 +7,8 @@ import 'package:h4pay/User.dart';
 import 'package:h4pay/Util.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/WebView.dart';
-import 'package:h4pay/main.dart';
 import 'package:h4pay/mp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -41,7 +39,7 @@ class RegisterPageState extends State<RegisterPage> {
     }
   ];
 
-  List<String> userTypes = ['A', 'AT', 'T', 'M', 'S'];
+  List<String> userTypes = ['S'];
   @override
   Widget build(BuildContext context) {
     return Scaffold(

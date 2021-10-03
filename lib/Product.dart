@@ -1,9 +1,7 @@
-import 'package:async/async.dart';
+import 'dart:async';
 import 'package:h4pay/Setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Product {
   final int id;
@@ -36,8 +34,15 @@ class Product {
 
 Future<List<Product>?> fetchProduct(String from) async {
   print(from);
-  final response = await http.get(
+  final response = await http
+      .get(
     Uri.parse('$API_URL/product'),
+  )
+      .timeout(
+    Duration(seconds: 3),
+    onTimeout: () {
+      throw TimeoutException("timed out...");
+    },
   );
   if (response.statusCode == 200) {
     print("request go");

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:h4pay/Gift.dart';
-import 'package:h4pay/Order.dart';
-import 'package:h4pay/Product.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:intl/intl.dart';
@@ -85,7 +83,7 @@ class OkCancelGroup extends StatelessWidget {
           child: H4PayButton(
             text: "확인",
             onClick: okClicked,
-            backgroundColor: Colors.green,
+            backgroundColor: Theme.of(context).primaryColor,
           ),
         ),
         Spacer(
@@ -237,8 +235,11 @@ void showSnackbar(
 String roleStrFromLetter(String letter) {
   String? role;
   switch (letter) {
-    case 'A':
+    case 'SA':
       role = "시스템 관리자";
+      break;
+    case 'A':
+      role = "행정실 관리자";
       break;
     case 'AT':
       role = "매점 관리 교사";

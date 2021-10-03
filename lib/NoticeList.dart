@@ -21,18 +21,27 @@ class NoticeListPage extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List data = snapshot.data as List;
-          return ListView.builder(
-            itemCount: data.length,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              return type == Notice
-                  ? NoticeCard(notice: data[index] as Notice)
-                  : EventCard(
-                      event: data[index] as Event,
-                    );
-            },
-          );
+          if (data.length != 0) {
+            return ListView.builder(
+              itemCount: data.length,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                return type == Notice
+                    ? NoticeCard(notice: data[index] as Notice)
+                    : EventCard(event: data[index] as Event);
+              },
+            );
+          } else {
+            return Container(
+              margin: EdgeInsets.only(
+                top: MediaQuery.of(context).size.height * 0.4,
+              ),
+              color: Colors.red,
+              alignment: Alignment.center,
+              child: Text("장바구니가 비어 있는 것 같아요."),
+            );
+          }
         } else {
           return CircularProgressIndicator();
         }

@@ -6,7 +6,6 @@ import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:package_info/package_info.dart';
 
 class HyperLinkText extends StatelessWidget {

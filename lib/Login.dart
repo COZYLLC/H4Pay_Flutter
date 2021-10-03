@@ -1,9 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:h4pay/Register.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/User.dart';
@@ -14,8 +12,6 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:connectivity/connectivity.dart';
-import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 
 class LoginPage extends StatefulWidget {
   bool canGoBack;
@@ -95,9 +91,6 @@ class LoginPageState extends State<LoginPage> {
                         } else {
                           return null;
                         }
-                      },
-                      onChanged: (_) {
-                        _loginFormKey.currentState!.validate();
                       },
                       textInputAction: TextInputAction.done,
                     ),
@@ -232,29 +225,37 @@ class LoginPageState extends State<LoginPage> {
     final bytes = utf8.encode(pw);
     final digest = sha256.convert(bytes);
     final _prefs = await SharedPreferences.getInstance();
-    final response = await http.post(
-      Uri.parse("$API_URL/users/login"),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: json.encode({
-        'uid': id,
-        'password': base64.encode(digest.bytes),
-      }),
-    );
-    print("LOGIN TRY");
-    if (response.statusCode == 200) {
-      print("LOGIN STATUS TRUE");
-      final jsonResponse = json.decode(response.body);
-      if (jsonResponse['status']) {
-        print("JSON STATUS TRUE");
-        final H4PayUser? user = await tokenCheck(jsonResponse['accessToken']);
-        await user!.saveToStorage();
-        return true;
+    try {
+      final response = await http
+          .post(
+        Uri.parse("$API_URL/users/login"),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: json.encode({
+          'uid': id,
+          'password': base64.encode(digest.bytes),
+        }),
+      )
+          .timeout(Duration(seconds: 3), onTimeout: () {
+        throw TimeoutException("timed out...");
+      });
+      print("LOGIN TRY");
+      if (response.statusCode == 200) {
+        print("LOGIN STATUS TRUE");
+        final jsonResponse = json.decode(response.body);
+        if (jsonResponse['status']) {
+          print("JSON STATUS TRUE");
+          final H4PayUser? user = await tokenCheck(jsonResponse['accessToken']);
+          await user!.saveToStorage();
+          return true;
+        } else {
+          return false;
+        }
       } else {
         return false;
       }
-    } else {
+    } catch (e) {
       return false;
     }
   }
@@ -397,50 +398,68 @@ class AccountFindPageState extends State<AccountFindPage> {
 
   Future<H4PayResult> _findId(String name, String email) async {
     final _prefs = await SharedPreferences.getInstance();
-    final response = await http.post(
-      Uri.parse("$API_URL/users/find/uid"),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: json.encode({
-        "name": name,
-        "email": email,
-      }),
-    );
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
+    try {
+      final response = await http
+          .post(
+        Uri.parse("$API_URL/users/find/uid"),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: json.encode({
+          "name": name,
+          "email": email,
+        }),
+      )
+          .timeout(Duration(seconds: 3), onTimeout: () {
+        throw TimeoutException("timed out...");
+      });
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        return H4PayResult(
+          success: jsonResponse['status'],
+          data: jsonResponse['message'],
+        );
+      } else {
+        return H4PayResult(
+          success: false,
+          data: "서버 오류입니다.",
+        );
+      }
+    } catch (e) {
       return H4PayResult(
-        success: jsonResponse['status'],
-        data: jsonResponse['message'],
-      );
-    } else {
-      return H4PayResult(
-        success: false,
-        data: "서버 오류입니다.",
-      );
+          success: false, data: "서버 응답 시간이 초과되었습니다. 인터넷 연결을 확인하세요.");
     }
   }
 
   Future<H4PayResult> _findPw(String name, String email, String uid) async {
     final _prefs = await SharedPreferences.getInstance();
-    final response = await http.post(
-      Uri.parse("$API_URL/users/find/password"),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: json.encode({"name": name, "email": email, "uid": uid}),
-    );
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
+    try {
+      final response = await http
+          .post(
+        Uri.parse("$API_URL/users/find/password"),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: json.encode({"name": name, "email": email, "uid": uid}),
+      )
+          .timeout(Duration(seconds: 3), onTimeout: () {
+        throw TimeoutException("timed out...");
+      });
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        return H4PayResult(
+          success: jsonResponse['status'],
+          data: jsonResponse['message'],
+        );
+      } else {
+        return H4PayResult(
+          success: false,
+          data: "서버 오류입니다.",
+        );
+      }
+    } catch (e) {
       return H4PayResult(
-        success: jsonResponse['status'],
-        data: jsonResponse['message'],
-      );
-    } else {
-      return H4PayResult(
-        success: false,
-        data: "서버 오류입니다.",
-      );
+          success: false, data: "서버 응답 시간이 초과되었습니다. 인터넷 상태를 확인하세요.");
     }
   }
 }

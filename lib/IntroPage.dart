@@ -1,15 +1,18 @@
+import 'dart:async';
 import 'dart:io';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:h4pay/Gift.dart';
 import 'package:h4pay/Login.dart';
+import 'package:h4pay/PurchaseDetail.dart';
 import 'package:h4pay/Register.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Util.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uni_links/uni_links.dart';
+import 'package:flutter/services.dart' show PlatformException;
 
 class EmptyAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
@@ -19,6 +22,12 @@ class EmptyAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => Size(0.0, 0.0);
+}
+
+class H4PayRoute {
+  final String route;
+  final String data;
+  H4PayRoute({required this.route, required this.data});
 }
 
 class IntroPage extends StatefulWidget {
@@ -33,10 +42,61 @@ class IntroPageState extends State<IntroPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _ipController = TextEditingController();
 
+  StreamSubscription? _sub;
+
+  Future<void> initUniLinks() async {
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      final String? initialLink = await getInitialLink();
+      if (initialLink != null) {
+        final H4PayRoute route = parseUrl(initialLink);
+        pushToRoute(route);
+      }
+    } on PlatformException {
+      // Handle exception by warning the user their action did not succeed
+      // return?
+    }
+    // Attach a listener to the stream
+    _sub = linkStream.listen((String? link) {
+      if (link != null) {
+        final H4PayRoute route = parseUrl(link);
+        pushToRoute(route);
+      }
+    }, onError: (err) {
+      // Handle exception by warning the user their action did not succeed
+    });
+  }
+
+  pushToRoute(H4PayRoute route) async {
+    if (route.route == 'giftView') {
+      final Gift? gift = await fetchGiftDetail(route.data);
+      if (gift != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PurchaseDetailPage(purchase: gift),
+          ),
+        );
+      } else {
+        showSnackbar(
+          context,
+          "주문 상세 정보 조회에 실패했습니다.",
+          Colors.red,
+          Duration(seconds: 1),
+        );
+      }
+    }
+  }
+
+  H4PayRoute parseUrl(String url) {
+    return H4PayRoute(route: url.split("/")[3], data: url.split("/")[4]);
+  }
+
   @override
   void initState() {
     super.initState();
     //loadApiUrl(prefs);
+
     connectionCheck().then((value) {
       if (!value) {
         if (dotenv.env['TEST_MODE'] == "TRUE") {
@@ -74,6 +134,8 @@ class IntroPageState extends State<IntroPage> {
             false,
           );
         }
+      } else {
+        initUniLinks().then((value) => null);
       }
     });
   }

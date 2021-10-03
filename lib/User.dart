@@ -6,7 +6,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:http/http.dart' as http;
-import 'package:localstorage/localstorage.dart';
 
 class H4PayUser {
   String? uid;
