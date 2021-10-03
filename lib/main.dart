@@ -96,7 +96,11 @@ class H4PayAppbarState extends State<H4PayAppbar> {
         leading: widget.canGoBack
             ? IconButton(
                 icon: new Icon(Icons.arrow_back),
-                onPressed: widget.backPressed,
+                onPressed: widget.backPressed == null
+                    ? () {
+                        Navigator.pop(context);
+                      }
+                    : widget.backPressed,
                 color: Colors.black,
               )
             : null,

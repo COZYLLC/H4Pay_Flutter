@@ -228,14 +228,19 @@ class AppInfo {
 
 class WebViewScaffold extends StatelessWidget {
   final String initialUrl;
+  final String title;
 
-  const WebViewScaffold({Key? key, required this.initialUrl}) : super(key: key);
+  const WebViewScaffold(
+      {Key? key, required this.title, required this.initialUrl})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        shape: ContinuousRectangleBorder(),
+      appBar: H4PayAppbar(
+        title: title,
+        height: 56.0,
+        canGoBack: true,
       ),
       body: WebView(
         initialUrl: initialUrl,

@@ -126,7 +126,6 @@ class ListPageState extends State<ListPage> {
               title: widget.appBarTitle!,
               height: 56.0,
               canGoBack: true,
-              backPressed: () {},
             )
           : null,
       body: LayoutBuilder(builder: (context, constraints) {

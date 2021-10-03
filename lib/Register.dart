@@ -175,6 +175,7 @@ class RegisterPageState extends State<RegisterPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => WebViewScaffold(
+                                      title: "약관 보기",
                                       initialUrl: terms[index]['url'],
                                     ),
                                   ),
