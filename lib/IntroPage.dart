@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -10,6 +11,8 @@ import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Util.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uni_links/uni_links.dart';
+import 'package:flutter/services.dart' show PlatformException;
 
 class EmptyAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
@@ -33,10 +36,32 @@ class IntroPageState extends State<IntroPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _ipController = TextEditingController();
 
+  StreamSubscription? _sub;
+
+  Future<void> initUniLinks() async {
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      final initialLink = await getInitialLink();
+      print(initialLink);
+      // Parse the link and warn the user, if it is not correct,
+      // but keep in mind it could be `null`.
+    } on PlatformException {
+      // Handle exception by warning the user their action did not succeed
+      // return?
+    }
+    // Attach a listener to the stream
+    _sub = linkStream.listen((String? link) {
+      // Parse the link and warn the user, if it is not correct
+    }, onError: (err) {
+      // Handle exception by warning the user their action did not succeed
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     //loadApiUrl(prefs);
+    initUniLinks().then((value) => null);
     connectionCheck().then((value) {
       if (!value) {
         if (dotenv.env['TEST_MODE'] == "TRUE") {

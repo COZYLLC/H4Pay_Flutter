@@ -125,12 +125,18 @@ class ListPageState extends State<ListPage> {
               title: Text(widget.appBarTitle!),
             )
           : null,
-      body: SingleChildScrollView(
-        child: FutureBuilder(
-          future: widget.dataFuture,
-          builder: widget.builder,
-        ),
-      ),
+      body: LayoutBuilder(builder: (context, constraints) {
+        return Container(
+          color: Colors.blue,
+          child: SingleChildScrollView(
+            child: FutureBuilder(
+              future: widget.dataFuture,
+              builder: widget.builder,
+            ),
+          ),
+          height: constraints.maxHeight,
+        );
+      }),
     );
   }
 }

@@ -1,9 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:h4pay/Register.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/User.dart';
@@ -14,8 +10,6 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:connectivity/connectivity.dart';
-import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 
 class LoginPage extends StatefulWidget {
   bool canGoBack;
@@ -95,9 +89,6 @@ class LoginPageState extends State<LoginPage> {
                         } else {
                           return null;
                         }
-                      },
-                      onChanged: (_) {
-                        _loginFormKey.currentState!.validate();
                       },
                       textInputAction: TextInputAction.done,
                     ),

@@ -237,8 +237,11 @@ void showSnackbar(
 String roleStrFromLetter(String letter) {
   String? role;
   switch (letter) {
-    case 'A':
+    case 'SA':
       role = "시스템 관리자";
+      break;
+    case 'A':
+      role = "행정실 관리자";
       break;
     case 'AT':
       role = "매점 관리 교사";

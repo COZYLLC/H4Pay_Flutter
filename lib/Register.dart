@@ -41,7 +41,7 @@ class RegisterPageState extends State<RegisterPage> {
     }
   ];
 
-  List<String> userTypes = ['A', 'AT', 'T', 'M', 'S'];
+  List<String> userTypes = ['S'];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
