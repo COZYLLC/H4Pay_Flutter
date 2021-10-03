@@ -127,7 +127,6 @@ class ListPageState extends State<ListPage> {
           : null,
       body: LayoutBuilder(builder: (context, constraints) {
         return Container(
-          color: Colors.blue,
           child: SingleChildScrollView(
             child: FutureBuilder(
               future: widget.dataFuture,

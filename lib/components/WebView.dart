@@ -48,7 +48,7 @@ class WebViewExampleState extends State<WebViewExample> {
 
   @override
   Widget build(BuildContext context) {
-    final url = "https://h4pay.co.kr";
+    final url = "http://172.30.1.52:8080";
     return Scaffold(
       body: WebView(
         initialUrl: Uri.encodeFull(
