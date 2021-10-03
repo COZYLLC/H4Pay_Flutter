@@ -79,6 +79,7 @@ class H4PayInfoPageState extends State {
         'type': 'route',
         'text': "이용약관",
         'content': WebViewScaffold(
+          title: "약관 보기",
           initialUrl: "https://h4pay.co.kr/law/terms.html",
         ),
       },
@@ -86,6 +87,7 @@ class H4PayInfoPageState extends State {
         'type': 'route',
         'text': "개인정보 처리방침",
         'content': WebViewScaffold(
+            title: "약관 보기",
             initialUrl: "https://h4pay.co.kr/law/privacyPolicy.html")
       },
       {
