@@ -1,8 +1,8 @@
+import 'dart:async';
+
 import 'package:h4pay/Setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Notice {
   final String id;
@@ -31,19 +31,27 @@ class Notice {
 }
 
 Future<List<Notice>?> fetchNotice() async {
-  final response = await http.get(
-    Uri.parse('$API_URL/notice'),
-  );
-  if (response.statusCode == 200) {
-    print("request go");
-    final jsonResponse = jsonDecode(response.body);
-    if (jsonResponse['status']) {
-      List notice = jsonDecode(response.body)['result'];
-      return notice.map((e) => Notice.fromList(e)).toList();
+  try {
+    final response = await http
+        .get(
+      Uri.parse('$API_URL/notice'),
+    )
+        .timeout(Duration(seconds: 3), onTimeout: () {
+      throw TimeoutException("timed out...");
+    });
+    if (response.statusCode == 200) {
+      print("request go");
+      final jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['status']) {
+        List notice = jsonDecode(response.body)['result'];
+        return notice.map((e) => Notice.fromList(e)).toList();
+      } else {
+        return null;
+      }
     } else {
-      return null;
+      throw Exception('Failed to fetch notice.');
     }
-  } else {
-    throw Exception('Failed to fetch notice.');
+  } catch (e) {
+    return null;
   }
 }

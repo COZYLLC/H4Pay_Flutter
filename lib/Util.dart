@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:h4pay/Gift.dart';
-import 'package:h4pay/Order.dart';
-import 'package:h4pay/Product.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:intl/intl.dart';
@@ -85,7 +83,7 @@ class OkCancelGroup extends StatelessWidget {
           child: H4PayButton(
             text: "확인",
             onClick: okClicked,
-            backgroundColor: Colors.green,
+            backgroundColor: Theme.of(context).primaryColor,
           ),
         ),
         Spacer(

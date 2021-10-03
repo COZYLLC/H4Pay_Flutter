@@ -9,7 +9,6 @@ import 'package:h4pay/PurchaseDetail.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/components/Button.dart';
-import 'package:h4pay/main.dart';
 import 'package:h4pay/Util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animated_check/animated_check.dart';

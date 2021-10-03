@@ -482,7 +482,7 @@ class PurchaseCard extends StatelessWidget {
                           }
                         },
                         backgroundColor: !isGift || isReceiver
-                            ? Colors.green
+                            ? Theme.of(context).primaryColor
                             : Colors.grey[400]!,
                         width: MediaQuery.of(context).size.width * 0.4,
                       ),

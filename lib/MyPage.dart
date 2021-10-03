@@ -4,12 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:h4pay/Gift.dart';
 import 'package:h4pay/H4PayInfo.dart';
 import 'package:h4pay/IntroPage.dart';
-import 'package:h4pay/Login.dart';
 import 'package:h4pay/Order.dart';
 import 'package:h4pay/PurchaseList.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/Success.dart';
-import 'package:h4pay/Support.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/Util.dart';
 import 'package:h4pay/components/Button.dart';
@@ -32,7 +30,6 @@ class MyPageState extends State<MyPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _fetchUser = userFromStorage();
   }
@@ -148,14 +145,19 @@ class MyPageState extends State<MyPage> {
                                 icon: Icon(Icons.logout),
                                 text: "로그아웃",
                                 onClick: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => IntroPage(
-                                        canGoBack: false,
+                                  showAlertDialog(
+                                      context, "로그아웃", "정말로 로그아웃 하시겠습니까?", () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => IntroPage(
+                                          canGoBack: false,
+                                        ),
                                       ),
-                                    ),
-                                  );
+                                    );
+                                  }, () {
+                                    Navigator.pop(context);
+                                  });
                                 },
                               ),
                             ],

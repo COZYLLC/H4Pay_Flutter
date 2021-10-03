@@ -1,4 +1,4 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:async';
 import 'package:h4pay/Purchase.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/Setting.dart';
@@ -44,24 +44,33 @@ class Order extends Purchase {
       toJson(this),
     );
     print("[API] ${jsonBody}");
-    final response = await http.post(
-      Uri.parse("$API_URL/orders/create"),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonBody,
-    );
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
+    try {
+      final response = await http
+          .post(
+        Uri.parse("$API_URL/orders/create"),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonBody,
+      )
+          .timeout(Duration(seconds: 3), onTimeout: () {
+        throw TimeoutException("timed out...");
+      });
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        return H4PayResult(
+          success: jsonResponse['status'],
+          data: jsonResponse['message'],
+        );
+      } else {
+        return H4PayResult(
+          success: false,
+          data: "서버 오류입니다.",
+        );
+      }
+    } catch (e) {
       return H4PayResult(
-        success: jsonResponse['status'],
-        data: jsonResponse['message'],
-      );
-    } else {
-      return H4PayResult(
-        success: false,
-        data: "서버 오류입니다.",
-      );
+          success: false, data: "서버 응답 시간이 초과되었습니다. 인터넷 연결 상태를 확인하세요.");
     }
   }
 
@@ -98,31 +107,47 @@ String genOrderId() {
 
 Future<List<Order>?> fetchOrder(_uid) async {
   print(API_URL);
-  final response = await http.get(
-    Uri.parse('$API_URL/orders/fromuid/$_uid'),
-  );
-  if (response.statusCode == 200) {
-    final jsonResponse = jsonDecode(response.body);
-    if (jsonResponse['status']) {
-      List orders = jsonDecode(response.body)['order'];
-      return orders.map((e) => Order.fromJson(e)).toList();
+  try {
+    final response = await http
+        .get(
+      Uri.parse('$API_URL/orders/fromuid/$_uid'),
+    )
+        .timeout(Duration(seconds: 3), onTimeout: () {
+      throw TimeoutException("timed out...");
+    });
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['status']) {
+        List orders = jsonDecode(response.body)['order'];
+        return orders.map((e) => Order.fromJson(e)).toList();
+      } else {
+        return null;
+      }
     } else {
-      return null;
+      throw Exception('Failed to fetch order.');
     }
-  } else {
-    throw Exception('Failed to fetch order.');
+  } catch (e) {
+    return null;
   }
 }
 
 Future<bool> cancelOrder(String orderId) async {
   print(API_URL);
-  final response = await http.get(
-    Uri.parse('$API_URL/orders/cancel/${orderId}'),
-  );
-  if (response.statusCode == 200) {
-    final jsonResponse = jsonDecode(response.body);
-    return jsonResponse['status'];
-  } else {
-    throw Exception('Failed to fetch order.');
+  try {
+    final response = await http
+        .get(
+      Uri.parse('$API_URL/orders/cancel/${orderId}'),
+    )
+        .timeout(Duration(seconds: 3), onTimeout: () {
+      throw TimeoutException("timed out...");
+    });
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse['status'];
+    } else {
+      throw Exception('Failed to fetch order.');
+    }
+  } catch (e) {
+    return false;
   }
 }
