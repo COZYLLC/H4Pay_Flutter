@@ -48,12 +48,7 @@ class MyApp extends StatelessWidget {
           statusBarColor: Colors.transparent,
         ),
         child: GestureDetector(
-          onTap: () {
-            FocusScopeNode currentFocus = FocusScope.of(context);
-            if (!currentFocus.hasPrimaryFocus) {
-              currentFocus.unfocus();
-            }
-          },
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
           child: MaterialApp(
             theme: ThemeData(
               fontFamily: 'Spoqa_Han_Sans',
