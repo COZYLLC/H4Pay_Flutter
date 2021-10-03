@@ -44,7 +44,7 @@ class H4PayInfoPageState extends State {
     String version = packageInfo.version;
     Seller seller = Seller(
       name: "서전고 사회적협동조합",
-      ceo: "안상희",
+      ceo: "\n대표이사: 안상희",
       address: "충북 진천군 덕산읍 대하로 47",
       tel: "043-537-8737",
       businessId: "564-82-00214",
@@ -56,7 +56,7 @@ class H4PayInfoPageState extends State {
         'type': 'alert',
         'text': "COZY 정보",
         'content': [
-          Text("COZY 대표: 송치원"),
+          Text("대표: 송치원"),
           HyperLinkText(text: "Tel: 010-6795-8358", url: "tel://010-6795-8358"),
           Text("Fax: 0508-941-8358"),
           Text("사업자등록번호: 619-88-02154"),
