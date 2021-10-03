@@ -128,7 +128,6 @@ class SupportFormPageState extends State<SupportFormPage> {
         height: 56.0,
         canGoBack: true,
       ),
-      resizeToAvoidBottomInset: false,
       body: SingleChildScrollView(
         padding: EdgeInsets.all(18),
         child: Column(

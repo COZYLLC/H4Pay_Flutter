@@ -8,8 +8,10 @@ import 'package:h4pay/Login.dart';
 import 'package:h4pay/PurchaseDetail.dart';
 import 'package:h4pay/Register.dart';
 import 'package:h4pay/Setting.dart';
+import 'package:h4pay/User.dart';
 import 'package:h4pay/Util.dart';
 import 'package:h4pay/components/Button.dart';
+import 'package:h4pay/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:flutter/services.dart' show PlatformException;
@@ -135,7 +137,21 @@ class IntroPageState extends State<IntroPage> {
           );
         }
       } else {
-        initUniLinks().then((value) => null);
+        initUniLinks().then((value) async {
+          final H4PayUser? user = await userFromStorage();
+          final SharedPreferences _prefs =
+              await SharedPreferences.getInstance();
+          if (user != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MyHomePage(
+                  prefs: _prefs,
+                ),
+              ),
+            );
+          }
+        });
       }
     });
   }

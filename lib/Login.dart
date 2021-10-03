@@ -113,7 +113,6 @@ class LoginPageState extends State<LoginPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => MyHomePage(
-                          title: "H4Pay",
                           prefs: prefs,
                         ),
                       ),
@@ -244,8 +243,12 @@ class LoginPageState extends State<LoginPage> {
         if (jsonResponse['status']) {
           print("JSON STATUS TRUE");
           final H4PayUser? user = await tokenCheck(jsonResponse['accessToken']);
-          await user!.saveToStorage();
-          return true;
+          if (user != null) {
+            await user.saveToStorage();
+            return true;
+          } else {
+            return false;
+          }
         } else {
           return false;
         }

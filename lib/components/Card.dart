@@ -688,7 +688,7 @@ void showNoticeCard(BuildContext context, Notice notice) {
             Container(
               height: 30,
             ),
-            Text(notice.content),
+            Text(notice.content.replaceAll("\\n", "\n")),
             Text(getPrettyDateStr(notice.date, false))
           ],
         ),
@@ -721,7 +721,7 @@ void showEventCard(BuildContext context, Event event) {
             Text("${getPrettyAmountStr(event.price)} 할인"),
             Text(
                 "${getPrettyDateStr(event.start, false)} ~ ${getPrettyDateStr(event.start, false)}"),
-            Text(event.content),
+            Text(event.content.replaceAll("\\n", "\n")),
           ],
         ),
       ],

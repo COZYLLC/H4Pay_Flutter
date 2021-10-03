@@ -57,7 +57,8 @@ Future<H4PayUser?> userFromStorage() async {
   final storage = new FlutterSecureStorage();
   try {
     final Map userJson = await storage.readAll();
-    return H4PayUser.fromjson(userJson);
+    final H4PayUser user = H4PayUser.fromjson(userJson);
+    return await tokenCheck(user.token);
   } catch (e) {
     return null;
   }
@@ -187,6 +188,7 @@ Future<H4PayResult> withdraw(
   );
   if (response.statusCode == 200) {
     final jsonResponse = json.decode(response.body);
+    await logout();
     return H4PayResult(
         success: jsonResponse['status'], data: jsonResponse['message']);
   } else {

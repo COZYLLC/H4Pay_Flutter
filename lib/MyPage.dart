@@ -147,6 +147,7 @@ class MyPageState extends State<MyPage> {
                                 onClick: () {
                                   showAlertDialog(
                                       context, "로그아웃", "정말로 로그아웃 하시겠습니까?", () {
+                                    logout();
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -497,9 +498,10 @@ class MyInfoPageState extends State<MyInfoPage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => IntroPage(
-                                            canGoBack: false,
-                                          )),
+                                    builder: (context) => IntroPage(
+                                      canGoBack: false,
+                                    ),
+                                  ),
                                 );
                               },
                               backgroundColor: Theme.of(context).primaryColor,

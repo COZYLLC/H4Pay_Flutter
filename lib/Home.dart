@@ -31,6 +31,7 @@ class Home extends StatefulWidget {
 
 class HomeState extends State<Home> {
   final SharedPreferences prefs;
+  final GlobalKey _carouselKey = GlobalKey();
   int? currentTile;
   bool cartClicked = false;
   bool moving = false;
@@ -78,11 +79,11 @@ class HomeState extends State<Home> {
                   children: [
                     CarouselSlider(
                       options: CarouselOptions(
-                        height: MediaQuery.of(context).size.height * 0.165,
+                        height: MediaQuery.of(context).size.width * 0.35,
                       ),
                       items: adList.map((i) {
-                        return Builder(
-                          builder: (BuildContext context) {
+                        return LayoutBuilder(
+                          builder: (BuildContext context, constraint) {
                             return InkWell(
                               onTap: () {
                                 i.runtimeType == Notice
@@ -97,7 +98,7 @@ class HomeState extends State<Home> {
                                     image: NetworkImage(
                                       i.img,
                                     ),
-                                    fit: BoxFit.fitHeight,
+                                    fit: BoxFit.cover,
                                   ),
                                   color: Theme.of(context).primaryColor,
                                   borderRadius: BorderRadius.circular(23),
