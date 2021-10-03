@@ -50,6 +50,7 @@ class WebViewExampleState extends State<WebViewExample> {
   Widget build(BuildContext context) {
     final url = "http://172.30.1.52:8080";
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: WebView(
         initialUrl: Uri.encodeFull(
             "$url/payment?cashReceipt=${widget.cashReceiptType}&amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}&development=${dotenv.env['TEST_MODE']}"),
@@ -237,6 +238,7 @@ class WebViewScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: H4PayAppbar(
         title: title,
         height: 56.0,

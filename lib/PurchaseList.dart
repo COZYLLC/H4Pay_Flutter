@@ -68,6 +68,7 @@ class PurchaseListState extends State<PurchaseList> {
             );
           } else {
             return ListView.builder(
+              reverse: true,
               itemCount: purchases.length,
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),

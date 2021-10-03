@@ -4,7 +4,7 @@
   <queries>
     <package android:name="viva.republica.toss" />
   </queries>
-  <application android:label="h4pay_flutter" android:icon="@mipmap/launcher_icon" android:usesCleartextTraffic="true" android:allowBackup="false">
+  <application android:label="H4Pay" android:icon="@mipmap/launcher_icon" android:usesCleartextTraffic="true" android:allowBackup="false">
     <activity android:name=".MainActivity" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
       <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
@@ -18,16 +18,17 @@
                  Flutter's first frame. -->
       <meta-data android:name="io.flutter.embedding.android.SplashScreenDrawable" android:resource="@drawable/launch_background" />
       <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.LAUNCHER" />
         <category android:name="android.intent.category.BROWSABLE" />
-
         <data 
         android:scheme="https"
         android:host="h4pay.co.kr"
         android:pathPrefix="/"></data>
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
     <!-- Don't delete the meta-data below.

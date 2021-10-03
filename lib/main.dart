@@ -44,21 +44,28 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion(
-      child: MaterialApp(
-        theme: ThemeData(
-          fontFamily: 'Spoqa_Han_Sans',
-          primarySwatch: createMaterialColor(Color(0xff5B82D1)),
-          primaryColor: Color(0xff5B82D1),
+        value: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
         ),
-        //home: MyHomePage(title: 'H4Pay', prefs: prefs),
-        home: IntroPage(
-          canGoBack: false,
-        ),
-      ),
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-      ),
-    );
+        child: GestureDetector(
+          onTap: () {
+            FocusScopeNode currentFocus = FocusScope.of(context);
+            if (!currentFocus.hasPrimaryFocus) {
+              currentFocus.unfocus();
+            }
+          },
+          child: MaterialApp(
+            theme: ThemeData(
+              fontFamily: 'Spoqa_Han_Sans',
+              primarySwatch: createMaterialColor(Color(0xff5B82D1)),
+              primaryColor: Color(0xff5B82D1),
+            ),
+            //home: MyHomePage(title: 'H4Pay', prefs: prefs),
+            home: IntroPage(
+              canGoBack: false,
+            ),
+          ),
+        ));
   }
 }
 

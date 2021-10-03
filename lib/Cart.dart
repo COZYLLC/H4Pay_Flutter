@@ -103,6 +103,7 @@ class CartState extends State<Cart> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SingleChildScrollView(
         child: FutureBuilder(
           future: _fetchProduct!,
