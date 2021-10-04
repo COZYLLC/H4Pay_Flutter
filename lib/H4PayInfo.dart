@@ -44,7 +44,7 @@ class H4PayInfoPageState extends State {
     String version = packageInfo.version;
     Seller seller = Seller(
       name: "서전고 사회적협동조합",
-      ceo: "\n대표이사: 안상희",
+      ceo: "대표이사: 안상희",
       address: "충북 진천군 덕산읍 대하로 47",
       tel: "043-537-8737",
       businessId: "564-82-00214",
@@ -102,14 +102,7 @@ class H4PayInfoPageState extends State {
         'type': 'alert',
         'text': '${seller.name} 사업자 정보',
         'content': [
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(text: seller.name),
-                TextSpan(text: seller.ceo)
-              ],
-            ),
-          ),
+          Text(seller.ceo),
           Text("주소: ${seller.address}"),
           Text("Tel: ${seller.tel}"),
           Text("사업자등록번호: ${seller.businessId}"),
