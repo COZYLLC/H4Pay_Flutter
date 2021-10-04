@@ -31,7 +31,7 @@ dependencies:
   flutter_dotenv:
   shared_preferences:
   shimmer: ^2.0.0
-  webview_flutter: ^2.0.13
+  webview_flutter: ^2.0.14
   cupertino_icons: ^1.0.2
   url_launcher:
   animated_check: ^1.0.0
