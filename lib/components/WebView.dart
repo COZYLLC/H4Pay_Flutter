@@ -104,7 +104,7 @@ class WebViewExampleState extends State<WebViewExample> {
               print("cannot open app");
               return NavigationDecision.prevent;
             }
-          } else if (request.url.startsWith("$url/payment/success")) {
+          } else if (request.url.startsWith("$url/paySuccess")) {
             print("[WEBVIEW] PAYMENT SUCCESS");
             Navigator.push(
               context,
