@@ -29,8 +29,10 @@ Future main() async {
 }
 
 loadApiUrl(SharedPreferences prefs) {
-  if (prefs.getString("API_URL") == null) {
+  print(prefs.getString("API_URL"));
+  if (prefs.getString("API_URL") == null || prefs.getString("API_URL") == "") {
     prefs.setString('API_URL', dotenv.env['API_URL']!);
+    API_URL = dotenv.env['API_URL'];
   } else {
     API_URL = prefs.getString("API_URL");
   }
