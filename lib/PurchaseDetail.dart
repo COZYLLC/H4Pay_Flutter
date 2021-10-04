@@ -60,7 +60,6 @@ class PurchaseDetailPageState extends State<PurchaseDetailPage> {
           if (snapshot.hasData) {
             final Map data = snapshot.data as Map;
             final List<Product> products = data['product'];
-            final H4PayUser user = data['user'];
             return Container(
               margin: EdgeInsets.all(40),
               child: Column(

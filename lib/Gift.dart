@@ -151,7 +151,8 @@ Future<Gift?> fetchGiftDetail(String orderId) async {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       if (jsonResponse['status']) {
-        Map<String, dynamic> gift = jsonDecode(response.body)['gift'];
+        print(jsonResponse);
+        Map<String, dynamic> gift = jsonResponse['gift'];
         return Gift.fromJson(gift);
       } else {
         return null;
