@@ -26,7 +26,6 @@ class LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     //Firebase.initializeApp();
     _loginCheck();
@@ -69,9 +68,6 @@ class LoginPageState extends State<LoginPage> {
                           return null;
                         }
                       },
-                      onChanged: (_) {
-                        _loginFormKey.currentState!.validate();
-                      },
                       textInputAction: TextInputAction.next,
                     ),
                     TextFormField(
@@ -105,27 +101,28 @@ class LoginPageState extends State<LoginPage> {
                 text: "로그인",
                 width: double.infinity,
                 onClick: () async {
-                  _loginFormKey.currentState!.validate();
-                  if (await _login(_idController.text, _pwController.text)) {
-                    final SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MyHomePage(
-                          prefs: prefs,
+                  if (_loginFormKey.currentState!.validate()) {
+                    if (await _login(_idController.text, _pwController.text)) {
+                      final SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MyHomePage(
+                            prefs: prefs,
+                          ),
                         ),
-                      ),
-                    );
-                  } else {
-                    showSnackbar(
-                      context,
-                      "아이디 혹은 비밀번호가 틀렸습니다.",
-                      Colors.red,
-                      Duration(
-                        seconds: 1,
-                      ),
-                    );
+                      );
+                    } else {
+                      showSnackbar(
+                        context,
+                        "아이디 혹은 비밀번호가 틀렸습니다.",
+                        Colors.red,
+                        Duration(
+                          seconds: 1,
+                        ),
+                      );
+                    }
                   }
                 },
                 backgroundColor: Theme.of(context).primaryColor,

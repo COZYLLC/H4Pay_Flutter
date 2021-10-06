@@ -437,20 +437,24 @@ class PurchaseCard extends StatelessWidget {
                       getPrettyAmountStr(purchase.amount),
                     ),
                     Text(
-                      getPrettyDateStr(purchase.expire, true),
+                      getPrettyDateStr(purchase.expire, true) + " 까지",
                     ),
-                    Text(
-                      purchase.exchanged ? "교환됨" : "",
-                      style: TextStyle(
-                        color: Colors.red,
-                      ),
-                    ),
-                    Text(
-                      checkExpire(purchase.expire) ? "만료됨" : "",
-                      style: TextStyle(
-                        color: Colors.red,
-                      ),
-                    ),
+                    (isGift == false)
+                        ? Text(
+                            purchase.exchanged ? "교환됨" : "",
+                            style: TextStyle(
+                              color: Colors.red,
+                            ),
+                          )
+                        : Container(),
+                    (isGift == true && !purchase.exchanged)
+                        ? Text(
+                            checkExpire(purchase.expire) ? "만료됨" : "",
+                            style: TextStyle(
+                              color: Colors.red,
+                            ),
+                          )
+                        : Container(),
                   ],
                 ),
               )
@@ -720,7 +724,7 @@ void showEventCard(BuildContext context, Event event) {
             ),
             Text("${getPrettyAmountStr(event.price)} 할인"),
             Text(
-                "${getPrettyDateStr(event.start, false)} ~ ${getPrettyDateStr(event.start, false)}"),
+                "${getPrettyDateStr(event.start, false)} ~ ${getPrettyDateStr(event.end, false)}"),
             Text(event.content.replaceAll("\\n", "\n")),
           ],
         ),

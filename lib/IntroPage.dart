@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:h4pay/AppLink.dart';
 import 'package:h4pay/Gift.dart';
 import 'package:h4pay/Login.dart';
 import 'package:h4pay/PurchaseDetail.dart';
@@ -44,62 +45,12 @@ class IntroPageState extends State<IntroPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _ipController = TextEditingController();
 
-  StreamSubscription? _sub;
-
-  Future<void> initUniLinks() async {
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      final String? initialLink = await getInitialLink();
-      if (initialLink != null) {
-        final H4PayRoute route = parseUrl(initialLink);
-        pushToRoute(route);
-      }
-    } on PlatformException {
-      // Handle exception by warning the user their action did not succeed
-      // return?
-    }
-    // Attach a listener to the stream
-    _sub = linkStream.listen((String? link) {
-      if (link != null) {
-        final H4PayRoute route = parseUrl(link);
-        pushToRoute(route);
-      }
-    }, onError: (err) {
-      // Handle exception by warning the user their action did not succeed
-    });
-  }
-
-  pushToRoute(H4PayRoute route) async {
-    if (route.route == 'giftView') {
-      final Gift? gift = await fetchGiftDetail(route.data);
-      if (gift != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PurchaseDetailPage(purchase: gift),
-          ),
-        );
-      } else {
-        showSnackbar(
-          context,
-          "주문 상세 정보 조회에 실패했습니다.",
-          Colors.red,
-          Duration(seconds: 1),
-        );
-      }
-    }
-  }
-
-  H4PayRoute parseUrl(String url) {
-    return H4PayRoute(route: url.split("/")[3], data: url.split("/")[4]);
-  }
-
   @override
   void initState() {
     super.initState();
-    //loadApiUrl(prefs);
+    registerListener(context);
 
-    connectionCheck().then((value) {
+    connectionCheck().then((value) async {
       if (!value) {
         if (dotenv.env['TEST_MODE'] == "TRUE") {
           showCustomAlertDialog(
@@ -137,50 +88,32 @@ class IntroPageState extends State<IntroPage> {
           );
         }
       } else {
-        initUniLinks().then((value) async {
-          final H4PayUser? user = await userFromStorage();
-          final SharedPreferences _prefs =
-              await SharedPreferences.getInstance();
-          if (user != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MyHomePage(
-                  prefs: _prefs,
-                ),
+        final Widget? route = await initUniLinks(context);
+        if (route != null)
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => route),
+          );
+        final H4PayUser? user = await userFromStorage();
+        final SharedPreferences _prefs = await SharedPreferences.getInstance();
+        if (user != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MyHomePage(
+                prefs: _prefs,
               ),
-            );
-          }
-        });
+            ),
+          );
+        }
       }
     });
-  }
-
-  Future<bool> connectionCheck() async {
-    final connStatus = await Connectivity().checkConnectivity();
-    if (connStatus == ConnectivityResult.mobile ||
-        connStatus == ConnectivityResult.wifi) {
-      try {
-        final socket = await Socket.connect(
-          API_URL!.split(":")[1].split("//")[1],
-          int.parse(API_URL!.split(":")[2].split("/")[0]),
-          timeout: Duration(seconds: 3),
-        );
-        socket.destroy();
-        return true;
-      } catch (e) {
-        return false;
-      }
-    }
-    return false;
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () async {
-        return widget.canGoBack;
-      },
+      onWillPop: () async => onBackPressed(context, widget.canGoBack),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: EmptyAppBar(),

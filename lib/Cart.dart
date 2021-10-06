@@ -228,7 +228,44 @@ class CartState extends State<Cart> {
     );
   }
 
+  List<String?>? checkSoldout() {
+    List<String> soldoutProducts = [];
+    cartMap.entries.forEach((item) {
+      final product = products!.singleWhereOrNull(
+        (product) => product.id == int.parse(item.key),
+      );
+      if (product != null) {
+        if (product.soldout) {
+          soldoutProducts.add(product.productName);
+        }
+      } else {
+        return null;
+      }
+    });
+    return soldoutProducts;
+  }
+
   _payment() async {
+    products = await fetchProduct("payment");
+    final List<String?>? soldoutList = checkSoldout();
+    if (soldoutList != null) {
+      var soldoutString = "";
+      soldoutList.forEachIndexed((idx, element) {
+        print(element);
+        soldoutString +=
+            (element! + (idx + 1 == soldoutList.length ? "" : ", "));
+      });
+      if (soldoutList.length != 0) {
+        showSnackbar(
+          context,
+          "품절된 상품이 있어요: $soldoutString",
+          Colors.red,
+          Duration(seconds: 1),
+        );
+        return;
+      }
+    }
+
     final _orderId = "1" + genOrderId() + "000";
     final tempPurchase = {
       'type': 'Order',

@@ -66,6 +66,35 @@ class RegisterPageState extends State<RegisterPage> {
                     controller: id,
                     decoration: InputDecoration(labelText: "아이디"),
                     textInputAction: TextInputAction.next,
+                    onEditingComplete: () {
+                      uidDuplicateCheck(id.text).then((value) {
+                        if (!value) {
+                          showCustomAlertDialog(
+                            context,
+                            "아아디 중복",
+                            [Text("이미 존재하는 아이디입니다.")],
+                            [
+                              H4PayButton(
+                                text: "확인",
+                                onClick: () {
+                                  Navigator.pop(context);
+                                },
+                                backgroundColor: Theme.of(context).primaryColor,
+                                width: double.infinity,
+                              )
+                            ],
+                            true,
+                          );
+                        } else {
+                          do {
+                            FocusScope.of(context).nextFocus();
+                          } while (FocusScope.of(context)
+                              .focusedChild!
+                              .context!
+                              .widget is! EditableText);
+                        }
+                      });
+                    },
                     validator: (value) {
                       final RegExp regExp = RegExp(r'^[A-za-z0-9]{5,15}$');
                       return regExp.hasMatch(value!) ? null : "아이디가 올바르지 않습니다.";

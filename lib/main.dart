@@ -227,7 +227,7 @@ class MyHomePageState extends State<MyHomePage> {
     List<String> titles = ["지원", "이벤트", "H4Pay", "장바구니", "마이페이지"];
 
     return WillPopScope(
-      onWillPop: () async => false,
+      onWillPop: () async => onBackPressed(context, true),
       child: Scaffold(
         appBar: H4PayAppbar(
           title: _title,

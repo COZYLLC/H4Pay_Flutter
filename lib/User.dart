@@ -53,6 +53,26 @@ Future<bool> logout() async {
   }
 }
 
+Future<bool> uidDuplicateCheck(String uid) async {
+  final response = await http.post(
+    Uri.parse("$API_URL/users/valid"),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: json.encode(
+      {"type": "live", "uid": uid},
+    ),
+  );
+  if (response.statusCode == 200) {
+    final jsonResponse = json.decode(response.body);
+    print(jsonResponse);
+    final bool status = jsonResponse['status'];
+    return status;
+  } else {
+    return false;
+  }
+}
+
 Future<H4PayUser?> userFromStorage() async {
   final storage = new FlutterSecureStorage();
   try {

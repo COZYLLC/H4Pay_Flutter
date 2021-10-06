@@ -116,7 +116,7 @@ class WebViewExampleState extends State<WebViewExample> {
               ),
             ).then(updateBadges);
             return NavigationDecision.prevent;
-          } else if (request.url.startsWith("$url/payment/fail")) {
+          } else if (request.url.startsWith("$url/payFail")) {
             Navigator.pop(context);
             return NavigationDecision.prevent;
           } else {

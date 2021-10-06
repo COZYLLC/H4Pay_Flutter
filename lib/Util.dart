@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:h4pay/Gift.dart';
+import 'package:h4pay/Setting.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:intl/intl.dart';
@@ -8,6 +12,48 @@ import 'package:intl/intl.dart';
 final DateFormat dateFormat = new DateFormat('yyyy-MM-dd hh:mm');
 final DateFormat dateFormatNoTime = new DateFormat('yyyy-MM-dd');
 final NumberFormat numberFormat = new NumberFormat('###,###,###,###');
+
+int? lastTimeBackPressed;
+
+Future<bool> onBackPressed(BuildContext context, bool canGoBack) async {
+  if (canGoBack) {
+    if (DateTime.now().millisecondsSinceEpoch <
+        (lastTimeBackPressed ?? 0) + 2000) {
+      // 현재 시간이 마지막으로 백버튼을 누른 시간으로부터 2초가 지난 시간보다 작은 경우
+      exit(0);
+    } else {
+      lastTimeBackPressed = DateTime.now().millisecondsSinceEpoch;
+      showSnackbar(
+        context,
+        "'뒤로' 버튼을 한번 더 누르시면 앱이 종료됩니다.",
+        Theme.of(context).primaryColor,
+        Duration(seconds: 1),
+      );
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+Future<bool> connectionCheck() async {
+  final connStatus = await Connectivity().checkConnectivity();
+  if (connStatus == ConnectivityResult.mobile ||
+      connStatus == ConnectivityResult.wifi) {
+    try {
+      final socket = await Socket.connect(
+        API_URL!.split(":")[1].split("//")[1],
+        int.parse(API_URL!.split(":")[2].split("/")[0]),
+        timeout: Duration(seconds: 3),
+      );
+      socket.destroy();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  return false;
+}
 
 String getPrettyDateStr(String date, bool withTime) {
   if (withTime) {
