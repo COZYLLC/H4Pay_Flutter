@@ -76,15 +76,6 @@ class LoginPageState extends State<LoginPage> {
                       decoration: InputDecoration(
                         labelText: "비밀번호",
                       ),
-                      validator: (value) {
-                        final RegExp regExp = RegExp(
-                            r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$');
-                        if (!regExp.hasMatch(value!)) {
-                          return "비밀번호는 영대소문자와 숫자, 특수문자를 포함해 8자 이상이어야 합니다.";
-                        } else {
-                          return null;
-                        }
-                      },
                       textInputAction: TextInputAction.done,
                     ),
                   ],
@@ -321,10 +312,13 @@ class AccountFindPageState extends State<AccountFindPage> {
                     _emailController.text,
                   );
                   showSnackbar(
-                      context,
-                      findResult.data,
-                      findResult.success ? Colors.green : Colors.red,
-                      Duration(seconds: 1));
+                    context,
+                    findResult.success
+                        ? "아이디가 메일로 전송되었어요. 메일이 도착하지 않았으면 스팸함을 확인해보세요."
+                        : findResult.data,
+                    findResult.success ? Colors.green : Colors.red,
+                    Duration(seconds: 1),
+                  );
                 }
               },
               backgroundColor: Color(0xff5B82D1),
@@ -376,14 +370,18 @@ class AccountFindPageState extends State<AccountFindPage> {
                 if (_findPwFormKey.currentState!.validate()) {
                   // 입력값이 정상이면
                   final H4PayResult findResult = await _findPw(
-                      _nameController.text,
-                      _emailController.text,
-                      _idController.text);
+                    _nameController.text,
+                    _emailController.text,
+                    _idController.text,
+                  );
                   showSnackbar(
-                      context,
-                      findResult.data,
-                      findResult.success ? Colors.green : Colors.red,
-                      Duration(seconds: 1));
+                    context,
+                    findResult.success
+                        ? "새로운 비밀번호가 메일로 전송되었어요. 메일이 도착하지 않았으면 스팸함을 확인해보세요."
+                        : findResult.data,
+                    findResult.success ? Colors.green : Colors.red,
+                    Duration(seconds: 1),
+                  );
                 }
               },
               backgroundColor: Color(0xff5B82D1),

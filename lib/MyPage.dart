@@ -361,14 +361,6 @@ class MyInfoPageState extends State<MyInfoPage> {
                                   decoration: InputDecoration(
                                     labelText: "기존 비밀번호",
                                   ),
-                                  validator: (value) {
-                                    final RegExp regExp = RegExp(
-                                      r'(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$',
-                                    );
-                                    return regExp.hasMatch(value!)
-                                        ? null
-                                        : "비밀번호가 올바르지 않습니다.";
-                                  },
                                 ),
                               ),
                               Container(
@@ -444,6 +436,7 @@ class MyInfoPageState extends State<MyInfoPage> {
                                   ),
                                 );
                               } else {
+                                Navigator.pop(context);
                                 showSnackbar(
                                   context,
                                   "비밀번호 변경에 실패했습니다.",

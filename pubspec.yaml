@@ -73,13 +73,9 @@ flutter:
   fonts:
     - family: Spoqa_Han_Sans
       fonts:
-        - asset: assets/font/SpoqaHanSansNeo-Light.otf
-          weight: 300
-        - asset: assets/font/SpoqaHanSansNeo-Regular.otf
+        - asset: assets/font/SpoqaHanSansNeo-Regular.ttf
           weight: 400
-        - asset: assets/font/SpoqaHanSansNeo-Medium.otf
-          weight: 500
-        - asset: assets/font/SpoqaHanSansNeo-Bold.otf
+        - asset: assets/font/SpoqaHanSansNeo-Bold.ttf
           weight: 700
 
 flutter_icons:

@@ -657,7 +657,7 @@ class NoticeCard extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 25),
                 ),
                 Text(
-                  notice.content,
+                  notice.content.replaceAll("\\n", "\n"),
                   softWrap: false,
                   overflow: TextOverflow.fade,
                   maxLines: 1,

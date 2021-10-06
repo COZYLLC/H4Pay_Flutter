@@ -123,6 +123,7 @@ Future<bool> changePassword(
   );
   if (response.statusCode == 200) {
     final jsonResponse = json.decode(response.body);
+    await logout();
     return jsonResponse['status'];
   } else {
     return false;
