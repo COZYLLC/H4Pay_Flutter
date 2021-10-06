@@ -51,6 +51,34 @@ class WebViewExampleState extends State<WebViewExample> {
     final url = "https://h4pay.co.kr";
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        backgroundColor: Colors.grey[100],
+        toolbarHeight: 20,
+        centerTitle: true,
+        shadowColor: Colors.transparent,
+        automaticallyImplyLeading: false,
+        shape: ContinuousRectangleBorder(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(38),
+            topRight: Radius.circular(38),
+          ),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 100,
+              height: 3,
+              decoration: BoxDecoration(
+                color: Colors.grey,
+                border: Border.all(width: 1, color: Colors.grey),
+                borderRadius: BorderRadius.all(Radius.circular(38)),
+              ),
+            ),
+          ],
+        ),
+      ),
       body: WebView(
         initialUrl: Uri.encodeFull(
             "$url/payment?cashReceipt=${widget.cashReceiptType}&amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}&development=${dotenv.env['TEST_MODE']}"),
