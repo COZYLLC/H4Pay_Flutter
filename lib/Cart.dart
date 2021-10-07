@@ -285,7 +285,12 @@ class CartState extends State<Cart> {
               amount: this.totalPrice,
               orderId: _orderId,
               orderName: getProductName(
-                  tempPurchase['item'] as Map, products![0].productName),
+                  tempPurchase['item'] as Map,
+                  products!
+                      .singleWhereOrNull((element) =>
+                          element.id.toString() ==
+                          cartMap.entries.elementAt(0).key)!
+                      .productName),
               customerName: user.name!,
               cashReceiptType: cashReceiptType),
         ),

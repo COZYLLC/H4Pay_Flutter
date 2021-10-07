@@ -234,41 +234,41 @@ class SupportFormPageState extends State<SupportFormPage> {
                     onClick: () async {
                       if (_formKey.currentState!.validate()) {
                         final H4PayUser? user = await userFromStorage();
-                        if (file != null && user != null) {
+                        if (user != null) {
                           await _upload(
                             user.uid!,
                             user.email!,
                             title.text,
                             widget.type,
                             content.text,
-                            file!,
+                            file,
+                          );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SuccessPage(
+                                canGoBack: false,
+                                successText: "문의가 완료되었습니다.",
+                                title: "문의 완료",
+                                bottomDescription: [
+                                  Text("더 좋은 서비스를 위해 노력하겠습니다.")
+                                ],
+                                actions: [
+                                  H4PayButton(
+                                    text: "지원 페이지로 돌아가기",
+                                    onClick: () {
+                                      Navigator.pop(context);
+                                      Navigator.pop(context);
+                                    },
+                                    backgroundColor:
+                                        Theme.of(context).primaryColor,
+                                    width: double.infinity,
+                                  )
+                                ],
+                              ),
+                            ),
                           );
                         }
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SuccessPage(
-                              canGoBack: false,
-                              successText: "문의가 완료되었습니다.",
-                              title: "문의 완료",
-                              bottomDescription: [
-                                Text("더 좋은 서비스를 위해 노력하겠습니다.")
-                              ],
-                              actions: [
-                                H4PayButton(
-                                  text: "지원 페이지로 돌아가기",
-                                  onClick: () {
-                                    Navigator.pop(context);
-                                    Navigator.pop(context);
-                                  },
-                                  backgroundColor:
-                                      Theme.of(context).primaryColor,
-                                  width: double.infinity,
-                                )
-                              ],
-                            ),
-                          ),
-                        );
                       }
                     },
                     backgroundColor: Theme.of(context).primaryColor,
@@ -284,15 +284,10 @@ class SupportFormPageState extends State<SupportFormPage> {
   }
 
   Future<H4PayResult> _upload(String uid, String email, String title,
-      String category, String content, File img) async {
-    var stream = new http.ByteStream(DelegatingStream.typed(img.openRead()));
-    var length = await img.length();
-
+      String category, String content, File? img) async {
     var uri = Uri.parse("$API_URL/upload");
-
     var request = new http.MultipartRequest("POST", uri);
-    var multipartFile = new http.MultipartFile('img', stream, length,
-        filename: basename(img.path));
+
     request.fields.addAll({
       'uid': uid,
       'email': email,
@@ -300,11 +295,21 @@ class SupportFormPageState extends State<SupportFormPage> {
       'category': category,
       'content': content
     });
-    request.files.add(multipartFile);
+
+    if (img != null) {
+      var stream = new http.ByteStream(DelegatingStream.typed(img.openRead()));
+      var length = await img.length();
+      var multipartFile = new http.MultipartFile('img', stream, length,
+          filename: basename(img.path));
+      request.files.add(multipartFile);
+    }
+
     var response = await request.send();
+    print("[API] ${response.statusCode}");
     if (response.statusCode == 200) {
       final responseString = await response.stream.bytesToString();
       final jsonResponse = json.decode(responseString);
+      print(jsonResponse);
       return H4PayResult(
         success: jsonResponse['status'],
         data: jsonResponse['message'],
