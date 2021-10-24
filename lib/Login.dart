@@ -93,17 +93,21 @@ class LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 onClick: () async {
                   if (_loginFormKey.currentState!.validate()) {
-                    if (await _login(_idController.text, _pwController.text)) {
-                      final SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MyHomePage(
+                    final String? accessToken =
+                        await _login(_idController.text, _pwController.text);
+                    if (accessToken != null) {
+                      final H4PayUser? user = await tokenCheck(accessToken);
+                      if (user != null) {
+                        user.saveToStorage();
+                        final SharedPreferences prefs =
+                            await SharedPreferences.getInstance();
+                        navigateRoute(
+                          context,
+                          MyHomePage(
                             prefs: prefs,
                           ),
-                        ),
-                      );
+                        );
+                      }
                     } else {
                       showSnackbar(
                         context,
@@ -205,10 +209,9 @@ class LoginPageState extends State<LoginPage> {
     }
   }
  */
-  Future<bool> _login(String id, String pw) async {
+  Future<String?> _login(String id, String pw) async {
     final bytes = utf8.encode(pw);
     final digest = sha256.convert(bytes);
-    final _prefs = await SharedPreferences.getInstance();
     try {
       final response = await http
           .post(
@@ -221,30 +224,27 @@ class LoginPageState extends State<LoginPage> {
           'password': base64.encode(digest.bytes),
         }),
       )
-          .timeout(Duration(seconds: 3), onTimeout: () {
-        throw TimeoutException("timed out...");
-      });
+          .timeout(
+        Duration(seconds: 3),
+        onTimeout: () {
+          throw TimeoutException("timed out...");
+        },
+      );
       print("LOGIN TRY");
       if (response.statusCode == 200) {
         print("LOGIN STATUS TRUE");
         final jsonResponse = json.decode(response.body);
         if (jsonResponse['status']) {
-          print("JSON STATUS TRUE");
-          final H4PayUser? user = await tokenCheck(jsonResponse['accessToken']);
-          if (user != null) {
-            await user.saveToStorage();
-            return true;
-          } else {
-            return false;
-          }
+          final String? accessToken = jsonResponse['accessToken'];
+          return accessToken;
         } else {
-          return false;
+          return null;
         }
       } else {
-        return false;
+        return null;
       }
     } catch (e) {
-      return false;
+      return null;
     }
   }
 }

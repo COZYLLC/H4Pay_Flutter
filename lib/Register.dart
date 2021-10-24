@@ -6,9 +6,11 @@ import 'package:h4pay/Success.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/Util.dart';
 import 'package:h4pay/components/Button.dart';
+import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:h4pay/main.dart';
 import 'package:h4pay/mp.dart';
+import 'package:h4pay/validator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -63,57 +65,46 @@ class RegisterPageState extends State<RegisterPage> {
                     },
                   ),
                   TextFormField(
-                    controller: id,
-                    decoration: InputDecoration(labelText: "아이디"),
-                    textInputAction: TextInputAction.next,
-                    onEditingComplete: () {
-                      uidDuplicateCheck(id.text).then((value) {
-                        if (!value) {
-                          showCustomAlertDialog(
-                            context,
-                            "아아디 중복",
-                            [Text("이미 존재하는 아이디입니다.")],
-                            [
-                              H4PayButton(
-                                text: "확인",
-                                onClick: () {
-                                  Navigator.pop(context);
-                                },
-                                backgroundColor: Theme.of(context).primaryColor,
-                                width: double.infinity,
-                              )
-                            ],
-                            true,
-                          );
-                        } else {
-                          do {
-                            FocusScope.of(context).nextFocus();
-                          } while (FocusScope.of(context)
-                              .focusedChild!
-                              .context!
-                              .widget is! EditableText);
-                        }
-                      });
-                    },
-                    validator: (value) {
-                      final RegExp regExp = RegExp(r'^[A-za-z0-9]{5,15}$');
-                      return regExp.hasMatch(value!) ? null : "아이디가 올바르지 않습니다.";
-                    },
-                  ),
+                      controller: id,
+                      decoration: InputDecoration(labelText: "아이디"),
+                      textInputAction: TextInputAction.next,
+                      onEditingComplete: () {
+                        uidDuplicateCheck(id.text).then((value) {
+                          if (!value) {
+                            showCustomAlertDialog(
+                              context,
+                              "아아디 중복",
+                              [Text("이미 존재하는 아이디입니다.")],
+                              [
+                                H4PayButton(
+                                  text: "확인",
+                                  onClick: () {
+                                    Navigator.pop(context);
+                                  },
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
+                                  width: double.infinity,
+                                )
+                              ],
+                              true,
+                            );
+                          } else {
+                            do {
+                              FocusScope.of(context).nextFocus();
+                            } while (FocusScope.of(context)
+                                .focusedChild!
+                                .context!
+                                .widget is! EditableText);
+                          }
+                        });
+                      },
+                      validator: idValidator),
                   TextFormField(
-                    controller: pw,
-                    decoration: InputDecoration(labelText: "비밀번호"),
-                    textInputAction: TextInputAction.next,
-                    obscureText: true,
-                    validator: (value) {
-                      final RegExp regExp = RegExp(
-                        r'(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$',
-                      );
-                      return regExp.hasMatch(value!)
-                          ? null
-                          : "비밀번호는 영대소문자와 숫자, 특수문자를 포함해 8자 이상이어야 합니다.";
-                    },
-                  ),
+                      controller: pw,
+                      decoration: InputDecoration(labelText: "비밀번호"),
+                      textInputAction: TextInputAction.next,
+                      obscureText: true,
+                      validator: pwValidator),
                   TextFormField(
                     controller: pwCheck,
                     decoration: InputDecoration(labelText: "비밀번호 확인"),
@@ -162,27 +153,17 @@ class RegisterPageState extends State<RegisterPage> {
                           )
                         : Container(),
                   ),
-                  TextFormField(
-                    controller: email,
-                    decoration: InputDecoration(labelText: "이메일"),
-                    textInputAction: TextInputAction.next,
-                    validator: (value) {
-                      final RegExp regExp = RegExp(
-                          r'([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$');
-                      return regExp.hasMatch(value!) ? null : "이메일이 올바르지 않습니다.";
-                    },
-                  ),
+                  H4PayInput(
+                      title: "이메일",
+                      controller: email,
+                      isMultiLine: false,
+                      validator: emailValidator),
                   TextFormField(
                     controller: tel,
                     decoration: InputDecoration(labelText: "전화번호"),
                     textInputAction: TextInputAction.next,
                     keyboardType: TextInputType.phone,
-                    validator: (value) {
-                      final RegExp regExp = RegExp(r'^\d{3}-\d{4}-\d{4}$');
-                      return regExp.hasMatch(value!)
-                          ? null
-                          : "전화번호가 올바르지 않습니다.";
-                    },
+                    validator: telValidator,
                     inputFormatters: [
                       MultiMaskedTextInputFormatter(
                         masks: ['xxx-xxxx-xxxx', 'xxx-xxx-xxxx'],

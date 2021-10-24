@@ -6,6 +6,7 @@ import 'package:h4pay/Result.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Success.dart';
 import 'package:h4pay/User.dart';
+import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/main.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
@@ -145,7 +146,7 @@ class SupportFormPageState extends State<SupportFormPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  H4PayInput(
+                  H4PayInput.round(
                     title: "제목",
                     controller: title,
                     backgroundColor: Colors.grey[200]!,
@@ -159,7 +160,7 @@ class SupportFormPageState extends State<SupportFormPage> {
                     margin: EdgeInsets.symmetric(
                       vertical: 10,
                     ),
-                    child: H4PayInput(
+                    child: H4PayInput.round(
                       title: "문의 내용",
                       controller: content,
                       backgroundColor: Colors.grey[200]!,
@@ -317,71 +318,5 @@ class SupportFormPageState extends State<SupportFormPage> {
     } else {
       return H4PayResult(success: false, data: "서버 오류입니다.");
     }
-  }
-}
-
-class H4PayInput extends StatefulWidget {
-  final String title;
-  final TextEditingController controller;
-  final Color backgroundColor;
-  final Color borderColor;
-  final bool isMultiLine;
-  final String? Function(String?)? validator;
-  final int? minLines;
-
-  const H4PayInput(
-      {Key? key,
-      required this.title,
-      required this.controller,
-      required this.backgroundColor,
-      required this.borderColor,
-      required this.isMultiLine,
-      required this.validator,
-      this.minLines})
-      : super(key: key);
-  @override
-  H4PayInputState createState() => H4PayInputState();
-}
-
-class H4PayInputState extends State<H4PayInput> {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          widget.title,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-        ),
-        Container(
-          height: 10,
-        ),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: widget.backgroundColor,
-            borderRadius: BorderRadius.circular(38),
-            border: Border.all(
-              color: widget.borderColor,
-            ),
-          ),
-          child: TextFormField(
-            controller: widget.controller,
-            decoration: InputDecoration(
-              border: InputBorder.none,
-            ),
-            textInputAction: widget.isMultiLine
-                ? TextInputAction.newline
-                : TextInputAction.next,
-            keyboardType: widget.isMultiLine
-                ? TextInputType.multiline
-                : TextInputType.text,
-            maxLines: null,
-            minLines: widget.isMultiLine ? widget.minLines : 1,
-            validator: widget.validator,
-          ),
-        ),
-      ],
-    );
   }
 }

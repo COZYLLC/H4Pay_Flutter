@@ -58,11 +58,11 @@ Future<bool> connectionCheck() async {
 String getPrettyDateStr(String date, bool withTime) {
   if (withTime) {
     return dateFormat.format(
-      DateTime.parse(date),
+      DateTime.parse(date).toLocal(),
     );
   } else {
     return dateFormatNoTime.format(
-      DateTime.parse(date),
+      DateTime.parse(date).toLocal(),
     );
   }
 }
@@ -192,6 +192,10 @@ class H4PayDialog extends StatelessWidget {
         content: SingleChildScrollView(child: content),
         actions: actions);
   }
+}
+
+navigateRoute(BuildContext context, Widget widget) {
+  Navigator.push(context, MaterialPageRoute(builder: (context) => widget));
 }
 
 showDropdownAlertDialog(BuildContext context, String title, String userName,

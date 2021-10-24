@@ -22,11 +22,11 @@ import 'package:wakelock/wakelock.dart';
 class CardWidget extends StatefulWidget {
   final margin;
   final child;
-  final onClick;
+  final Function()? onClick;
   CardWidget({
     required this.margin,
     required this.child,
-    required this.onClick,
+    this.onClick,
   });
 
   @override
@@ -46,9 +46,7 @@ class _CardWidgetState extends State<CardWidget> {
       color: Colors.white,
       child: InkWell(
         borderRadius: BorderRadius.circular(23),
-        onTap: () {
-          widget.onClick();
-        },
+        onTap: widget.onClick,
         child: Container(
             padding: EdgeInsets.all(18),
             decoration: BoxDecoration(
@@ -590,7 +588,6 @@ class PurchaseCard extends StatelessWidget {
         ],
       ),
       margin: EdgeInsets.symmetric(vertical: 9.0, horizontal: 18.0),
-      onClick: null,
     );
   }
 }
