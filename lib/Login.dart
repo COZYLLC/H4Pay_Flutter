@@ -98,7 +98,7 @@ class LoginPageState extends State<LoginPage> {
                     if (accessToken != null) {
                       final H4PayUser? user = await tokenCheck(accessToken);
                       if (user != null) {
-                        user.saveToStorage();
+                        await user.saveToStorage();
                         final SharedPreferences prefs =
                             await SharedPreferences.getInstance();
                         navigateRoute(

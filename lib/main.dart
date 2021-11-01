@@ -24,17 +24,21 @@ import 'package:http/http.dart' as http;
 Future main() async {
   await dotenv.load(fileName: ".env");
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  loadApiUrl(prefs);
+  await loadApiUrl(prefs);
   runApp(MyApp(prefs));
 }
 
-loadApiUrl(SharedPreferences prefs) {
+loadApiUrl(SharedPreferences prefs) async {
   print(prefs.getString("API_URL"));
   if (prefs.getString("API_URL") == null || prefs.getString("API_URL") == "") {
     prefs.setString('API_URL', dotenv.env['API_URL']!);
     API_URL = dotenv.env['API_URL'];
   } else {
     API_URL = prefs.getString("API_URL");
+    if (!await connectionCheck()) {
+      prefs.setString('API_URL', dotenv.env['API_URL']!);
+      API_URL = dotenv.env['API_URL'];
+    }
   }
 }
 
