@@ -69,7 +69,7 @@ class H4PayInputState extends State<H4PayInput> {
     Container titleText = Container(
       margin: EdgeInsets.only(bottom: 10),
       child: Text(
-        widget.title!,
+        widget.title,
         style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
       ),
     );

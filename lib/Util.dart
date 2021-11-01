@@ -38,21 +38,44 @@ Future<bool> onBackPressed(BuildContext context, bool canGoBack) async {
 
 Future<bool> connectionCheck() async {
   final connStatus = await Connectivity().checkConnectivity();
+  print(API_URL!);
+  print(connStatus);
   if (connStatus == ConnectivityResult.mobile ||
       connStatus == ConnectivityResult.wifi) {
     try {
+      final host = parseHost(API_URL!);
+      print(host);
       final socket = await Socket.connect(
-        API_URL!.split(":")[1].split("//")[1],
-        int.parse(API_URL!.split(":")[2].split("/")[0]),
+        host['host'],
+        host['port'],
         timeout: Duration(seconds: 3),
       );
       socket.destroy();
       return true;
     } catch (e) {
+      print(e);
       return false;
     }
   }
   return false;
+}
+
+Map parseHost(String url) {
+  Map result = {
+    "host": "",
+    "port": "",
+  };
+  final splitedByColon = url.split(":");
+  if (splitedByColon.length > 2) {
+    // 포트가 있는 경우
+    result['host'] = splitedByColon[1].split("//")[1];
+    result['port'] = int.parse(splitedByColon[2].split("/")[0]);
+  } else {
+    // 포트가 없는 경우
+    result['host'] = splitedByColon[1].split("//")[1].split("/")[0];
+    result['port'] = splitedByColon[0] == "https" ? 443 : 80;
+  }
+  return result;
 }
 
 String getPrettyDateStr(String date, bool withTime) {
