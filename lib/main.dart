@@ -29,7 +29,6 @@ Future main() async {
 }
 
 loadApiUrl(SharedPreferences prefs) async {
-  print(prefs.getString("API_URL"));
   if (prefs.getString("API_URL") == null || prefs.getString("API_URL") == "") {
     prefs.setString('API_URL', dotenv.env['API_URL']!);
     API_URL = dotenv.env['API_URL'];
@@ -164,7 +163,6 @@ class MyHomePageState extends State<MyHomePage> {
 
   Future updateBadges() async {
     // calculate cart items, orders, gifts and set badge states.
-    print("[LOGIC] update badges");
     final H4PayUser? user = await userFromStorage();
     if (user == null) {
       showSnackbar(
