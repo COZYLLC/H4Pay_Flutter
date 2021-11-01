@@ -92,7 +92,6 @@ class CartState extends State<Cart> {
 
   loadCart() {
     final cartString = prefs.getString('cart');
-    print("[CART] $cartString");
     if (cartString != null) {
       setState(() {
         cartMap = json.decode(cartString);
@@ -251,7 +250,6 @@ class CartState extends State<Cart> {
     if (soldoutList != null) {
       var soldoutString = "";
       soldoutList.forEachIndexed((idx, element) {
-        print(element);
         soldoutString +=
             (element! + (idx + 1 == soldoutList.length ? "" : ", "));
       });

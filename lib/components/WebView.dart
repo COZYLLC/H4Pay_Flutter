@@ -88,19 +88,14 @@ class WebViewExampleState extends State<WebViewExample> {
           _webViewController = webViewController;
         },
         navigationDelegate: (request) async {
-          print("[WEBVIEW] ${request.url}");
-          // print("[WEBVIEW] ${request.url.startsWith("$url/payment/success")}");
           final appInfo = AppInfo(url: request.url);
-          print("${appInfo.isAppLink()} | ${appInfo.url}");
           if (appInfo.isAppLink()) {
             try {
               await appInfo.getAppInfo();
-              print(appInfo.appUrl);
               if (await canLaunch(appInfo.appUrl!)) {
                 launch(appInfo.appUrl!);
                 return NavigationDecision.prevent;
               } else {
-                print(appInfo.appUrl);
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {
@@ -129,11 +124,9 @@ class WebViewExampleState extends State<WebViewExample> {
                 return NavigationDecision.prevent;
               }
             } catch (e) {
-              print("cannot open app");
               return NavigationDecision.prevent;
             }
           } else if (request.url.startsWith("$url/paySuccess")) {
-            print("[WEBVIEW] PAYMENT SUCCESS");
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -156,14 +149,12 @@ class WebViewExampleState extends State<WebViewExample> {
   }
 
   Map _parseParams(String url) {
-    print("[API] $url");
     final params = url.split('?')[1].split("&");
     var parsedParams = {};
     for (var i = 0; i < 3; i++) {
       final param = params[i].split("=");
       parsedParams[param[0]] = param[1];
     }
-    print("[API] $parsedParams");
     return parsedParams;
   }
 }

@@ -73,9 +73,7 @@ class PurchaseListState extends State<PurchaseList> {
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               itemBuilder: (context, index) {
-                for (var i = 0; i < purchases.length; i++) {
-                  print(purchases[i].orderId);
-                }
+                for (var i = 0; i < purchases.length; i++) {}
                 return PurchaseCard(
                   purchase: purchases[index],
                   product: products.singleWhereOrNull(

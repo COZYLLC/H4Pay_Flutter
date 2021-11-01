@@ -10,8 +10,6 @@ import 'package:uni_links/uni_links.dart';
 
 Future<Widget?> appLinkToRoute(H4PayRoute route) async {
   if (route.route == 'giftView') {
-    print("gift route");
-
     final Gift? gift = await fetchGiftDetail(route.data);
     if (gift != null) {
       return PurchaseDetailPage(purchase: gift);
@@ -27,9 +25,7 @@ H4PayRoute parseUrl(String url) {
 
 registerListener(context) {
   StreamSubscription? _sub;
-  print("registered listener");
   _sub = linkStream.listen((String? link) async {
-    print("link listened");
     if (link != null) {
       final H4PayRoute route = parseUrl(link);
       final Widget? routeToNavigate = await appLinkToRoute(route);
@@ -56,7 +52,6 @@ Future<Widget?> initUniLinks(BuildContext context) async {
   H4PayRoute? route;
   try {
     final String? initialLink = await getInitialLink();
-    print(initialLink);
     if (initialLink != null) {
       route = parseUrl(initialLink);
     }

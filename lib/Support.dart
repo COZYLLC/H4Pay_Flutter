@@ -306,11 +306,9 @@ class SupportFormPageState extends State<SupportFormPage> {
     }
 
     var response = await request.send();
-    print("[API] ${response.statusCode}");
     if (response.statusCode == 200) {
       final responseString = await response.stream.bytesToString();
       final jsonResponse = json.decode(responseString);
-      print(jsonResponse);
       return H4PayResult(
         success: jsonResponse['status'],
         data: jsonResponse['message'],

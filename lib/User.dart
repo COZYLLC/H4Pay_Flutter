@@ -27,7 +27,6 @@ class H4PayUser {
   }
 
   Future<bool> saveToStorage() async {
-    print("[API] $token");
     try {
       await storage.deleteAll();
       await storage.write(key: 'uid', value: this.uid);
@@ -37,7 +36,6 @@ class H4PayUser {
       storage.write(key: 'token', value: this.token);
       return true;
     } catch (e) {
-      print("[ERROR] $e");
       return false;
     }
   }
@@ -65,7 +63,6 @@ Future<bool> uidDuplicateCheck(String uid) async {
   );
   if (response.statusCode == 200) {
     final jsonResponse = json.decode(response.body);
-    print(jsonResponse);
     final bool status = jsonResponse['status'];
     return status;
   } else {
@@ -183,7 +180,6 @@ Future<H4PayResult> createUser(
   );
   if (response.statusCode == 200) {
     final jsonResponse = json.decode(response.body);
-    print("[API] $jsonResponse");
     return H4PayResult(
         success: jsonResponse['status'], data: jsonResponse['message']);
   } else {

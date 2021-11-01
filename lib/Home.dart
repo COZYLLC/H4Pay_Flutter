@@ -190,8 +190,7 @@ class HomeState extends State<Home> {
     ); // 장바구니 데이터 Stringify 후 SharedPreference에 저장
     final MyHomePageState? parentState =
         context.findAncestorStateOfType<MyHomePageState>();
-    print(parentState!);
-    parentState.setState(() {
+    parentState!.setState(() {
       parentState.cartBadgeCount = countAllItemsInCart(cartMap);
     });
     if (!mounted) return;
@@ -261,7 +260,6 @@ class HomeState extends State<Home> {
             if (!_formKey.currentState!.validate()) {
               return;
             }
-            print("[GIFT] ${studentId.text}");
             final H4PayResult result = await checkUserValid(studentId.text);
             if (result.success) {
               _sendGift(

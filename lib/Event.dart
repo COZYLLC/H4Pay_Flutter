@@ -35,7 +35,6 @@ class Event extends Notice {
         );
 
   factory Event.fromList(Map<String, dynamic> json) {
-    //print(json);
     return Event(
       id: json['id'],
       title: json['name'],
@@ -60,7 +59,6 @@ Future<List<Event>?> fetchEvent() async {
       throw TimeoutException("timed out...");
     });
     if (response.statusCode == 200) {
-      print("request go");
       final jsonResponse = jsonDecode(response.body);
       if (jsonResponse['status']) {
         List events = jsonDecode(response.body)['result'];
@@ -86,7 +84,6 @@ Future<List<Event>?> fetchMatchEvent(String uid) async {
       throw TimeoutException("timed out...");
     });
     if (response.statusCode == 200) {
-      print("request go");
       final jsonResponse = jsonDecode(response.body);
       if (jsonResponse['status']) {
         List products = jsonDecode(response.body)['result'];

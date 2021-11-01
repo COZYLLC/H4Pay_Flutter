@@ -149,13 +149,10 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
   Future<Purchase?> _processPayment() async {
     _prefs = await SharedPreferences.getInstance();
     final H4PayUser? user = await userFromStorage();
-    print(user);
     if (user != null) {
       final Map<String, dynamic> tempPurchase =
           json.decode(_prefs!.getString('tempPurchase')!);
       final Map paymentData = widget.params;
-      print(tempPurchase['orderId']);
-      print(paymentData['orderId']);
 //     if (tempPurchase['orderId'] == paymentData['orderId']) {
       if (true) {
         final date = DateTime.now();
@@ -168,15 +165,11 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
         tempPurchase['paymentKey'] = paymentData['paymentKey'];
 
         if (tempPurchase['type'] == 'Order') {
-          print("order");
           tempPurchase['uid'] = user.uid;
           final order = Order.fromJson(tempPurchase);
           final H4PayResult createResult = await order.create();
-          print("[PAYMENT] $tempPurchase");
           if (createResult.success) {
-            print(_prefs);
             _prefs!.setString('cart', json.encode({}));
-            print("[PAYMENT] ${_prefs!.getString('cart')}");
             return order;
           } else {
             showSnackbar(
@@ -187,13 +180,8 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
           tempPurchase['extended'] = false;
           final gift = Gift.fromJson(tempPurchase);
           final H4PayResult createResult = await gift.create();
-          print("[PAYMENT] $tempPurchase");
-          print(createResult.success);
-          print(createResult.data);
           if (createResult.success) {
-            print(_prefs);
             _prefs!.setString('cart', json.encode({}));
-            print("[PAYMENT] ${_prefs!.getString('cart')}");
             return gift;
           } else {
             showSnackbar(

@@ -19,7 +19,6 @@ class Notice {
       required this.date});
 
   factory Notice.fromList(Map<String, dynamic> json) {
-    //print(json);
     return Notice(
       id: json['id'],
       title: json['title'],
@@ -40,7 +39,6 @@ Future<List<Notice>?> fetchNotice() async {
       throw TimeoutException("timed out...");
     });
     if (response.statusCode == 200) {
-      print("request go");
       final jsonResponse = jsonDecode(response.body);
       if (jsonResponse['status']) {
         List notice = jsonDecode(response.body)['result'];

@@ -43,7 +43,6 @@ class Order extends Purchase {
     final jsonBody = json.encode(
       toJson(this),
     );
-    print("[API] ${jsonBody}");
     try {
       final response = await http
           .post(
@@ -106,7 +105,6 @@ String genOrderId() {
 }
 
 Future<List<Order>?> fetchOrder(_uid) async {
-  print(API_URL);
   try {
     final response = await http
         .get(
@@ -132,7 +130,6 @@ Future<List<Order>?> fetchOrder(_uid) async {
 }
 
 Future<bool> cancelOrder(String orderId) async {
-  print(API_URL);
   try {
     final response = await http
         .get(

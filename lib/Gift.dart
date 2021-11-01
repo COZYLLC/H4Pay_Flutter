@@ -52,7 +52,6 @@ class Gift extends Purchase {
     final jsonBody = json.encode(
       toJson(this),
     );
-    print("[API] ${jsonBody} Creating");
     try {
       final response = await http
           .post(
@@ -68,10 +67,8 @@ class Gift extends Purchase {
           throw TimeoutException('timed out..');
         },
       );
-      print("done");
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
-        print("[API] $response");
         return H4PayResult(
             success: jsonResponse['status'], data: jsonResponse['message']);
       } else {
@@ -151,7 +148,6 @@ Future<Gift?> fetchGiftDetail(String orderId) async {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       if (jsonResponse['status']) {
-        print(jsonResponse);
         Map<String, dynamic> gift = jsonResponse['gift'];
         return Gift.fromJson(gift);
       } else {
@@ -191,7 +187,6 @@ Future<H4PayResult> checkUserValid(String studentId) async {
   final List<Map> studentList = [
     {'studentid': studentId}
   ];
-  print("[API] {'users': ${jsonEncode(studentList)}");
   try {
     final validResponse = await http.post(
       Uri.parse('$API_URL/gift/uservalid'),

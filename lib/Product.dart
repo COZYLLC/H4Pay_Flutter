@@ -21,7 +21,6 @@ class Product {
   });
 
   factory Product.fromList(Map<String, dynamic> json) {
-    //print(json);
     return Product(
         id: json['id'],
         desc: json['desc'],
@@ -33,7 +32,6 @@ class Product {
 }
 
 Future<List<Product>?> fetchProduct(String from) async {
-  print(from);
   final response = await http
       .get(
     Uri.parse('$API_URL/product'),
@@ -45,7 +43,6 @@ Future<List<Product>?> fetchProduct(String from) async {
     },
   );
   if (response.statusCode == 200) {
-    print("request go");
     final jsonResponse = jsonDecode(response.body);
     if (jsonResponse['status']) {
       List products = jsonDecode(response.body)['list'];

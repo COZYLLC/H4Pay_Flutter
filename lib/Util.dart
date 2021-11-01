@@ -38,13 +38,10 @@ Future<bool> onBackPressed(BuildContext context, bool canGoBack) async {
 
 Future<bool> connectionCheck() async {
   final connStatus = await Connectivity().checkConnectivity();
-  print(API_URL!);
-  print(connStatus);
   if (connStatus == ConnectivityResult.mobile ||
       connStatus == ConnectivityResult.wifi) {
     try {
       final host = parseHost(API_URL!);
-      print(host);
       final socket = await Socket.connect(
         host['host'],
         host['port'],
@@ -53,7 +50,6 @@ Future<bool> connectionCheck() async {
       socket.destroy();
       return true;
     } catch (e) {
-      print(e);
       return false;
     }
   }
@@ -268,8 +264,6 @@ showDropdownAlertDialog(BuildContext context, String title, String userName,
                       Duration(seconds: 1),
                     );
                     Navigator.pop(context);
-                    print(
-                        "$amount | $orderId | $orderName | $customerName | $cashReceiptType");
                     showBottomSheet(
                       context: context,
                       builder: (context) => WebViewExample(

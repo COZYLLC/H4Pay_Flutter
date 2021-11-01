@@ -61,8 +61,7 @@ class LoginPageState extends State<LoginPage> {
                       ),
                       validator: (value) {
                         final RegExp regExp = RegExp(r'^[A-za-z0-9]{5,15}$');
-                        print("[VALIDATOR] ${regExp.hasMatch(value!)}");
-                        if (!regExp.hasMatch(value)) {
+                        if (!regExp.hasMatch(value!)) {
                           return "아이디는 영소문자와 숫자를 포함해 5자 이상 19자 이하여아 합니다.";
                         } else {
                           return null;
@@ -137,10 +136,6 @@ class LoginPageState extends State<LoginPage> {
         'https://www.googleapis.com/auth/userinfo.profile',
       ]).signIn();
       if (account != null) {
-        print(account.id);
-        print(account.email);
-        print(account.displayName);
-        print(account.photoUrl);
         GoogleSignInAuthentication? authentication =
             await account.authentication;
         return await _googleLogin(authentication.idToken!);
@@ -148,7 +143,6 @@ class LoginPageState extends State<LoginPage> {
         return false;
       }
     } catch (error) {
-      print(error);
       return false;
     }
   }
@@ -163,12 +157,10 @@ class LoginPageState extends State<LoginPage> {
         //webAuthenticationOptions: WebAuthenticationOptions(clientId: clientId, redirectUri: redirectUri)
       );
 
-      print(credential);
       return true;
       // Now send the credential (especially `credential.authorizationCode`) to your server to create a session
       // after they have been validated with Apple (see `Integration` section for more information on how to do this)
     } catch (e) {
-      print(e);
       return false;
     }
   }
@@ -186,7 +178,6 @@ class LoginPageState extends State<LoginPage> {
     );
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
-      print("[API] $jsonResponse");
       if (jsonResponse['verified']) {
         if (jsonResponse['existUser']) {
           final H4PayUser? user = await tokenCheck(jsonResponse['accessToken']);
@@ -230,9 +221,7 @@ class LoginPageState extends State<LoginPage> {
           throw TimeoutException("timed out...");
         },
       );
-      print("LOGIN TRY");
       if (response.statusCode == 200) {
-        print("LOGIN STATUS TRUE");
         final jsonResponse = json.decode(response.body);
         if (jsonResponse['status']) {
           final String? accessToken = jsonResponse['accessToken'];
