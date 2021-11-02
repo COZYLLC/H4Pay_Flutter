@@ -22,7 +22,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 Future main() async {
-  await dotenv.load(fileName: ".env");
+  if (kReleaseMode) {
+    await dotenv.load(fileName: ".env");
+  } else {
+    await dotenv.load(fileName: ".env.development");
+  }
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await loadApiUrl(prefs);
   runApp(MyApp(prefs));
