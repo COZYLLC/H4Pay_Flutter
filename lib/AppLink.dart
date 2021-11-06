@@ -19,21 +19,33 @@ Future<Widget?> appLinkToRoute(H4PayRoute route) async {
   }
 }
 
-H4PayRoute parseUrl(String url) {
-  return H4PayRoute(route: url.split("/")[3], data: url.split("/")[4]);
+H4PayRoute? parseUrl(String url) {
+  if (url.startsWith("https://")) {
+    return H4PayRoute(route: url.split("/")[3], data: url.split("/")[4]);
+  } else if (url.startsWith("h4pay://")) {
+    print(url);
+    final String routeWithoutProtocol = url.split("//")[1];
+    return H4PayRoute(
+      route: routeWithoutProtocol.split("/")[0],
+      data: routeWithoutProtocol.split("/")[1],
+    );
+  }
+  return null;
 }
 
 registerListener(context) {
   StreamSubscription? _sub;
   _sub = linkStream.listen((String? link) async {
     if (link != null) {
-      final H4PayRoute route = parseUrl(link);
-      final Widget? routeToNavigate = await appLinkToRoute(route);
-      if (routeToNavigate != null) {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => routeToNavigate));
-      } else {
-        throw Error();
+      final H4PayRoute? route = parseUrl(link);
+      if (route != null) {
+        final Widget? routeToNavigate = await appLinkToRoute(route);
+        if (routeToNavigate != null) {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => routeToNavigate));
+        } else {
+          throw Error();
+        }
       }
     }
   }, onError: (err) {
