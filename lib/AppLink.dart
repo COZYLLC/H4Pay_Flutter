@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -6,7 +7,9 @@ import 'package:h4pay/Gift.dart';
 import 'package:h4pay/IntroPage.dart';
 import 'package:h4pay/PurchaseDetail.dart';
 import 'package:h4pay/Util.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:wakelock/wakelock.dart';
 
 Future<Widget?> appLinkToRoute(H4PayRoute route) async {
   if (route.route == 'giftView') {
@@ -23,7 +26,6 @@ H4PayRoute? parseUrl(String url) {
   if (url.startsWith("https://")) {
     return H4PayRoute(route: url.split("/")[3], data: url.split("/")[4]);
   } else if (url.startsWith("h4pay://")) {
-    print(url);
     final String routeWithoutProtocol = url.split("//")[1];
     return H4PayRoute(
       route: routeWithoutProtocol.split("/")[0],
@@ -41,8 +43,13 @@ registerListener(context) {
       if (route != null) {
         final Widget? routeToNavigate = await appLinkToRoute(route);
         if (routeToNavigate != null) {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => routeToNavigate));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => routeToNavigate),
+          ).then((value) async {
+            await ScreenBrightness.resetScreenBrightness();
+            await Wakelock.toggle(enable: false);
+          });
         } else {
           throw Error();
         }

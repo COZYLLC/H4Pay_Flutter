@@ -24,7 +24,7 @@
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
         <data android:scheme="https" android:host="h4pay.co.kr" android:pathPrefix="/"></data>
-        <data android:scheme="h4pay"></data>
+        <data android:scheme="h4pay" android:host="giftView"></data>
       </intent-filter>
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
