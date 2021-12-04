@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:h4pay/Purchase.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/Setting.dart';
@@ -139,12 +140,16 @@ Future<List<Gift>?> fetchGift(_uid) async {
 }
 
 Future<Gift?> fetchGiftDetail(String orderId) async {
+  debugPrint(orderId);
+  debugPrint(API_URL);
   try {
     final response = await http
         .get(Uri.parse('$API_URL/gift/findbyorderid/$orderId'))
         .timeout(Duration(seconds: 3), onTimeout: () {
       throw TimeoutException("timed out...");
     });
+    debugPrint(response.body);
+    debugPrint(response.statusCode.toString());
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       if (jsonResponse['status']) {
