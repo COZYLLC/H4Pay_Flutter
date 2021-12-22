@@ -461,7 +461,7 @@ class PurchaseCard extends StatelessWidget {
     final isReceiver = purchase.uidto == uid;
     final isValid = !isPassedExpire(purchase.expire) && !purchase.exchanged;
     final canUse = !isGift || isReceiver;
-    final isNotExtended = !purchase.extended!;
+    final isNotExtended = isGift && !purchase.extended!;
     final isUsable = isValid && canUse;
 
     final Expanded useButton = Expanded(
@@ -519,7 +519,7 @@ class PurchaseCard extends StatelessWidget {
           },
         );
       },
-      backgroundColor: purchase.extended! || !isReceiver
+      backgroundColor: isGift && (purchase.extended! || !isReceiver)
           ? Colors.grey[400]!
           : Theme.of(context).primaryColor,
       width: MediaQuery.of(context).size.width * 0.4,
