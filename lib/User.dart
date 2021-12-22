@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class H4PayUser {
   String? uid;
@@ -38,6 +40,43 @@ class H4PayUser {
     } catch (e) {
       return false;
     }
+  }
+}
+
+Future<String?> login(String id, String pw) async {
+  final bytes = utf8.encode(pw);
+  final digest = sha256.convert(bytes);
+  try {
+    final response = await http
+        .post(
+      Uri.parse("$API_URL/users/login"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: json.encode({
+        'uid': id,
+        'password': base64.encode(digest.bytes),
+      }),
+    )
+        .timeout(
+      Duration(seconds: 3),
+      onTimeout: () {
+        throw TimeoutException("timed out...");
+      },
+    );
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      if (jsonResponse['status']) {
+        final String? accessToken = jsonResponse['accessToken'];
+        return accessToken;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  } catch (e) {
+    return null;
   }
 }
 
@@ -210,5 +249,72 @@ Future<H4PayResult> withdraw(
         success: jsonResponse['status'], data: jsonResponse['message']);
   } else {
     return H4PayResult(success: false, data: "서버 오류입니다.");
+  }
+}
+
+Future<H4PayResult> findId(String name, String email) async {
+  final _prefs = await SharedPreferences.getInstance();
+  try {
+    final response = await http
+        .post(
+      Uri.parse("$API_URL/users/find/uid"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: json.encode({
+        "name": name,
+        "email": email,
+      }),
+    )
+        .timeout(Duration(seconds: 3), onTimeout: () {
+      throw TimeoutException("timed out...");
+    });
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return H4PayResult(
+        success: jsonResponse['status'],
+        data: jsonResponse['message'],
+      );
+    } else {
+      return H4PayResult(
+        success: false,
+        data: "서버 오류입니다.",
+      );
+    }
+  } catch (e) {
+    return H4PayResult(
+        success: false, data: "서버 응답 시간이 초과되었습니다. 인터넷 연결을 확인하세요.");
+  }
+}
+
+Future<H4PayResult> findPw(String name, String email, String uid) async {
+  final _prefs = await SharedPreferences.getInstance();
+  try {
+    final response = await http
+        .post(
+      Uri.parse("$API_URL/users/find/password"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: json.encode({"name": name, "email": email, "uid": uid}),
+    )
+        .timeout(Duration(seconds: 3), onTimeout: () {
+      throw TimeoutException("timed out...");
+    });
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return H4PayResult(
+        success: jsonResponse['status'],
+        data: jsonResponse['message'],
+      );
+    } else {
+      return H4PayResult(
+        success: false,
+        data: "서버 오류입니다.",
+      );
+    }
+  } catch (e) {
+    return H4PayResult(
+        success: false, data: "서버 응답 시간이 초과되었습니다. 인터넷 상태를 확인하세요.");
   }
 }

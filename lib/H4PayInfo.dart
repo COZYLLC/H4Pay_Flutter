@@ -1,13 +1,13 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Seller.dart';
 import 'package:h4pay/Util.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/components/WebView.dart';
+import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/main.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info/package_info.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HyperLinkText extends StatelessWidget {
   final String text;
@@ -147,19 +147,15 @@ class H4PayInfoPageState extends State {
                             if (infos[index]['type'] == "alert") {
                               showCustomAlertDialog(
                                 context,
-                                infos[index]['text'],
-                                infos[index]['content'],
-                                [
-                                  H4PayButton(
-                                    text: "닫기",
-                                    onClick: () {
-                                      Navigator.pop(context);
-                                    },
-                                    backgroundColor:
-                                        Theme.of(context).primaryColor,
-                                    width: double.infinity,
-                                  )
-                                ],
+                                H4PayDialog(
+                                  title: infos[index]['text'],
+                                  content: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: infos[index]['content'],
+                                  ),
+                                  actions: [H4PayCloseButton(context: context)],
+                                ),
                                 true,
                               );
                             } else if (infos[index]['type'] == "route") {

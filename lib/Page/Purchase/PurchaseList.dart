@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/Gift.dart';
-import 'package:h4pay/Order.dart';
+import 'package:h4pay/Purchase/Gift.dart';
+import 'package:h4pay/Purchase/Order.dart';
 import 'package:h4pay/Product.dart';
-import 'package:h4pay/Purchase.dart';
+import 'package:h4pay/Purchase/Purchase.dart';
 import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/User.dart';
 import 'package:collection/collection.dart';
@@ -11,13 +11,16 @@ import 'package:h4pay/main.dart';
 class PurchaseList extends StatefulWidget {
   final Type type;
   final bool appBar;
-  PurchaseList({required this.type, required this.appBar});
+  final String title;
+  PurchaseList({required this.type, required this.appBar, required this.title});
   @override
-  PurchaseListState createState() => PurchaseListState();
+  PurchaseListState createState() => PurchaseListState(title: title);
 }
 
 class PurchaseListState extends State<PurchaseList> {
   int componentKey = 0;
+  final String title;
+  PurchaseListState({required this.title});
 
   Future<Map> _loadThings() async {
     final H4PayUser? user = await userFromStorage();
@@ -36,11 +39,6 @@ class PurchaseListState extends State<PurchaseList> {
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.type == Order
-        ? "주문 내역"
-        : widget.type == Gift
-            ? "받은 선물"
-            : "선물 발송 내역";
     return ListPage(
       withAppBar: true,
       appBarTitle: title,
@@ -73,7 +71,6 @@ class PurchaseListState extends State<PurchaseList> {
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               itemBuilder: (context, index) {
-                for (var i = 0; i < purchases.length; i++) {}
                 return PurchaseCard(
                   purchase: purchases[index],
                   product: products.singleWhereOrNull(

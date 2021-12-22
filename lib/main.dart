@@ -5,18 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Cart.dart';
-import 'package:h4pay/Event.dart';
 import 'package:h4pay/IntroPage.dart';
 import 'package:h4pay/NoticeList.dart';
-import 'package:h4pay/Gift.dart';
+import 'package:h4pay/Purchase/Gift.dart';
 import 'package:h4pay/Home.dart';
 import 'package:h4pay/MyPage.dart';
-import 'package:h4pay/Order.dart';
+import 'package:h4pay/Purchase/Order.dart';
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Support.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Connection.dart';
+import 'package:h4pay/Voucher.dart';
 import 'package:h4pay/creatematerialcolor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -41,13 +42,18 @@ loadApiUrl(SharedPreferences prefs) async {
     await connectionCheck(); // 연결 체크 진행
   } else {
     // pref에 저장된 URL이 있으면
+    print(prefs.getString("API_URL"));
+    print(dotenv.env['API_URL']);
     if (prefs.getString("API_URL") != dotenv.env['API_URL']) {
       // env에서 가져온 것과 현재 prefs에 저장된 것이 다르면
+      final String tempUrl = prefs.getString('API_URL')!;
       API_URL = dotenv.env['API_URL']; // env에서 가져와 임시 URL로 설정 후
       if (!await connectionCheck()) {
-        prefs.setString("API_URL", API_URL!);
+        print("API: $API_URL");
+        prefs.setString("API_URL", tempUrl);
         API_URL = prefs.getString("API_URL");
-      } // 연결체크 후 작동하지 않으면 prefs에 저장한 것으로 유지.
+        // 연결체크 후 작동하지 않으면 prefs에 저장한 것으로 유지.
+      }
     } else {
       API_URL = prefs.getString("API_URL"); //API_URL에 prefs에 저장된 URL 대입
       if (!await connectionCheck()) {
@@ -157,8 +163,9 @@ class MyHomePageState extends State<MyHomePage> {
 
   int giftBadgeCount = 0;
   int accountBadgeCount = 0;
+  int voucherBadgeCount = 0;
   int cartBadgeCount = 0;
-  Map<String, int> badges = {'order': 0, 'gift': 0};
+  Map<String, int> badges = {'order': 0, 'gift': 0, 'voucher': 0};
   String _title = "H4Pay";
   Future? _fetchStoreStatus;
 
@@ -180,7 +187,7 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   Future updateBadges() async {
-    // calculate cart items, orders, gifts and set badge states.
+    // calculate cart items, orders, gifts, vouchers and set badge states.
     final H4PayUser? user = await userFromStorage();
     if (user == null) {
       showSnackbar(
@@ -194,27 +201,36 @@ class MyHomePageState extends State<MyHomePage> {
     }
     final orders = await fetchOrder(user.uid);
     final gifts = await fetchGift(user.uid);
+    final vouchers = await fetchVouchers(user.uid!);
 
     int orderCount = 0;
     int giftCount = 0;
+    int voucherCount = 0;
     if (orders != null) {
       orders.forEach(
         (order) => {
-          if (!order.exchanged) {orderCount++},
+          if (!order.exchanged) orderCount++,
         },
       );
     }
     if (gifts != null) {
       gifts.forEach(
-        (gift) => {
-          if (!gift.exchanged && gift.uidto == user.uid) {giftCount++}
-        },
+        (gift) => {if (!gift.exchanged && gift.uidto == user.uid) giftCount++},
       );
+    }
+    if (vouchers != null) {
+      vouchers.forEach((voucher) => {
+            if (!voucher.exchanged &&
+                DateTime.parse(voucher.expire).millisecondsSinceEpoch >
+                    DateTime.now().millisecondsSinceEpoch)
+              voucherCount++
+          });
     }
     setState(() {
       badges['order'] = orderCount;
       badges['gift'] = giftCount;
-      accountBadgeCount = orderCount + giftCount;
+      badges['voucher'] = voucherCount;
+      accountBadgeCount = orderCount + giftCount + voucherCount;
     });
     final cartString = prefs.getString('cart'); // SharedPrefernce에서 장바구니 로드
     if (cartString != null) {
@@ -236,10 +252,7 @@ class MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     List<Widget?> _children = [
       SupportPage(),
-      NoticeListPage(
-        type: Event,
-        withAppBar: false,
-      ),
+      EventListPage(),
       Home(prefs),
       Cart(prefs),
       MyPage(prefs: prefs, badges: badges)

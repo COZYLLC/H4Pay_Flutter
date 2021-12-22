@@ -1,23 +1,24 @@
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Cart.dart';
 import 'package:h4pay/Event.dart';
-import 'package:h4pay/Gift.dart';
+import 'package:h4pay/Page/Voucher/VoucherView.dart';
+import 'package:h4pay/Purchase/Gift.dart';
 import 'package:h4pay/Home.dart';
 import 'package:h4pay/Notice.dart';
-import 'package:h4pay/Order.dart';
-import 'package:h4pay/Purchase.dart';
-import 'package:h4pay/PurchaseDetail.dart';
+import 'package:h4pay/Purchase/Order.dart';
+import 'package:h4pay/Purchase/Purchase.dart';
+import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
 import 'package:h4pay/Product.dart';
-import 'package:h4pay/PurchaseList.dart';
+import 'package:h4pay/Page/Purchase/PurchaseList.dart';
+import 'package:h4pay/Util/Wakelock.dart';
+import 'package:h4pay/Voucher.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/Util.dart';
 import 'package:blur/blur.dart';
-import 'package:screen_brightness/screen_brightness.dart';
-import 'package:wakelock/wakelock.dart';
+import 'package:h4pay/dialog/Event.dart';
+import 'package:h4pay/dialog/Notice.dart';
+import 'package:h4pay/Util/Beautifier.dart';
 
 class CardWidget extends StatefulWidget {
   final margin;
@@ -100,8 +101,8 @@ class AlertCard extends StatelessWidget {
 class ProductCard extends StatefulWidget {
   final Product product;
   bool isClicked;
-  final cartOnClick;
-  final giftOnClick;
+  final Function(int) cartOnClick;
+  final Function() giftOnClick;
 
   ProductCard(
       {required this.product,
@@ -281,7 +282,6 @@ class CartCardState extends State<CartCard> {
   @override
   Widget build(BuildContext context) {
     CartState? parentState = context.findAncestorStateOfType<CartState>();
-    var cartMap = parentState!.cartMap;
     return CardWidget(
       margin: EdgeInsets.symmetric(vertical: 9),
       onClick: () {},
@@ -316,7 +316,8 @@ class CartCardState extends State<CartCard> {
                           child: IconButton(
                             onPressed: () {
                               if (widget.qty != 1) {
-                                parentState.decrementCounter(widget.product.id);
+                                parentState!
+                                    .decrementCounter(widget.product.id);
                               }
                             },
                             icon: Icon(Icons.remove),
@@ -328,7 +329,7 @@ class CartCardState extends State<CartCard> {
                         Expanded(
                           child: IconButton(
                             onPressed: () {
-                              parentState.incrementCounter(widget.product.id);
+                              parentState!.incrementCounter(widget.product.id);
                             },
                             icon: Icon(Icons.add),
                           ),
@@ -340,7 +341,7 @@ class CartCardState extends State<CartCard> {
               ),
               TextButton(
                 onPressed: () {
-                  parentState.setState(() {
+                  parentState!.setState(() {
                     parentState.cartMap.remove('${widget.product.id}');
                   });
                   parentState.updateCart();
@@ -404,22 +405,133 @@ class PurchaseCard extends StatelessWidget {
       required this.uid})
       : super(key: key);
 
+  _cancel(context) async {
+    final isCanceled = await cancelOrder(purchase.orderId);
+    if (isCanceled) {
+      showSnackbar(
+        context,
+        "취소 처리 되었습니다.",
+        Colors.green,
+        Duration(seconds: 1),
+      );
+      PurchaseListState? parentState =
+          context.findAncestorStateOfType<PurchaseListState>();
+      parentState!.setState(() {
+        parentState.componentKey++;
+      });
+    } else {
+      showSnackbar(
+        context,
+        "취소 처리에 실패했습니다.",
+        Colors.red,
+        Duration(seconds: 1),
+      );
+    }
+    Navigator.pop(context, "OK");
+  }
+
+  _extend(context) async {
+    final extendRes = await (purchase as Gift).extend();
+    if (extendRes.success) {
+      PurchaseListState? parentState =
+          context.findAncestorStateOfType<PurchaseListState>();
+      parentState!.setState(() {
+        parentState.componentKey++;
+      });
+      showSnackbar(
+        context,
+        "기간 연장이 완료되었습니다!",
+        Colors.green,
+        Duration(seconds: 1),
+      );
+    } else {
+      showSnackbar(
+        context,
+        extendRes.data,
+        Colors.red,
+        Duration(seconds: 1),
+      );
+    }
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isGift = purchase.uid == null;
     final isReceiver = purchase.uidto == uid;
-    final isUsable = !checkExpire(purchase.expire) && !purchase.exchanged;
+    final isValid = !isPassedExpire(purchase.expire) && !purchase.exchanged;
+    final canUse = !isGift || isReceiver;
+    final isNotExtended = !purchase.extended!;
+    final isUsable = isValid && canUse;
+
+    final Expanded useButton = Expanded(
+      flex: 8,
+      child: H4PayButton(
+        text: "사용 하기",
+        onClick: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PurchaseDetailPage(
+                purchase: purchase,
+              ),
+            ),
+          ).then(disableWakeLock);
+        },
+        backgroundColor: !isGift || isReceiver
+            ? Theme.of(context).primaryColor
+            : Colors.grey[400]!,
+        width: MediaQuery.of(context).size.width * 0.4,
+      ),
+    );
+
+    final H4PayButton cancelButton = H4PayButton(
+      // 주문취소가 가능함.
+      text: "주문 취소",
+      width: MediaQuery.of(context).size.width * 0.4,
+      onClick: () {
+        showAlertDialog(
+          context,
+          "주문 취소",
+          "주문을 취소하시겠습니까?\n결제한 금액은 환불됩니다.",
+          () => _cancel(context),
+          () => Navigator.pop(context),
+        );
+      },
+      backgroundColor: Colors.red,
+    );
+
+    final H4PayButton extendButton = H4PayButton(
+      // 주문취소가 불가능한 대신, 기간 연장이 가능함.
+      text: "기간 연장",
+      onClick: () {
+        // 연장되지 않았고 수신인 기간 연장을 시도했으면
+        showAlertDialog(
+          // 의사 물은 후 연장 함수 호출
+          context,
+          "기간 연장",
+          "기간을 연장하면 환불이 불가합니다.\n정말로 기간을 연장하시겠습니까?",
+          () {
+            _extend(context);
+          },
+          () {
+            Navigator.pop(context);
+          },
+        );
+      },
+      backgroundColor: purchase.extended! || !isReceiver
+          ? Colors.grey[400]!
+          : Theme.of(context).primaryColor,
+      width: MediaQuery.of(context).size.width * 0.4,
+    );
+
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "No. ${purchase.orderId}",
-            style: TextStyle(fontWeight: FontWeight.w700),
-          ),
-          Text(
-            getPrettyDateStr(purchase.date, true),
-          ),
+          Text("No. ${purchase.orderId}",
+              style: TextStyle(fontWeight: FontWeight.w700)),
+          Text(getPrettyDateStr(purchase.date, true)),
           Divider(color: Colors.black),
           WideCardScaffold(
             imageUrl: product.img,
@@ -428,30 +540,14 @@ class PurchaseCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      getProductName(purchase.item, product.productName),
-                    ),
-                    Text(
-                      getPrettyAmountStr(purchase.amount),
-                    ),
-                    Text(
-                      getPrettyDateStr(purchase.expire, true) + " 까지",
-                    ),
-                    (isGift == false)
-                        ? Text(
-                            purchase.exchanged ? "교환됨" : "",
-                            style: TextStyle(
-                              color: Colors.red,
-                            ),
-                          )
+                    Text(getProductName(purchase.item, product.productName)),
+                    Text(getPrettyAmountStr(purchase.amount)),
+                    Text(getPrettyDateStr(purchase.expire, true) + " 까지"),
+                    (purchase.exchanged)
+                        ? Text("교환됨", style: TextStyle(color: Colors.red))
                         : Container(),
-                    (isGift == true && !purchase.exchanged)
-                        ? Text(
-                            checkExpire(purchase.expire) ? "만료됨" : "",
-                            style: TextStyle(
-                              color: Colors.red,
-                            ),
-                          )
+                    isPassedExpire(purchase.expire)
+                        ? Text("만료됨", style: TextStyle(color: Colors.red))
                         : Container(),
                   ],
                 ),
@@ -459,128 +555,24 @@ class PurchaseCard extends StatelessWidget {
             ],
           ),
           Container(
-            child: isUsable //만료되지 않았고 교환되지 않은 것
+            child: isValid //만료되지 않았고 교환되지 않은 것
                 ? Row(
-                    // 모두
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      isUsable // 만료되지 않았고 일반 주문이거나 수신자이면
+                          ? useButton
+                          : Container(),
                       Expanded(
                         flex: 8,
-                        child: H4PayButton(
-                          text: "사용 하기",
-                          onClick: () {
-                            if (!checkExpire(purchase.expire)) {
-                              if (!isGift || isReceiver) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PurchaseDetailPage(
-                                      purchase: purchase,
-                                    ),
-                                  ),
-                                ).then((value) async {
-                                  await ScreenBrightness
-                                      .resetScreenBrightness();
-                                  await Wakelock.toggle(enable: false);
-                                });
-                              }
-                            }
-                          },
-                          backgroundColor: !isGift || isReceiver
-                              ? Theme.of(context).primaryColor
-                              : Colors.grey[400]!,
-                          width: MediaQuery.of(context).size.width * 0.4,
+                        child: Container(
+                          margin: EdgeInsets.only(left: 10),
+                          child: !isGift // 일반 주문일 경우에
+                              ? cancelButton
+                              : isNotExtended & isReceiver
+                                  ? extendButton
+                                  : Container(),
                         ),
-                      ),
-                      Expanded(child: Container(), flex: 1),
-                      Expanded(
-                        flex: 8,
-                        child: !isGift // 일반선물
-                            ? H4PayButton(
-                                text: "주문 취소",
-                                width: MediaQuery.of(context).size.width * 0.4,
-                                onClick: () {
-                                  showAlertDialog(context, "주문 취소",
-                                      "주문을 취소하시겠습니까?\n결제한 금액은 환불됩니다.",
-                                      () async {
-                                    final isCanceled =
-                                        await cancelOrder(purchase.orderId);
-                                    if (isCanceled) {
-                                      showSnackbar(
-                                        context,
-                                        "취소 처리 되었습니다.",
-                                        Colors.green,
-                                        Duration(
-                                          seconds: 1,
-                                        ),
-                                      );
-                                      PurchaseListState? parentState =
-                                          context.findAncestorStateOfType<
-                                              PurchaseListState>();
-                                      parentState!.setState(() {
-                                        parentState.componentKey++;
-                                      });
-                                    } else {
-                                      showSnackbar(
-                                        context,
-                                        "취소 처리에 실패했습니다.",
-                                        Colors.red,
-                                        Duration(
-                                          seconds: 1,
-                                        ),
-                                      );
-                                    }
-                                    Navigator.pop(context, "OK");
-                                  }, () {
-                                    Navigator.pop(context, "Cancel");
-                                  });
-                                },
-                                backgroundColor: Colors.red,
-                              )
-                            : H4PayButton(
-                                text: "기간 연장",
-                                onClick: () {
-                                  if (!purchase.extended! &&
-                                      purchase.uidfrom != uid) {
-                                    showAlertDialog(context, "기간 연장",
-                                        "기간을 연장하면 환불이 불가합니다.\n정말로 기간을 연장하시겠습니까?",
-                                        () async {
-                                      final extendRes =
-                                          await (purchase as Gift).extend();
-                                      if (extendRes.success) {
-                                        PurchaseListState? parentState =
-                                            context.findAncestorStateOfType<
-                                                PurchaseListState>();
-                                        parentState!.setState(() {
-                                          parentState.componentKey++;
-                                        });
-                                        showSnackbar(
-                                          context,
-                                          "기간 연장이 완료되었습니다!",
-                                          Colors.green,
-                                          Duration(seconds: 1),
-                                        );
-                                      } else {
-                                        showSnackbar(
-                                          context,
-                                          extendRes.data,
-                                          Colors.red,
-                                          Duration(seconds: 1),
-                                        );
-                                      }
-                                      Navigator.pop(context);
-                                    }, () {
-                                      Navigator.pop(context);
-                                    });
-                                  }
-                                },
-                                backgroundColor: purchase.extended! ||
-                                        purchase.uidfrom == uid
-                                    ? Colors.grey[400]!
-                                    : Theme.of(context).primaryColor,
-                                width: MediaQuery.of(context).size.width * 0.4,
-                              ),
-                      ),
+                      )
                     ],
                   )
                 : Container(),
@@ -627,8 +619,61 @@ class EventCard extends StatelessWidget {
         ],
       ),
       onClick: () {
-        showEventCard(context, event);
+        showCustomAlertDialog(
+          context,
+          EventDialog(context: context, event: event),
+          true,
+        );
       },
+    );
+  }
+}
+
+class VoucherCard extends StatelessWidget {
+  final Voucher voucher;
+  final Product? product;
+  VoucherCard({
+    required this.voucher,
+    this.product,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CardWidget(
+      margin: null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "No. ${voucher.id}",
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          Text(getPrettyDateStr(voucher.date, true)),
+          Divider(color: Colors.black),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("${voucher.issuer['name']} 님이 발송한 선물"),
+              Text(getPrettyAmountStr(voucher.amount)),
+            ],
+          ),
+          Text(getPrettyDateStr(voucher.expire, true) + " 까지"),
+          H4PayButton(
+            text: "사용 하기",
+            onClick: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (BuildContext context) =>
+                      VoucherDetailPage(voucher: voucher),
+                ),
+              ).then(disableWakeLock);
+            },
+            backgroundColor: Theme.of(context).primaryColor,
+            width: double.infinity,
+          )
+        ],
+      ),
     );
   }
 }
@@ -671,70 +716,15 @@ class NoticeCard extends StatelessWidget {
         ],
       ),
       onClick: () {
-        showNoticeCard(context, notice);
+        showCustomAlertDialog(
+          context,
+          NoticeDialog(
+            context: context,
+            notice: notice,
+          ),
+          true,
+        );
       },
     );
   }
-}
-
-void showNoticeCard(BuildContext context, Notice notice) {
-  showCustomAlertDialog(
-      context,
-      notice.title,
-      [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CachedNetworkImage(imageUrl: notice.img),
-            Container(
-              height: 30,
-            ),
-            Text(notice.content.replaceAll("\\n", "\n")),
-            Text(getPrettyDateStr(notice.date, false))
-          ],
-        ),
-      ],
-      [
-        H4PayButton(
-          text: "닫기",
-          onClick: () {
-            Navigator.pop(context);
-          },
-          backgroundColor: Theme.of(context).primaryColor,
-          width: double.infinity,
-        )
-      ],
-      true);
-}
-
-void showEventCard(BuildContext context, Event event) {
-  showCustomAlertDialog(
-      context,
-      event.title,
-      [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CachedNetworkImage(imageUrl: event.img),
-            Container(
-              height: 30,
-            ),
-            Text("${getPrettyAmountStr(event.price)} 할인"),
-            Text(
-                "${getPrettyDateStr(event.start, false)} ~ ${getPrettyDateStr(event.end, false)}"),
-            Text(event.content.replaceAll("\\n", "\n")),
-          ],
-        ),
-      ],
-      [
-        H4PayButton(
-          text: "닫기",
-          onClick: () {
-            Navigator.pop(context);
-          },
-          backgroundColor: Theme.of(context).primaryColor,
-          width: double.infinity,
-        )
-      ],
-      true);
 }

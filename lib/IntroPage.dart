@@ -1,21 +1,20 @@
-import 'dart:async';
 import 'dart:io';
-import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/AppLink.dart';
-import 'package:h4pay/Gift.dart';
 import 'package:h4pay/Login.dart';
-import 'package:h4pay/PurchaseDetail.dart';
 import 'package:h4pay/Register.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Connection.dart';
 import 'package:h4pay/components/Button.dart';
+import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/main.dart';
+import 'package:new_version/new_version.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uni_links/uni_links.dart';
-import 'package:flutter/services.dart' show PlatformException;
+import 'package:in_app_update/in_app_update.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EmptyAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
@@ -49,51 +48,62 @@ class IntroPageState extends State<IntroPage> {
   void initState() {
     super.initState();
     registerListener(context);
+    checkUpdate();
 
     connectionCheck().then((value) async {
       if (!value) {
         if (dotenv.env['TEST_MODE'] == "TRUE") {
           showCustomAlertDialog(
             context,
-            "서버 오류",
-            [Text("서버와 연결할 수 없습니다. 개발자 모드이므로 IP 변경을 시도합니다.")],
-            [
-              H4PayButton(
-                  text: "확인",
+            H4PayDialog(
+              title: "서버 오류",
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [Text("서버와 연결할 수 없습니다. 개발자 모드이므로 IP 변경을 시도합니다.")],
+              ),
+              actions: [
+                H4PayOkButton(
+                  context: context,
                   onClick: () {
                     Navigator.pop(context);
                     showIpChangeDialog();
                   },
-                  backgroundColor: Theme.of(context).primaryColor),
-            ],
+                ),
+              ],
+            ),
             false,
           );
         } else {
           showCustomAlertDialog(
             context,
-            "서버 오류",
-            [
-              Text("서버와 연결할 수 없습니다.\n앱을 종료합니다."),
-            ],
-            [
-              H4PayButton(
-                  text: "확인",
+            H4PayDialog(
+              title: "서버 오류",
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [Text("서버와 연결할 수 없습니다.\n앱을 종료합니다.")],
+              ),
+              actions: [
+                H4PayOkButton(
+                  context: context,
                   onClick: () {
                     exit(0);
                   },
-                  backgroundColor: Colors.red,
-                  width: double.infinity)
-            ],
+                )
+              ],
+            ),
             false,
           );
         }
       } else {
         final Widget? route = await initUniLinks(context);
-        if (route != null)
+        if (route != null) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => route),
           );
+          return;
+        }
+
         final H4PayUser? user = await userFromStorage();
         final SharedPreferences _prefs = await SharedPreferences.getInstance();
         if (user != null) {
@@ -110,10 +120,54 @@ class IntroPageState extends State<IntroPage> {
     });
   }
 
+  Future<void> checkUpdate() async {
+    if (Platform.isAndroid) {
+      final status = await InAppUpdate.checkForUpdate();
+      if (status.updateAvailability == UpdateAvailability.updateAvailable) {
+        InAppUpdate.performImmediateUpdate().catchError(
+          (err) => showSnackbar(
+            context,
+            "업데이트에 실패했어요. 스토어에서 직접 진행해주세요.",
+            Colors.red,
+            Duration(seconds: 1),
+          ),
+        );
+      }
+    } else if (Platform.isIOS) {
+      final newVersion = NewVersion(
+        iOSId: "com.cozyllc.h4pay",
+        iOSAppStoreCountry: "KR",
+      );
+      final status = await newVersion.getVersionStatus();
+      if (status!.canUpdate) {
+        showAlertDialog(context, "앱 업데이트 안내",
+            "H4Pay를 더 안정적으로 이용하기 위해서 앱 업데이트가 필요해요. 앱스토어로 이동해 업데이트할까요?", () {
+          launch(status.appStoreLink).catchError((err) {
+            showSnackbar(
+              context,
+              "업데이트를 확인했지만 앱스토어 실행에 실패했어요: ${err.toString()}",
+              Colors.red,
+              Duration(seconds: 3),
+            );
+          });
+        }, () {
+          Navigator.pop(context);
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () async => onBackPressed(context, widget.canGoBack),
+      onWillPop: () async {
+        showAlertDialog(context, "앱 종료", "앱을 종료하시겠습니까?", () {
+          exit(0);
+        }, () {
+          Navigator.pop(context);
+        });
+        return false;
+      },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: EmptyAppBar(),
@@ -230,54 +284,59 @@ class IntroPageState extends State<IntroPage> {
   showIpChangeDialog() {
     showCustomAlertDialog(
         context,
-        "서버 URL 변경",
-        [
-          Text(
-              "서버 URL을 프로토콜, 포트, Route와 함께 입력해주세요. ex) https://yoon-lab.xyz:23408/api"),
-          Form(
-            key: _formKey,
-            child: TextFormField(
-              controller: _ipController,
-              validator: (value) {
-                return value!.isNotEmpty ? null : "URL을 입력해주세요.";
-              },
-            ),
-          )
-        ],
-        [
-          H4PayButton(
-            text: "확인",
-            onClick: () async {
-              FocusScope.of(context).requestFocus(FocusNode());
-              if (_formKey.currentState!.validate()) {
-                final _prefs = await SharedPreferences.getInstance();
-                _prefs.setString(
-                  'API_URL',
-                  _ipController.text,
-                );
-                API_URL = _ipController.text;
-                final connStatus = await connectionCheck();
-                if (connStatus) {
-                  Navigator.pop(context);
-                  showSnackbar(
-                    context,
-                    "IP '${_ipController.text}' 로 서버 URL을 설정합니다.",
-                    Colors.green,
-                    Duration(seconds: 1),
+        H4PayDialog(
+          title: "서버 URL 변경",
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                  "서버 URL을 프로토콜, 포트, Route와 함께 입력해주세요. ex) https://yoon-lab.xyz:23408/api"),
+              Form(
+                key: _formKey,
+                child: TextFormField(
+                  controller: _ipController,
+                  validator: (value) {
+                    return value!.isNotEmpty ? null : "URL을 입력해주세요.";
+                  },
+                ),
+              )
+            ],
+          ),
+          actions: [
+            H4PayOkButton(
+              context: context,
+              onClick: () async {
+                FocusScope.of(context).requestFocus(FocusNode());
+                if (_formKey.currentState!.validate()) {
+                  final _prefs = await SharedPreferences.getInstance();
+                  _prefs.setString(
+                    'API_URL',
+                    _ipController.text,
                   );
-                } else {
-                  showSnackbar(
-                    context,
-                    "IP '${_ipController.text}' 로 연결을 시도했지만 잘 안 되는 것 같네요...",
-                    Colors.red,
-                    Duration(seconds: 1),
-                  );
+                  API_URL = _ipController.text;
+                  print(_prefs.getString('API_URL'));
+                  final connStatus = await connectionCheck();
+                  if (connStatus) {
+                    Navigator.pop(context);
+                    showSnackbar(
+                      context,
+                      "IP '${_ipController.text}' 로 서버 URL을 설정합니다.",
+                      Colors.green,
+                      Duration(seconds: 1),
+                    );
+                  } else {
+                    showSnackbar(
+                      context,
+                      "IP '${_ipController.text}' 로 연결을 시도했지만 잘 안 되는 것 같네요...",
+                      Colors.red,
+                      Duration(seconds: 1),
+                    );
+                  }
                 }
-              }
-            },
-            backgroundColor: Theme.of(context).primaryColor,
-          )
-        ],
+              },
+            )
+          ],
+        ),
         true);
   }
 }

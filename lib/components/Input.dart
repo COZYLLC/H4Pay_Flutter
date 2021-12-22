@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:h4pay/mp.dart';
 
-enum H4PayInputType { round, underline }
+enum H4PayInputType { next, done }
 
 class H4PayInput extends StatefulWidget {
+  final bool? isPassword;
+  final bool? isTel;
   final String title;
   final TextEditingController controller;
   final Color? backgroundColor;
@@ -12,21 +14,13 @@ class H4PayInput extends StatefulWidget {
   final H4PayInputType type;
   final String? Function(String?)? validator;
   final int? minLines;
+  final Function()? onEditingComplete;
+  final List<MultiMaskedTextInputFormatter>? inputFormatters;
 
-  const H4PayInput(
-      {Key? key,
-      required this.title,
-      required this.controller,
-      this.backgroundColor,
-      this.borderColor,
-      required this.isMultiLine,
-      required this.validator,
-      this.minLines})
-      : type = H4PayInputType.underline,
-        super(key: key);
-
-  const H4PayInput.round({
+  const H4PayInput({
     Key? key,
+    this.isPassword,
+    this.isTel,
     required this.title,
     required this.controller,
     this.backgroundColor,
@@ -34,11 +28,15 @@ class H4PayInput extends StatefulWidget {
     required this.isMultiLine,
     required this.validator,
     this.minLines,
-  })  : type = H4PayInputType.round,
+    this.onEditingComplete,
+    this.inputFormatters,
+  })  : type = H4PayInputType.next,
         super(key: key);
 
   const H4PayInput.done({
     Key? key,
+    this.isPassword,
+    this.isTel,
     required this.title,
     required this.controller,
     this.backgroundColor,
@@ -46,7 +44,9 @@ class H4PayInput extends StatefulWidget {
     required this.isMultiLine,
     required this.validator,
     this.minLines,
-  })  : type = H4PayInputType.underline,
+    this.onEditingComplete,
+    this.inputFormatters,
+  })  : type = H4PayInputType.done,
         super(key: key);
 
   @override
@@ -73,32 +73,38 @@ class H4PayInputState extends State<H4PayInput> {
         style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
       ),
     );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        titleText,
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          decoration:
-              widget.type == H4PayInputType.round ? roundDecoration : null,
-          child: TextFormField(
-            controller: widget.controller,
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              labelText: widget.title,
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          titleText,
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            decoration: roundDecoration,
+            child: TextFormField(
+              obscureText: widget.isPassword ?? false,
+              controller: widget.controller,
+              decoration: InputDecoration(border: InputBorder.none),
+              textInputAction: widget.isMultiLine
+                  ? TextInputAction.newline
+                  : widget.type == H4PayInputType.done
+                      ? TextInputAction.done
+                      : TextInputAction.next,
+              keyboardType: widget.isTel ?? false
+                  ? TextInputType.phone
+                  : widget.isMultiLine
+                      ? TextInputType.multiline
+                      : TextInputType.text,
+              maxLines: widget.isMultiLine ? null : 1,
+              minLines: widget.isMultiLine ? widget.minLines : null,
+              validator: widget.validator,
+              onEditingComplete: widget.onEditingComplete,
+              inputFormatters: widget.inputFormatters,
             ),
-            textInputAction: widget.isMultiLine
-                ? TextInputAction.newline
-                : TextInputAction.next,
-            keyboardType: widget.isMultiLine
-                ? TextInputType.multiline
-                : TextInputType.text,
-            maxLines: null,
-            minLines: widget.isMultiLine ? widget.minLines : 1,
-            validator: widget.validator,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

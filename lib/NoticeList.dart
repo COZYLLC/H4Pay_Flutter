@@ -1,51 +1,86 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Event.dart';
 import 'package:h4pay/Notice.dart';
-import 'package:h4pay/PurchaseList.dart';
+import 'package:h4pay/Page/Purchase/PurchaseList.dart';
 import 'package:h4pay/components/Card.dart';
 
-class NoticeListPage extends StatelessWidget {
-  final Type type;
-  final bool withAppBar;
+class NoticeListPage extends ListPage {
+  NoticeListPage()
+      : super(
+          withAppBar: true,
+          type: Notice,
+          dataFuture: fetchNotice(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.hasData) {
+              List<Notice> data = snapshot.data;
+              if (data.length != 0) {
+                return ListView.builder(
+                  itemCount: data.length,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return NoticeCard(notice: data[index]);
+                  },
+                );
+              } else {
+                return CenterInScroll(
+                  child: Text(
+                    "공지사항이 없는 것 같아요.",
+                  ),
+                );
+              }
+            } else {
+              return CenterInScroll(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        );
+}
 
-  const NoticeListPage({Key? key, required this.type, required this.withAppBar})
-      : super(key: key);
+class CenterInScroll extends StatelessWidget {
+  final Widget child;
+  CenterInScroll({required this.child});
   @override
   Widget build(BuildContext context) {
-    return ListPage(
-      type: type,
-      withAppBar: withAppBar,
-      appBarTitle: "공지사항",
-      dataFuture: type == Notice ? fetchNotice() : fetchEvent(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          List data = snapshot.data as List;
-          if (data.length != 0) {
-            return ListView.builder(
-              itemCount: data.length,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                return type == Notice
-                    ? NoticeCard(notice: data[index] as Notice)
-                    : EventCard(event: data[index] as Event);
-              },
-            );
-          } else {
-            return Container(
-              margin: EdgeInsets.only(
-                top: MediaQuery.of(context).size.height * 0.4,
-              ),
-              color: Colors.red,
-              alignment: Alignment.center,
-              child: Text("장바구니가 비어 있는 것 같아요."),
-            );
-          }
-        } else {
-          return CircularProgressIndicator();
-        }
-      },
+    return Container(
+      margin: EdgeInsets.only(
+        top: MediaQuery.of(context).size.height * 0.4,
+      ),
+      alignment: Alignment.center,
+      child: child,
     );
   }
+}
+
+class EventListPage extends ListPage {
+  EventListPage()
+      : super(
+          withAppBar: true,
+          type: Event,
+          dataFuture: fetchEvent(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.hasData) {
+              List data = snapshot.data as List;
+              if (data.length != 0) {
+                return ListView.builder(
+                  itemCount: data.length,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return EventCard(event: data[index] as Event);
+                  },
+                );
+              } else {
+                return CenterInScroll(
+                  child: Text("이벤트가 없는 것 같아요."),
+                );
+              }
+            } else {
+              return CenterInScroll(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        );
 }

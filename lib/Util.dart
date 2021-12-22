@@ -1,17 +1,10 @@
 import 'dart:io';
 
-import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:h4pay/Gift.dart';
-import 'package:h4pay/Setting.dart';
+import 'package:h4pay/Purchase/Gift.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/WebView.dart';
-import 'package:intl/intl.dart';
-
-final DateFormat dateFormat = new DateFormat('yyyy-MM-dd hh:mm');
-final DateFormat dateFormatNoTime = new DateFormat('yyyy-MM-dd');
-final NumberFormat numberFormat = new NumberFormat('###,###,###,###');
+import 'package:h4pay/dialog/H4PayDialog.dart';
 
 int? lastTimeBackPressed;
 
@@ -36,79 +29,8 @@ Future<bool> onBackPressed(BuildContext context, bool canGoBack) async {
   }
 }
 
-Future<bool> connectionCheck() async {
-  final connStatus = await Connectivity().checkConnectivity();
-  if (connStatus == ConnectivityResult.mobile ||
-      connStatus == ConnectivityResult.wifi) {
-    try {
-      final host = parseHost(API_URL!);
-      final socket = await Socket.connect(
-        host['host'],
-        host['port'],
-        timeout: Duration(seconds: 3),
-      );
-      socket.destroy();
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-  return false;
-}
-
-Map parseHost(String url) {
-  Map result = {
-    "host": "",
-    "port": "",
-  };
-  final splitedByColon = url.split(":");
-  if (splitedByColon.length > 2) {
-    // 포트가 있는 경우
-    result['host'] = splitedByColon[1].split("//")[1];
-    result['port'] = int.parse(splitedByColon[2].split("/")[0]);
-  } else {
-    // 포트가 없는 경우
-    result['host'] = splitedByColon[1].split("//")[1].split("/")[0];
-    result['port'] = splitedByColon[0] == "https" ? 443 : 80;
-  }
-  return result;
-}
-
-String getPrettyDateStr(String date, bool withTime) {
-  if (withTime) {
-    return dateFormat.format(
-      DateTime.parse(date).toLocal(),
-    );
-  } else {
-    return dateFormatNoTime.format(
-      DateTime.parse(date).toLocal(),
-    );
-  }
-}
-
-String getPrettyAmountStr(int amount) {
-  return "${numberFormat.format(amount)}원";
-}
-
-String getProductName(Map item, String firstProductName) {
-  final int firstProductId = int.parse(
-    item.entries.elementAt(0).key,
-  );
-  int totalQty = 0;
-  item.forEach(
-    (key, value) {
-      if (int.parse(key) != firstProductId) {
-        totalQty += value as int;
-      }
-    },
-  );
-  return totalQty == 0
-      ? "$firstProductName"
-      : "$firstProductName 외 $totalQty 개";
-}
-
 void showAlertDialog(BuildContext context, String title, String content,
-    okClicked, cancelClicked) async {
+    Function()? okClicked, Function()? cancelClicked) async {
   await showDialog(
     context: context,
     barrierDismissible: false, // user must tap button!
@@ -127,7 +49,10 @@ void showAlertDialog(BuildContext context, String title, String content,
             Container(
               height: MediaQuery.of(context).size.height * 0.05,
             ),
-            OkCancelGroup(okClicked: okClicked, cancelClicked: cancelClicked)
+            OkCancelGroup(
+              okClicked: okClicked,
+              cancelClicked: cancelClicked,
+            )
           ],
         ),
       );
@@ -136,8 +61,8 @@ void showAlertDialog(BuildContext context, String title, String content,
 }
 
 class OkCancelGroup extends StatelessWidget {
-  final okClicked;
-  final cancelClicked;
+  final Function()? okClicked;
+  final Function()? cancelClicked;
   OkCancelGroup({required this.okClicked, required this.cancelClicked});
   @override
   Widget build(BuildContext context) {
@@ -147,7 +72,10 @@ class OkCancelGroup extends StatelessWidget {
           flex: 8,
           child: H4PayButton(
             text: "확인",
-            onClick: okClicked,
+            onClick: okClicked ??
+                () {
+                  Navigator.pop(context);
+                },
             backgroundColor: Theme.of(context).primaryColor,
           ),
         ),
@@ -158,7 +86,10 @@ class OkCancelGroup extends StatelessWidget {
           flex: 8,
           child: H4PayButton(
             text: "취소",
-            onClick: cancelClicked,
+            onClick: cancelClicked ??
+                () {
+                  Navigator.pop(context);
+                },
             backgroundColor: Colors.red,
           ),
         ),
@@ -167,50 +98,26 @@ class OkCancelGroup extends StatelessWidget {
   }
 }
 
-checkExpire(String expire) {
-  return DateTime.now().millisecondsSinceEpoch >
-      DateTime.parse(expire).millisecondsSinceEpoch;
-}
-
-showCustomAlertDialog(BuildContext context, String title, List<Widget> content,
-    List<Widget>? actions, bool dismissable) async {
+showCustomAlertDialog(
+    BuildContext context, H4PayDialog dialog, bool dismissable) async {
   await showDialog(
     context: context,
     barrierDismissible: dismissable, // user must tap button!
     builder: (BuildContext context) {
-      return H4PayDialog(
-        title: title,
-        content: Column(
-          children: content,
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-        ),
-        actions: actions,
-      );
+      return dialog;
     },
   );
 }
 
-class H4PayDialog extends StatelessWidget {
-  final String title;
-  final Widget content;
-  final List<Widget>? actions;
-
-  const H4PayDialog(
-      {Key? key, required this.title, required this.content, this.actions})
-      : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(23.0),
-          ),
-        ),
-        title: Text(title),
-        content: SingleChildScrollView(child: content),
-        actions: actions);
-  }
+showComponentDialog(
+    BuildContext context, Widget widget, bool dismissable) async {
+  await showDialog(
+    context: context,
+    barrierDismissible: dismissable,
+    builder: (BuildContext context) {
+      return widget;
+    },
+  );
 }
 
 navigateRoute(BuildContext context, Widget widget) {
@@ -285,10 +192,6 @@ showDropdownAlertDialog(BuildContext context, String title, String userName,
       );
     },
   );
-}
-
-navigateTo(Widget page, BuildContext context) {
-  Navigator.push(context, MaterialPageRoute(builder: (context) => page));
 }
 
 void showSnackbar(

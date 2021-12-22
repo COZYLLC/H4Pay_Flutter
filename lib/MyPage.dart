@@ -1,11 +1,12 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:h4pay/Gift.dart';
+import 'package:h4pay/Page/Account/ChangePassword.dart';
+import 'package:h4pay/Purchase/Gift.dart';
 import 'package:h4pay/H4PayInfo.dart';
 import 'package:h4pay/IntroPage.dart';
-import 'package:h4pay/Order.dart';
-import 'package:h4pay/PurchaseList.dart';
+import 'package:h4pay/Purchase/Order.dart';
+import 'package:h4pay/Page/Purchase/PurchaseList.dart';
+import 'package:h4pay/Page/Voucher/VoucherList.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/Success.dart';
 import 'package:h4pay/User.dart';
@@ -41,139 +42,117 @@ class MyPageState extends State<MyPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: FutureBuilder(
-          future: _fetchUser,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final H4PayUser user = snapshot.data as H4PayUser;
-              return Container(
-                margin: EdgeInsets.all(18),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        HelloUser(user: user),
-                        Spacer(),
-                        H4PayButton(
-                          text: "내 정보 보기",
+    return SingleChildScrollView(
+      child: FutureBuilder(
+        future: _fetchUser,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final H4PayUser user = snapshot.data as H4PayUser;
+            return Container(
+              margin: EdgeInsets.all(18),
+              child: Column(
+                children: [
+                  HelloUser(
+                    user: user,
+                    withButton: true,
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(top: 40),
+                    child: InfoMenuList(
+                      menu: [
+                        InfoMenu(
+                          icon: Icon(Icons.list_alt),
+                          text: "주문 내역",
+                          badgeCount: widget.badges['order'],
                           onClick: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => MyInfoPage(
-                                  user: user,
-                                ),
+                                builder: (context) => PurchaseList(
+                                    type: Order, appBar: true, title: "주문 내역"),
+                              ),
+                            ).then(updateBadges);
+                          },
+                        ),
+                        InfoMenuTitle(title: "선물"),
+                        InfoMenu(
+                          icon: Icon(Icons.markunread_mailbox),
+                          text: "선물함",
+                          badgeCount: widget.badges['gift'],
+                          onClick: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PurchaseList(
+                                    type: Gift, appBar: true, title: "받은 선물함"),
+                              ),
+                            ).then(updateBadges);
+                          },
+                        ),
+                        InfoMenu(
+                          icon: Icon(Icons.send),
+                          text: "선물 발송 내역",
+                          onClick: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PurchaseList(
+                                    type: SentGift,
+                                    appBar: true,
+                                    title: "선물 발송 내역"),
                               ),
                             );
                           },
-                          backgroundColor: Theme.of(context).primaryColor,
+                        ),
+                        InfoMenu(
+                          icon: Icon(Icons.card_giftcard),
+                          text: "상품권 보관함",
+                          badgeCount: widget.badges['voucher'],
+                          onClick: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => VoucherList(),
+                              ),
+                            ).then(updateBadges);
+                          },
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(top: 40),
+                          child: InfoMenu(
+                            icon: Icon(Icons.info),
+                            text: "정보 보기",
+                            onClick: () {
+                              navigateRoute(context, H4PayInfoPage());
+                            },
+                          ),
+                        ),
+                        InfoMenu(
+                          icon: Icon(Icons.logout),
+                          text: "로그아웃",
+                          onClick: () {
+                            showAlertDialog(context, "로그아웃", "정말로 로그아웃 하시겠습니까?",
+                                () {
+                              logout();
+                              navigateRoute(
+                                context,
+                                IntroPage(canGoBack: false),
+                              );
+                            }, () {
+                              Navigator.pop(context);
+                            });
+                          },
                         ),
                       ],
                     ),
-                    Container(
-                      margin: EdgeInsets.only(top: 40),
-                      child: Column(
-                        children: [
-                          InfoMenuList(
-                            menu: [
-                              InfoMenu(
-                                icon: Icon(Icons.list_alt),
-                                text: "주문 내역",
-                                badgeCount: widget.badges['order'],
-                                onClick: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PurchaseList(
-                                        type: Order,
-                                        appBar: true,
-                                      ),
-                                    ),
-                                  ).then(updateBadges);
-                                },
-                              ),
-                              InfoMenuTitle(title: "선물"),
-                              InfoMenu(
-                                icon: Icon(Icons.markunread_mailbox),
-                                text: "선물함",
-                                badgeCount: widget.badges['gift'],
-                                onClick: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PurchaseList(
-                                        type: Gift,
-                                        appBar: true,
-                                      ),
-                                    ),
-                                  ).then(updateBadges);
-                                },
-                              ),
-                              InfoMenu(
-                                icon: Icon(Icons.send),
-                                text: "선물 발송 내역",
-                                onClick: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PurchaseList(
-                                        type: SentGift,
-                                        appBar: true,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              Container(
-                                margin: EdgeInsets.only(top: 40),
-                                child: InfoMenu(
-                                  icon: Icon(Icons.info),
-                                  text: "정보 보기",
-                                  onClick: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => H4PayInfoPage(),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              InfoMenu(
-                                icon: Icon(Icons.logout),
-                                text: "로그아웃",
-                                onClick: () {
-                                  showAlertDialog(
-                                      context, "로그아웃", "정말로 로그아웃 하시겠습니까?", () {
-                                    logout();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => IntroPage(
-                                          canGoBack: false,
-                                        ),
-                                      ),
-                                    );
-                                  }, () {
-                                    Navigator.pop(context);
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            } else {
-              return CircularProgressIndicator();
-            }
-          },
-        ),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            return CircularProgressIndicator();
+          }
+        },
       ),
     );
   }
@@ -181,26 +160,49 @@ class MyPageState extends State<MyPage> {
 
 class HelloUser extends StatelessWidget {
   final H4PayUser user;
-  HelloUser({required this.user});
+  final bool withButton;
+
+  HelloUser({required this.user, required this.withButton});
   @override
   Widget build(BuildContext context) {
-    return Text.rich(
-      TextSpan(
-        children: [
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text.rich(
           TextSpan(
-            text: "안녕하세요,\n",
-            style: TextStyle(fontSize: 25),
+            children: [
+              TextSpan(
+                text: "안녕하세요,\n",
+                style: TextStyle(fontSize: 25),
+              ),
+              TextSpan(
+                text: "${user.name} ",
+                style: TextStyle(fontSize: 35, fontWeight: FontWeight.w700),
+              ),
+              TextSpan(
+                text: "님",
+                style: TextStyle(fontSize: 30),
+              )
+            ],
           ),
-          TextSpan(
-            text: "${user.name} ",
-            style: TextStyle(fontSize: 35, fontWeight: FontWeight.w700),
-          ),
-          TextSpan(
-            text: "님",
-            style: TextStyle(fontSize: 30),
-          )
-        ],
-      ),
+        ),
+        withButton
+            ? H4PayButton(
+                text: "내 정보 보기",
+                onClick: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MyInfoPage(
+                        user: user,
+                      ),
+                    ),
+                  );
+                },
+                backgroundColor: Theme.of(context).primaryColor,
+              )
+            : Container(),
+      ],
     );
   }
 }
@@ -239,15 +241,16 @@ class InfoMenu extends StatelessWidget {
   final int? badgeCount;
   final Icon icon;
   final String text;
-  final onClick;
+  final Function()? onClick;
 
   const InfoMenu(
       {Key? key,
       this.badgeCount,
       required this.icon,
       required this.text,
-      required this.onClick})
+      this.onClick})
       : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -264,22 +267,7 @@ class InfoMenu extends StatelessWidget {
               ),
               Spacer(),
               badgeCount != null && badgeCount != 0
-                  ? ClipOval(
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            badgeCount.toString(),
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    )
+                  ? Badge(count: badgeCount!)
                   : Container(),
             ],
           ),
@@ -292,19 +280,81 @@ class InfoMenu extends StatelessWidget {
   }
 }
 
+class Badge extends StatefulWidget {
+  final int count;
+  Badge({required this.count});
+
+  @override
+  BadgeState createState() => BadgeState();
+}
+
+class BadgeState extends State<Badge> {
+  @override
+  Widget build(BuildContext context) {
+    return ClipOval(
+      child: Container(
+        width: 20,
+        height: 20,
+        decoration: BoxDecoration(
+          color: Colors.red,
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: Text(
+            widget.count.toString(),
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class MyInfoPage extends StatefulWidget {
   final H4PayUser user;
   MyInfoPage({required this.user});
+
   @override
   MyInfoPageState createState() => MyInfoPageState();
 }
 
 class MyInfoPageState extends State<MyInfoPage> {
   final _formKey = GlobalKey<FormState>();
-
   final TextEditingController prevPassword = TextEditingController();
   final TextEditingController pw2Change = TextEditingController();
   final TextEditingController pwCheck = TextEditingController();
+
+  _withdraw(H4PayUser user) async {
+    final H4PayResult withdrawResult = await withdraw(user.uid!, user.name!);
+    if (withdrawResult.success) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SuccessPage(
+            canGoBack: false,
+            title: "회원 탈퇴 완료",
+            successText: "다음 번에 다시 뵐 수 있길 희망할게요.",
+            bottomDescription: [Text("회원탈퇴가 정상적으로 처리되었습니다.")],
+            actions: [
+              H4PayButton(
+                text: "홈으로 돌아가기",
+                onClick: () {
+                  navigateRoute(
+                    context,
+                    IntroPage(
+                      canGoBack: false,
+                    ),
+                  );
+                },
+                backgroundColor: Theme.of(context).primaryColor,
+                width: double.infinity,
+              )
+            ],
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -317,141 +367,40 @@ class MyInfoPageState extends State<MyInfoPage> {
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            HelloUser(user: widget.user),
+            HelloUser(user: widget.user, withButton: false),
             InfoMenuList(
               menu: [
                 InfoMenuTitle(title: "내 정보"),
                 InfoMenu(
                   icon: Icon(Icons.perm_identity),
                   text: widget.user.uid!,
-                  onClick: null,
                 ),
                 InfoMenu(
                   icon: Icon(Icons.badge),
                   text: widget.user.name!,
-                  onClick: null,
                 ),
                 InfoMenu(
                   icon: Icon(Icons.email),
                   text: widget.user.email!,
-                  onClick: null,
                 ),
                 InfoMenu(
                   icon: Icon(Icons.work),
                   text: roleStrFromLetter(widget.user.role!),
-                  onClick: null,
                 ),
                 InfoMenuTitle(title: "정보 변경"),
                 InfoMenu(
                   icon: Icon(Icons.password),
                   text: "비밀번호 변경",
                   onClick: () {
-                    showCustomAlertDialog(
+                    showComponentDialog(
                       context,
-                      "비밀번호 변경하기",
-                      [
-                        Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              Container(
-                                child: TextFormField(
-                                  controller: prevPassword,
-                                  obscureText: true,
-                                  decoration: InputDecoration(
-                                    labelText: "기존 비밀번호",
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                child: TextFormField(
-                                  controller: pw2Change,
-                                  obscureText: true,
-                                  decoration: InputDecoration(
-                                    labelText: "변경할 비밀번호",
-                                  ),
-                                  validator: (value) {
-                                    final RegExp regExp = RegExp(
-                                      r'(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$',
-                                    );
-                                    return regExp.hasMatch(value!)
-                                        ? null
-                                        : "비밀번호가 올바르지 않습니다.";
-                                  },
-                                ),
-                              ),
-                              TextFormField(
-                                controller: pwCheck,
-                                obscureText: true,
-                                decoration: InputDecoration(
-                                  labelText: "비밀번호 확인",
-                                ),
-                                validator: (value) {
-                                  final RegExp regExp = RegExp(
-                                    r'(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$',
-                                  );
-                                  return regExp.hasMatch(value!)
-                                      ? null
-                                      : "비밀번호가 올바르지 않습니다.";
-                                },
-                              )
-                            ],
-                          ),
-                        ),
-                      ],
-                      [
-                        H4PayButton(
-                          text: "비밀번호 변경",
-                          onClick: () async {
-                            if (_formKey.currentState!.validate()) {
-                              if (await changePassword(widget.user,
-                                  prevPassword.text, pw2Change.text)) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SuccessPage(
-                                      title: "비밀번호 변경 완료",
-                                      canGoBack: false,
-                                      successText: "비밀번호 변경이\n완료되었습니다.",
-                                      bottomDescription: [],
-                                      actions: [
-                                        H4PayButton(
-                                          text: "로그인 하러 가기",
-                                          onClick: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      IntroPage(
-                                                        canGoBack: false,
-                                                      )),
-                                            );
-                                          },
-                                          backgroundColor:
-                                              Theme.of(context).primaryColor,
-                                          width: double.infinity,
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              } else {
-                                Navigator.pop(context);
-                                showSnackbar(
-                                  context,
-                                  "비밀번호 변경에 실패했습니다.",
-                                  Colors.red,
-                                  Duration(
-                                    seconds: 1,
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                          backgroundColor: Theme.of(context).primaryColor,
-                          width: double.infinity,
-                        ),
-                      ],
+                      ChangePWDialog(
+                        formKey: _formKey,
+                        prevPassword: prevPassword,
+                        pw2Change: pw2Change,
+                        pwCheck: pwCheck,
+                        user: widget.user,
+                      ),
                       true,
                     );
                   },
@@ -472,39 +421,8 @@ class MyInfoPageState extends State<MyInfoPage> {
                 context,
                 "탈퇴하기",
                 "구매 내역과 모든 교횐권, 선물 발송 내역, 받은 선물 등의 정보가 모두 삭제됩니다.\n정말로 탈퇴하시겠습니까?",
-                () async {
-                  final H4PayResult withdrawResult =
-                      await withdraw(user.uid!, user.name!);
-                  if (withdrawResult.success) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SuccessPage(
-                          canGoBack: false,
-                          title: "회원 탈퇴 완료",
-                          successText: "다음 번에 다시 뵐 수 있길 희망할게요.",
-                          bottomDescription: [Text("회원탈퇴가 정상적으로 처리되었습니다.")],
-                          actions: [
-                            H4PayButton(
-                              text: "홈으로 돌아가기",
-                              onClick: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => IntroPage(
-                                      canGoBack: false,
-                                    ),
-                                  ),
-                                );
-                              },
-                              backgroundColor: Theme.of(context).primaryColor,
-                              width: double.infinity,
-                            )
-                          ],
-                        ),
-                      ),
-                    );
-                  }
+                () {
+                  _withdraw(user);
                 },
                 () {
                   Navigator.pop(context);

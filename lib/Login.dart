@@ -1,16 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:h4pay/Result.dart';
-import 'package:h4pay/Setting.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/Util.dart';
 import 'package:h4pay/components/Button.dart';
+import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/main.dart';
-import 'package:http/http.dart' as http;
-import 'package:crypto/crypto.dart';
-import 'dart:convert';
+import 'package:h4pay/validator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -27,7 +24,6 @@ class LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    //Firebase.initializeApp();
     _loginCheck();
   }
 
@@ -54,46 +50,29 @@ class LoginPageState extends State<LoginPage> {
                 key: _loginFormKey,
                 child: Column(
                   children: [
-                    TextFormField(
+                    H4PayInput(
+                      title: "아이디",
                       controller: _idController,
-                      decoration: InputDecoration(
-                        labelText: "아이디",
-                      ),
-                      validator: (value) {
-                        final RegExp regExp = RegExp(r'^[A-za-z0-9]{5,15}$');
-                        if (!regExp.hasMatch(value!)) {
-                          return "아이디는 영소문자와 숫자를 포함해 5자 이상 19자 이하여아 합니다.";
-                        } else {
-                          return null;
-                        }
-                      },
-                      textInputAction: TextInputAction.next,
+                      isMultiLine: false,
+                      validator: idValidator,
                     ),
-                    TextFormField(
+                    H4PayInput.done(
+                      isPassword: true,
+                      title: "비밀번호",
                       controller: _pwController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: "비밀번호",
-                      ),
-                      textInputAction: TextInputAction.done,
+                      isMultiLine: false,
+                      validator: pwValidator,
                     ),
                   ],
                 ),
               ),
-/*               H4PayButton(
-                text: "googleLogin",
-                onClick: _signInWithGoogle,
-                backgroundColor: Theme.of(context).primaryColor,
-                width: double.infinity,
-              
-              SignInWithAppleButton(onPressed: _signInWithApple), */
               H4PayButton(
                 text: "로그인",
                 width: double.infinity,
                 onClick: () async {
                   if (_loginFormKey.currentState!.validate()) {
                     final String? accessToken =
-                        await _login(_idController.text, _pwController.text);
+                        await login(_idController.text, _pwController.text);
                     if (accessToken != null) {
                       final H4PayUser? user = await tokenCheck(accessToken);
                       if (user != null) {
@@ -127,115 +106,6 @@ class LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
-/* 
-  Future<bool> _signInWithGoogle() async {
-    try {
-      GoogleSignInAccount? account = await GoogleSignIn(scopes: [
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/userinfo.profile',
-      ]).signIn();
-      if (account != null) {
-        GoogleSignInAuthentication? authentication =
-            await account.authentication;
-        return await _googleLogin(authentication.idToken!);
-      } else {
-        return false;
-      }
-    } catch (error) {
-      return false;
-    }
-  }
-
-  Future<bool> _signInWithApple() async {
-    try {
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-        //webAuthenticationOptions: WebAuthenticationOptions(clientId: clientId, redirectUri: redirectUri)
-      );
-
-      return true;
-      // Now send the credential (especially `credential.authorizationCode`) to your server to create a session
-      // after they have been validated with Apple (see `Integration` section for more information on how to do this)
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Future<bool> _googleLogin(String _idToken) async {
-       final _prefs = await SharedPreferences.getInstance();
-    final response = await http.post(
-      Uri.parse("$API_URL/users/auth/google"),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: json.encode(
-        {'idtoken': _idToken},
-      ),
-    );
-    if (response.statusCode == 200) {
-      final jsonResponse = json.decode(response.body);
-      if (jsonResponse['verified']) {
-        if (jsonResponse['existUser']) {
-          final H4PayUser? user = await tokenCheck(jsonResponse['accessToken']);
-          user!.saveToStorage();
-          return true;
-        } else {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => RegisterPage(),
-            ),
-          );
-          return false;
-        }
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
- */
-  Future<String?> _login(String id, String pw) async {
-    final bytes = utf8.encode(pw);
-    final digest = sha256.convert(bytes);
-    try {
-      final response = await http
-          .post(
-        Uri.parse("$API_URL/users/login"),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: json.encode({
-          'uid': id,
-          'password': base64.encode(digest.bytes),
-        }),
-      )
-          .timeout(
-        Duration(seconds: 3),
-        onTimeout: () {
-          throw TimeoutException("timed out...");
-        },
-      );
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        if (jsonResponse['status']) {
-          final String? accessToken = jsonResponse['accessToken'];
-          return accessToken;
-        } else {
-          return null;
-        }
-      } else {
-        return null;
-      }
-    } catch (e) {
-      return null;
-    }
-  }
 }
 
 class AccountFindPage extends StatefulWidget {
@@ -268,26 +138,18 @@ class AccountFindPageState extends State<AccountFindPage> {
               key: _findIdFormKey,
               child: Column(
                 children: [
-                  TextFormField(
+                  H4PayInput(
+                    title: "이름",
                     controller: _nameController,
-                    decoration: InputDecoration(labelText: "이름"),
-                    textInputAction: TextInputAction.next,
-                    validator: (value) {
-                      final RegExp regExp = RegExp(r'^[가-힣]{2,8}$');
-                      return regExp.hasMatch(value!) ? null : "이름이 올바르지 않습니다.";
-                    },
+                    isMultiLine: false,
+                    validator: nameValidator,
                   ),
-                  TextFormField(
+                  H4PayInput.done(
+                    title: "이메일",
                     controller: _emailController,
-                    decoration: InputDecoration(labelText: "이메일"),
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.done,
-                    validator: (value) {
-                      final RegExp regExp = RegExp(
-                          r'([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$');
-                      return regExp.hasMatch(value!) ? null : "이메일이 올바르지 않습니다.";
-                    },
-                  ),
+                    isMultiLine: false,
+                    validator: emailValidator,
+                  )
                 ],
               ),
             ),
@@ -296,7 +158,7 @@ class AccountFindPageState extends State<AccountFindPage> {
               onClick: () async {
                 if (_findIdFormKey.currentState!.validate()) {
                   // 입력값이 정상이면
-                  final H4PayResult findResult = await _findId(
+                  final H4PayResult findResult = await findId(
                     _nameController.text,
                     _emailController.text,
                   );
@@ -321,34 +183,23 @@ class AccountFindPageState extends State<AccountFindPage> {
               key: _findPwFormKey,
               child: Column(
                 children: [
-                  TextFormField(
+                  H4PayInput(
+                    title: "이름",
                     controller: _nameController,
-                    decoration: InputDecoration(labelText: "이름"),
-                    textInputAction: TextInputAction.next,
-                    validator: (value) {
-                      final RegExp regExp = RegExp(r'^[가-힣]{2,8}$');
-                      return regExp.hasMatch(value!) ? null : "이름이 올바르지 않습니다.";
-                    },
+                    isMultiLine: false,
+                    validator: nameValidator,
                   ),
-                  TextFormField(
+                  H4PayInput(
+                    title: "아이디",
                     controller: _idController,
-                    decoration: InputDecoration(labelText: "아이디"),
-                    textInputAction: TextInputAction.next,
-                    validator: (value) {
-                      final RegExp regExp = RegExp(r'^[A-za-z0-9]{5,15}$');
-                      return regExp.hasMatch(value!) ? null : "아이디가 올바르지 않습니다.";
-                    },
+                    isMultiLine: false,
+                    validator: idValidator,
                   ),
-                  TextFormField(
+                  H4PayInput.done(
+                    title: "이메일",
                     controller: _emailController,
-                    decoration: InputDecoration(labelText: "이메일"),
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.done,
-                    validator: (value) {
-                      final RegExp regExp = RegExp(
-                          r'([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$');
-                      return regExp.hasMatch(value!) ? null : "이메일이 올바르지 않습니다.";
-                    },
+                    isMultiLine: false,
+                    validator: emailValidator,
                   ),
                 ],
               ),
@@ -358,7 +209,7 @@ class AccountFindPageState extends State<AccountFindPage> {
               onClick: () async {
                 if (_findPwFormKey.currentState!.validate()) {
                   // 입력값이 정상이면
-                  final H4PayResult findResult = await _findPw(
+                  final H4PayResult findResult = await findPw(
                     _nameController.text,
                     _emailController.text,
                     _idController.text,
@@ -380,72 +231,5 @@ class AccountFindPageState extends State<AccountFindPage> {
         ),
       ),
     );
-  }
-
-  Future<H4PayResult> _findId(String name, String email) async {
-    final _prefs = await SharedPreferences.getInstance();
-    try {
-      final response = await http
-          .post(
-        Uri.parse("$API_URL/users/find/uid"),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: json.encode({
-          "name": name,
-          "email": email,
-        }),
-      )
-          .timeout(Duration(seconds: 3), onTimeout: () {
-        throw TimeoutException("timed out...");
-      });
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        return H4PayResult(
-          success: jsonResponse['status'],
-          data: jsonResponse['message'],
-        );
-      } else {
-        return H4PayResult(
-          success: false,
-          data: "서버 오류입니다.",
-        );
-      }
-    } catch (e) {
-      return H4PayResult(
-          success: false, data: "서버 응답 시간이 초과되었습니다. 인터넷 연결을 확인하세요.");
-    }
-  }
-
-  Future<H4PayResult> _findPw(String name, String email, String uid) async {
-    final _prefs = await SharedPreferences.getInstance();
-    try {
-      final response = await http
-          .post(
-        Uri.parse("$API_URL/users/find/password"),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: json.encode({"name": name, "email": email, "uid": uid}),
-      )
-          .timeout(Duration(seconds: 3), onTimeout: () {
-        throw TimeoutException("timed out...");
-      });
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        return H4PayResult(
-          success: jsonResponse['status'],
-          data: jsonResponse['message'],
-        );
-      } else {
-        return H4PayResult(
-          success: false,
-          data: "서버 오류입니다.",
-        );
-      }
-    } catch (e) {
-      return H4PayResult(
-          success: false, data: "서버 응답 시간이 초과되었습니다. 인터넷 상태를 확인하세요.");
-    }
   }
 }

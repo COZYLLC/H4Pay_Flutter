@@ -1,23 +1,17 @@
 import 'dart:convert';
 
-import 'package:async/async.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:carousel_slider/carousel_options.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Cart.dart';
 import 'package:h4pay/Event.dart';
-import 'package:h4pay/Gift.dart';
 import 'package:h4pay/Notice.dart';
-import 'package:h4pay/Order.dart';
 import 'package:h4pay/Product.dart';
-import 'package:h4pay/Result.dart';
-import 'package:h4pay/User.dart';
 import 'package:h4pay/Util.dart';
-import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Card.dart';
-import 'package:h4pay/components/WebView.dart';
+import 'package:h4pay/dialog/Event.dart';
+import 'package:h4pay/dialog/GiftOption.dart';
+import 'package:h4pay/dialog/Notice.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:h4pay/main.dart';
 
@@ -47,7 +41,9 @@ class HomeState extends State<Home> {
 
   Future<Map> _fetchThings() async {
     Map data = {};
-    data['product'] = await fetchProduct('homePage');
+    List<Product>? products = await fetchProduct('homePage');
+    products!.sort((a, b) => a.productName.compareTo(b.productName));
+    data['product'] = products;
     data['notice'] = await fetchNotice();
     data['event'] = await fetchEvent();
     return data;
@@ -87,8 +83,22 @@ class HomeState extends State<Home> {
                             return InkWell(
                               onTap: () {
                                 i.runtimeType == Notice
-                                    ? showNoticeCard(context, i)
-                                    : showEventCard(context, i as Event);
+                                    ? showCustomAlertDialog(
+                                        context,
+                                        NoticeDialog(
+                                          context: context,
+                                          notice: i,
+                                        ),
+                                        true,
+                                      )
+                                    : showCustomAlertDialog(
+                                        context,
+                                        EventDialog(
+                                          context: context,
+                                          event: i as Event,
+                                        ),
+                                        true,
+                                      );
                               },
                               child: Container(
                                 width: MediaQuery.of(context).size.width,
@@ -130,7 +140,7 @@ class HomeState extends State<Home> {
                               : margin = EdgeInsets.fromLTRB(9, 12, 22, 12);
                           return ProductCard(
                             product: products[index],
-                            isClicked: currentTile == index,
+                            isClicked: currentTile == products[index].id,
                             cartOnClick: addProductToCart,
                             giftOnClick: () {
                               openGiftAlert(products[index]);
@@ -146,7 +156,9 @@ class HomeState extends State<Home> {
                 curve: Curves.fastOutSlowIn,
                 child: cartClicked
                     ? CachedNetworkImage(
-                        imageUrl: products[currentTile!].img,
+                        imageUrl: products
+                            .firstWhere((product) => product.id == currentTile!)
+                            .img,
                         width: MediaQuery.of(context).size.width * 0.3,
                       )
                     : Container(),
@@ -217,120 +229,18 @@ class HomeState extends State<Home> {
     final TextEditingController qty = new TextEditingController();
     showCustomAlertDialog(
       context,
-      "선물 옵션",
-      [
-        Form(
-          key: _formKey,
-          child: Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: TextFormField(
-                  controller: studentId,
-                  decoration: InputDecoration(
-                    labelText: "학번",
-                  ),
-                  keyboardType: TextInputType.number,
-                  maxLength: 4,
-                  validator: (value) {
-                    return value!.length == 4 ? null : "올바른 학번을 입력해주세요.";
-                  },
-                ),
-              ),
-              Spacer(flex: 1),
-              Expanded(
-                flex: 2,
-                child: TextFormField(
-                  controller: qty,
-                  decoration: InputDecoration(
-                    labelText: "수량",
-                  ),
-                  keyboardType: TextInputType.number,
-                  maxLength: 1,
-                  validator: (value) {
-                    return value!.length == 1 ? null : "올바른 수량을 입력해주세요.";
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-        OkCancelGroup(
-          okClicked: () async {
-            if (!_formKey.currentState!.validate()) {
-              return;
-            }
-            final H4PayResult result = await checkUserValid(studentId.text);
-            if (result.success) {
-              _sendGift(
-                  result.data, product, studentId.text, int.parse(qty.text));
-            } else {
-              Navigator.pop(context);
-              showSnackbar(
-                context,
-                result.data,
-                Colors.red,
-                Duration(seconds: 1),
-              );
-            }
-          },
-          cancelClicked: () {
-            Navigator.pop(context);
-          },
-        )
-      ],
-      null,
+      GiftOptionDialog(
+        context: context,
+        formKey: _formKey,
+        studentId: studentId,
+        qty: qty,
+        prefs: prefs,
+        product: product,
+      ),
       true,
     );
     setState(() {
       currentTile = null;
     });
-  }
-
-  void _sendGift(String userName, Product product, String stId, int qty) async {
-    final _orderId = "2" + genOrderId() + "000";
-    final Map tempPurchase = {
-      'type': 'Gift',
-      'uidto': stId,
-      'amount': product.price * qty,
-      'item': {product.id.toString(): qty},
-      'orderId': _orderId
-    };
-    prefs.setString('tempPurchase', json.encode(tempPurchase));
-    Navigator.pop(context);
-    final H4PayUser? user = await userFromStorage();
-    if (user != null) {
-      showAlertDialog(context, "발송 확인", "$userName 님에게 선물을 발송할까요?", () {
-        Navigator.pop(context);
-/*         showDropdownAlertDialog(context, "현금영수증 옵션", userName,
-            product.price * qty, _orderId, product.productName, user.name!); */
-        showSnackbar(
-          context,
-          "$userName 님에게 선물을 전송할게요.",
-          Colors.green,
-          Duration(seconds: 1),
-        );
-        showBottomSheet(
-          context: context,
-          builder: (context) => WebViewExample(
-            type: Gift,
-            amount: product.price * qty,
-            orderId: _orderId,
-            orderName: product.productName,
-            customerName: user.name!,
-            cashReceiptType: "미발급",
-          ),
-        );
-      }, () {
-        Navigator.pop(context);
-      });
-    } else {
-      showSnackbar(
-        context,
-        "사용자 정보를 불러오지 못했습니다.",
-        Colors.red,
-        Duration(seconds: 1),
-      );
-    }
   }
 }

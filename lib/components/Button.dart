@@ -1,9 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class H4PayButton extends StatelessWidget {
   final String text;
-  final onClick;
+  final Function()? onClick;
   final Color backgroundColor;
   final Color? textColor;
   final double? width;
@@ -41,4 +40,35 @@ class H4PayButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class H4PayCloseButton extends H4PayButton {
+  final BuildContext context;
+  H4PayCloseButton({required this.context})
+      : super(
+          text: "닫기",
+          onClick: () {
+            Navigator.pop(context);
+          },
+          backgroundColor: Theme.of(context).primaryColor,
+          width: double.infinity,
+        );
+}
+
+class H4PayOkButton extends H4PayButton {
+  final BuildContext context;
+  final Function()? onClick;
+
+  H4PayOkButton({
+    required this.context,
+    this.onClick,
+  }) : super(
+          text: "확인",
+          onClick: onClick ??
+              () {
+                Navigator.pop(context);
+              },
+          backgroundColor: Theme.of(context).primaryColor,
+          width: double.infinity,
+        );
 }

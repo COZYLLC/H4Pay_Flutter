@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class MultiMaskedTextInputFormatter extends TextInputFormatter {
@@ -33,11 +32,15 @@ class MultiMaskedTextInputFormatter extends TextInputFormatter {
     } else {}
 
     final pasted = (newText.length - oldText.length).abs() > 1;
-    final mask = masks!.firstWhere((value) {
-      final maskValue = pasted ? value.replaceAll(separator!, '') : value;
-      return newText.length <= maskValue.length;
-    });
-
+    String? mask;
+    try {
+      mask = masks!.firstWhere((value) {
+        final maskValue = pasted ? value.replaceAll(separator!, '') : value;
+        return newText.length <= maskValue.length;
+      });
+    } catch (e) {
+      mask = null;
+    }
     if (mask == null) {
       return oldValue;
     }

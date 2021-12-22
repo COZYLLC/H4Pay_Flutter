@@ -1,15 +1,14 @@
 import 'dart:convert';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:h4pay/Gift.dart';
-import 'package:h4pay/Order.dart';
-import 'package:h4pay/Purchase.dart';
-import 'package:h4pay/PurchaseDetail.dart';
+import 'package:h4pay/Purchase/Gift.dart';
+import 'package:h4pay/Purchase/Order.dart';
+import 'package:h4pay/Purchase/Purchase.dart';
+import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animated_check/animated_check.dart';
@@ -92,7 +91,6 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
                               text: "홈으로 돌아가기",
                               width: MediaQuery.of(context).size.width * 0.4,
                               onClick: () {
-                                int count = 0;
                                 Navigator.pop(context);
                               },
                               backgroundColor: Theme.of(context).primaryColor,

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:h4pay/Notice.dart';
 import 'package:h4pay/NoticeList.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/Setting.dart';
@@ -11,7 +10,6 @@ import 'package:h4pay/main.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:h4pay/MyPage.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Card.dart';
@@ -83,10 +81,7 @@ class SupportPageState extends State<SupportPage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => type.key == 'notice'
-                                  ? NoticeListPage(
-                                      type: Notice,
-                                      withAppBar: true,
-                                    )
+                                  ? NoticeListPage()
                                   : SupportFormPage(
                                       type: type.key,
                                     ),
@@ -146,7 +141,7 @@ class SupportFormPageState extends State<SupportFormPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  H4PayInput.round(
+                  H4PayInput(
                     title: "제목",
                     controller: title,
                     backgroundColor: Colors.grey[200]!,
@@ -160,7 +155,7 @@ class SupportFormPageState extends State<SupportFormPage> {
                     margin: EdgeInsets.symmetric(
                       vertical: 10,
                     ),
-                    child: H4PayInput.round(
+                    child: H4PayInput(
                       title: "문의 내용",
                       controller: content,
                       backgroundColor: Colors.grey[200]!,
@@ -209,8 +204,9 @@ class SupportFormPageState extends State<SupportFormPage> {
                             child: H4PayButton(
                               text: "사진 업로드",
                               onClick: () async {
-                                FilePickerResult? result =
-                                    await FilePicker.platform.pickFiles();
+                                FilePickerResult? result = await FilePicker
+                                    .platform
+                                    .pickFiles(type: FileType.image);
                                 if (result != null) {
                                   setState(() {
                                     file = File(result.files.single.path!);

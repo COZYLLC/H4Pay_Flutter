@@ -2,9 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:h4pay/Order.dart';
+import 'package:h4pay/Purchase/Order.dart';
 import 'package:h4pay/Product.dart';
 import 'package:h4pay/User.dart';
+import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/Util.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Card.dart';

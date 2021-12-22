@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Login.dart';
 import 'package:h4pay/Result.dart';
@@ -8,6 +7,7 @@ import 'package:h4pay/Util.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/components/WebView.dart';
+import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/main.dart';
 import 'package:h4pay/mp.dart';
 import 'package:h4pay/validator.dart';
@@ -42,6 +42,34 @@ class RegisterPageState extends State<RegisterPage> {
     }
   ];
 
+  _checkUidValidity() {
+    uidDuplicateCheck(id.text).then((isDuplicated) {
+      if (!isDuplicated) {
+        showCustomAlertDialog(
+          context,
+          H4PayDialog(
+            title: "아이디 중복",
+            content: Text("이미 존재하는 아이디입니다."),
+            actions: [
+              H4PayOkButton(
+                context: context,
+                onClick: () {
+                  Navigator.pop(context);
+                },
+              )
+            ],
+          ),
+          true,
+        );
+      } else {
+        do {
+          FocusScope.of(context).nextFocus();
+        } while (FocusScope.of(context).focusedChild!.context!.widget
+            is! EditableText);
+      }
+    });
+  }
+
   List<String> userTypes = ['S'];
   @override
   Widget build(BuildContext context) {
@@ -55,114 +83,51 @@ class RegisterPageState extends State<RegisterPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  TextFormField(
+                  H4PayInput(
+                    title: "이름",
                     controller: name,
-                    decoration: InputDecoration(labelText: "이름"),
-                    textInputAction: TextInputAction.next,
-                    validator: (value) {
-                      final RegExp regExp = RegExp(r'^[가-힣]{2,8}$');
-                      return regExp.hasMatch(value!) ? null : "이름이 올바르지 않습니다.";
-                    },
-                  ),
-                  TextFormField(
-                      controller: id,
-                      decoration: InputDecoration(labelText: "아이디"),
-                      textInputAction: TextInputAction.next,
-                      onEditingComplete: () {
-                        uidDuplicateCheck(id.text).then((value) {
-                          if (!value) {
-                            showCustomAlertDialog(
-                              context,
-                              "아아디 중복",
-                              [Text("이미 존재하는 아이디입니다.")],
-                              [
-                                H4PayButton(
-                                  text: "확인",
-                                  onClick: () {
-                                    Navigator.pop(context);
-                                  },
-                                  backgroundColor:
-                                      Theme.of(context).primaryColor,
-                                  width: double.infinity,
-                                )
-                              ],
-                              true,
-                            );
-                          } else {
-                            do {
-                              FocusScope.of(context).nextFocus();
-                            } while (FocusScope.of(context)
-                                .focusedChild!
-                                .context!
-                                .widget is! EditableText);
-                          }
-                        });
-                      },
-                      validator: idValidator),
-                  TextFormField(
-                      controller: pw,
-                      decoration: InputDecoration(labelText: "비밀번호"),
-                      textInputAction: TextInputAction.next,
-                      obscureText: true,
-                      validator: pwValidator),
-                  TextFormField(
-                    controller: pwCheck,
-                    decoration: InputDecoration(labelText: "비밀번호 확인"),
-                    textInputAction: TextInputAction.next,
-                    obscureText: true,
-                    validator: (value) {
-                      return (pw.text == pwCheck.text)
-                          ? null
-                          : "비밀번호가 일치하지 않습니다.";
-                    },
-                  ),
-                  DropdownButtonFormField(
-                    hint: Text("사용자 유형 선택"),
-                    value: selectedUserType,
-                    items: userTypes
-                        .map(
-                          (e) => DropdownMenuItem(
-                            child: Text(
-                              roleStrFromLetter(e),
-                            ),
-                            value: e,
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedUserType = value.toString();
-                      });
-                    },
-                  ),
-                  Container(
-                    child: (selectedUserType != null)
-                        ? TextFormField(
-                            controller: userAuth,
-                            decoration: InputDecoration(
-                              labelText:
-                                  selectedUserType == 'S' ? "학번" : "인증코드",
-                            ),
-                            textInputAction: TextInputAction.next,
-                            validator: (value) {
-                              return (selectedUserType != 'S' ||
-                                      userAuth.text.length == 4)
-                                  ? null
-                                  : "올바르지 않습니다.";
-                            },
-                          )
-                        : Container(),
+                    isMultiLine: false,
+                    validator: nameValidator,
                   ),
                   H4PayInput(
-                      title: "이메일",
-                      controller: email,
-                      isMultiLine: false,
-                      validator: emailValidator),
-                  TextFormField(
+                    title: "아이디",
+                    controller: id,
+                    isMultiLine: false,
+                    validator: idValidator,
+                    onEditingComplete: _checkUidValidity,
+                  ),
+                  H4PayInput(
+                    title: "비밀번호",
+                    controller: pw,
+                    isMultiLine: false,
+                    validator: pwValidator,
+                    isPassword: true,
+                  ),
+                  H4PayInput(
+                    title: "비밀번호 확인",
+                    controller: pwCheck,
+                    isMultiLine: false,
+                    validator: (value) =>
+                        pw.text == value ? null : "비밀번호가 일치하지 않습니다.",
+                  ),
+                  H4PayInput(
+                    title: "학번",
+                    controller: userAuth,
+                    isMultiLine: false,
+                    validator: (value) =>
+                        value!.length == 4 ? null : "학번은 4자리 숫자입니다.",
+                  ),
+                  H4PayInput(
+                    title: "이메일",
+                    controller: email,
+                    isMultiLine: false,
+                    validator: emailValidator,
+                  ),
+                  H4PayInput.done(
+                    isTel: true,
+                    title: "휴대전화 번호",
                     controller: tel,
-                    decoration: InputDecoration(labelText: "전화번호"),
-                    textInputAction: TextInputAction.next,
-                    keyboardType: TextInputType.phone,
+                    isMultiLine: false,
                     validator: telValidator,
                     inputFormatters: [
                       MultiMaskedTextInputFormatter(
