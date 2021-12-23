@@ -239,8 +239,5 @@ class HomeState extends State<Home> {
       ),
       true,
     );
-    setState(() {
-      currentTile = null;
-    });
   }
 }

@@ -50,8 +50,8 @@ class IntroPageState extends State<IntroPage> {
     registerListener(context);
     checkUpdate();
 
-    connectionCheck().then((value) async {
-      if (!value) {
+    connectionCheck().then((connected) async {
+      if (!connected) {
         if (dotenv.env['TEST_MODE'] == "TRUE") {
           showCustomAlertDialog(
             context,
@@ -103,7 +103,6 @@ class IntroPageState extends State<IntroPage> {
           );
           return;
         }
-
         final H4PayUser? user = await userFromStorage();
         final SharedPreferences _prefs = await SharedPreferences.getInstance();
         if (user != null) {
@@ -314,7 +313,7 @@ class IntroPageState extends State<IntroPage> {
                     _ipController.text,
                   );
                   API_URL = _ipController.text;
-                  print(_prefs.getString('API_URL'));
+                  print("API URL newly setted: $API_URL");
                   final connStatus = await connectionCheck();
                   if (connStatus) {
                     Navigator.pop(context);

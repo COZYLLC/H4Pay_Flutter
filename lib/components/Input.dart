@@ -5,12 +5,12 @@ enum H4PayInputType { next, done }
 
 class H4PayInput extends StatefulWidget {
   final bool? isPassword;
-  final bool? isTel;
+  final bool? isNumber;
   final String title;
   final TextEditingController controller;
   final Color? backgroundColor;
   final Color? borderColor;
-  final bool isMultiLine;
+  final bool? isMultiLine;
   final H4PayInputType type;
   final String? Function(String?)? validator;
   final int? minLines;
@@ -20,12 +20,12 @@ class H4PayInput extends StatefulWidget {
   const H4PayInput({
     Key? key,
     this.isPassword,
-    this.isTel,
+    this.isNumber,
     required this.title,
     required this.controller,
     this.backgroundColor,
     this.borderColor,
-    required this.isMultiLine,
+    this.isMultiLine,
     required this.validator,
     this.minLines,
     this.onEditingComplete,
@@ -36,12 +36,12 @@ class H4PayInput extends StatefulWidget {
   const H4PayInput.done({
     Key? key,
     this.isPassword,
-    this.isTel,
+    this.isNumber,
     required this.title,
     required this.controller,
     this.backgroundColor,
     this.borderColor,
-    required this.isMultiLine,
+    this.isMultiLine,
     required this.validator,
     this.minLines,
     this.onEditingComplete,
@@ -86,18 +86,18 @@ class H4PayInputState extends State<H4PayInput> {
               obscureText: widget.isPassword ?? false,
               controller: widget.controller,
               decoration: InputDecoration(border: InputBorder.none),
-              textInputAction: widget.isMultiLine
+              textInputAction: widget.isMultiLine ?? false
                   ? TextInputAction.newline
                   : widget.type == H4PayInputType.done
                       ? TextInputAction.done
                       : TextInputAction.next,
-              keyboardType: widget.isTel ?? false
+              keyboardType: widget.isNumber ?? false
                   ? TextInputType.phone
-                  : widget.isMultiLine
+                  : widget.isMultiLine ?? false
                       ? TextInputType.multiline
                       : TextInputType.text,
-              maxLines: widget.isMultiLine ? null : 1,
-              minLines: widget.isMultiLine ? widget.minLines : null,
+              maxLines: widget.isMultiLine ?? false ? null : 1,
+              minLines: widget.isMultiLine ?? false ? widget.minLines : null,
               validator: widget.validator,
               onEditingComplete: widget.onEditingComplete,
               inputFormatters: widget.inputFormatters,

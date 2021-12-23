@@ -35,32 +35,15 @@ Future main() async {
 
 loadApiUrl(SharedPreferences prefs) async {
   if (prefs.getString("API_URL") == null || prefs.getString("API_URL") == "") {
-    // prefs에 저장된 URL이 없으면
-    prefs.setString(
-        'API_URL', dotenv.env['API_URL']!); // prefs에 env에서 가져온 URL 저장
-    API_URL = dotenv.env['API_URL']; // API_URL에 env에서 가져온 URL 대입
-    await connectionCheck(); // 연결 체크 진행
+    // prefs에 저장된 URL이 없으면(최초 실행) env URL을 prefs에 저장 후 연결테스트
+    prefs.setString('API_URL', dotenv.env['API_URL']!);
+    API_URL = dotenv.env['API_URL'];
   } else {
-    // pref에 저장된 URL이 있으면
-    print(prefs.getString("API_URL"));
-    print(dotenv.env['API_URL']);
-    if (prefs.getString("API_URL") != dotenv.env['API_URL']) {
-      // env에서 가져온 것과 현재 prefs에 저장된 것이 다르면
-      final String tempUrl = prefs.getString('API_URL')!;
-      API_URL = dotenv.env['API_URL']; // env에서 가져와 임시 URL로 설정 후
-      if (!await connectionCheck()) {
-        print("API: $API_URL");
-        prefs.setString("API_URL", tempUrl);
-        API_URL = prefs.getString("API_URL");
-        // 연결체크 후 작동하지 않으면 prefs에 저장한 것으로 유지.
-      }
-    } else {
-      API_URL = prefs.getString("API_URL"); //API_URL에 prefs에 저장된 URL 대입
-      if (!await connectionCheck()) {
-        // 연결 체크에 실패하면
-        prefs.setString('API_URL', dotenv.env['API_URL']!); // env에서 가져와 대입
-        API_URL = dotenv.env['API_URL'];
-      }
+    // prefs에 저장된 것으로 연결시도 후 작동하지 않으면
+    API_URL = prefs.getString("API_URL");
+    if (!await connectionCheck()) {
+      // env에 저장된 것으로 시도
+      API_URL = dotenv.env['API_URL'];
     }
   }
 }

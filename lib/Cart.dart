@@ -29,10 +29,12 @@ int calculateTotalPrice(Map cartMap, List<Product> products) {
   num price = 0;
   cartMap.forEach(
     (key, value) {
-      price += products
-              .singleWhereOrNull((element) => element.id == int.parse(key))!
-              .price *
-          value;
+      try {
+        price += products
+                .singleWhereOrNull((element) => element.id == int.parse(key))!
+                .price *
+            value;
+      } catch (e) {}
     },
   );
   return price.toInt();
@@ -283,13 +285,14 @@ class CartState extends State<Cart> {
               type: Order,
               amount: this.totalPrice,
               orderId: _orderId,
-              orderName: getProductName(
-                  tempPurchase['item'] as Map,
-                  products!
-                      .singleWhereOrNull((element) =>
-                          element.id.toString() ==
-                          cartMap.entries.elementAt(0).key)!
-                      .productName),
+              orderName: getOrderName(
+                tempPurchase['item'] as Map,
+                products!
+                    .singleWhereOrNull((element) =>
+                        element.id.toString() ==
+                        cartMap.entries.elementAt(0).key)!
+                    .productName,
+              ),
               customerName: user.name!,
               cashReceiptType: cashReceiptType),
         ),

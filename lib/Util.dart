@@ -98,8 +98,8 @@ class OkCancelGroup extends StatelessWidget {
   }
 }
 
-showCustomAlertDialog(
-    BuildContext context, H4PayDialog dialog, bool dismissable) async {
+showCustomAlertDialog(BuildContext context, H4PayDialog dialog,
+    bool dismissable) async {
   await showDialog(
     context: context,
     barrierDismissible: dismissable, // user must tap button!

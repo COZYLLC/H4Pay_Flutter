@@ -146,7 +146,6 @@ class SupportFormPageState extends State<SupportFormPage> {
                     controller: title,
                     backgroundColor: Colors.grey[200]!,
                     borderColor: Colors.grey[400]!,
-                    isMultiLine: false,
                     validator: (value) {
                       return value!.length > 0 ? null : "문의 내용을 입력해주세요.";
                     },

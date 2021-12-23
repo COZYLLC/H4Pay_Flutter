@@ -7,6 +7,8 @@ import 'package:h4pay/Purchase/Order.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Beautifier.dart';
+import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,44 +35,49 @@ class GiftOptionDialog extends H4PayDialog {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Form(
-          key: formKey,
-          child: Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: TextFormField(
-                  controller: studentId,
-                  decoration: InputDecoration(
-                    labelText: "학번",
-                  ),
-                  keyboardType: TextInputType.number,
-                  maxLength: 4,
-                  validator: (value) {
-                    return value!.length == 4 ? null : "올바른 학번을 입력해주세요.";
-                  },
-                ),
-              ),
-              Spacer(flex: 1),
-              Expanded(
-                flex: 2,
-                child: TextFormField(
-                  controller: qty,
-                  decoration: InputDecoration(
-                    labelText: "수량",
-                  ),
-                  keyboardType: TextInputType.number,
-                  maxLength: 1,
-                  validator: (value) {
-                    return value!.length == 1 ? null : "올바른 수량을 입력해주세요.";
-                  },
-                ),
-              ),
-            ],
-          ),
+    return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(23.0),
         ),
+      ),
+      title: Text(title),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Form(
+            key: formKey,
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 8,
+                  child: H4PayInput(
+                    isNumber: true,
+                    title: "학번",
+                    controller: studentId,
+                    validator: (value) {
+                      return value!.length == 4 ? null : "올바른 학번을 입력해주세요.";
+                    },
+                  ),
+                ),
+                Spacer(flex: 1),
+                Expanded(
+                  flex: 8,
+                  child: H4PayInput.done(
+                    isNumber: true,
+                    controller: qty,
+                    title: "수량",
+                    validator: (value) {
+                      return value!.length == 1 ? null : "올바른 수량을 입력해주세요.";
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      actions: [
         OkCancelGroup(
           okClicked: () async {
             if (!formKey.currentState!.validate()) {
@@ -127,7 +134,10 @@ class GiftOptionDialog extends H4PayDialog {
             type: Gift,
             amount: product.price * qty,
             orderId: _orderId,
-            orderName: product.productName,
+            orderName: "(선물) ${getOrderName(
+              {product.id.toString(): qty},
+              product.productName,
+            )}",
             customerName: user.name!,
             cashReceiptType: "미발급",
           ),

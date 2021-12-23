@@ -398,12 +398,12 @@ class PurchaseCard extends StatelessWidget {
   final Product product;
   final String uid;
 
-  const PurchaseCard(
-      {Key? key,
-      required this.purchase,
-      required this.product,
-      required this.uid})
-      : super(key: key);
+  const PurchaseCard({
+    Key? key,
+    required this.purchase,
+    required this.product,
+    required this.uid,
+  }) : super(key: key);
 
   _cancel(context) async {
     final isCanceled = await cancelOrder(purchase.orderId);
@@ -540,7 +540,7 @@ class PurchaseCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(getProductName(purchase.item, product.productName)),
+                    Text(getOrderName(purchase.item, product.productName)),
                     Text(getPrettyAmountStr(purchase.amount)),
                     Text(getPrettyDateStr(purchase.expire, true) + " 까지"),
                     (purchase.exchanged)
@@ -562,17 +562,19 @@ class PurchaseCard extends StatelessWidget {
                       isUsable // 만료되지 않았고 일반 주문이거나 수신자이면
                           ? useButton
                           : Container(),
-                      Expanded(
-                        flex: 8,
-                        child: Container(
-                          margin: EdgeInsets.only(left: 10),
-                          child: !isGift // 일반 주문일 경우에
-                              ? cancelButton
-                              : isNotExtended & isReceiver
-                                  ? extendButton
-                                  : Container(),
-                        ),
-                      )
+                      !isGift || (isNotExtended && isReceiver)
+                          ? Expanded(
+                              flex: 8,
+                              child: Container(
+                                margin: EdgeInsets.only(left: 10),
+                                child: !isGift // 일반 주문일 경우에
+                                    ? cancelButton
+                                    : isNotExtended & isReceiver
+                                        ? extendButton
+                                        : Container(),
+                              ),
+                            )
+                          : Container()
                     ],
                   )
                 : Container(),

@@ -53,14 +53,12 @@ class LoginPageState extends State<LoginPage> {
                     H4PayInput(
                       title: "아이디",
                       controller: _idController,
-                      isMultiLine: false,
                       validator: idValidator,
                     ),
                     H4PayInput.done(
                       isPassword: true,
                       title: "비밀번호",
                       controller: _pwController,
-                      isMultiLine: false,
                       validator: pwValidator,
                     ),
                   ],
@@ -141,13 +139,11 @@ class AccountFindPageState extends State<AccountFindPage> {
                   H4PayInput(
                     title: "이름",
                     controller: _nameController,
-                    isMultiLine: false,
                     validator: nameValidator,
                   ),
                   H4PayInput.done(
                     title: "이메일",
                     controller: _emailController,
-                    isMultiLine: false,
                     validator: emailValidator,
                   )
                 ],
@@ -186,19 +182,16 @@ class AccountFindPageState extends State<AccountFindPage> {
                   H4PayInput(
                     title: "이름",
                     controller: _nameController,
-                    isMultiLine: false,
                     validator: nameValidator,
                   ),
                   H4PayInput(
                     title: "아이디",
                     controller: _idController,
-                    isMultiLine: false,
                     validator: idValidator,
                   ),
                   H4PayInput.done(
                     title: "이메일",
                     controller: _emailController,
-                    isMultiLine: false,
                     validator: emailValidator,
                   ),
                 ],

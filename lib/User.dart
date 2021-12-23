@@ -44,6 +44,7 @@ class H4PayUser {
 }
 
 Future<String?> login(String id, String pw) async {
+  print("APIURL $API_URL");
   final bytes = utf8.encode(pw);
   final digest = sha256.convert(bytes);
   try {

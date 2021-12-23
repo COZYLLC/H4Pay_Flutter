@@ -72,7 +72,7 @@ class PurchaseDetailPageState extends State<PurchaseDetailPage> {
                   ReceiptText(title: "주문 번호", content: widget.purchase.orderId),
                   ReceiptText(
                     title: "상품명",
-                    content: getProductName(
+                    content: getOrderName(
                       widget.purchase.item,
                       products
                           .singleWhereOrNull(

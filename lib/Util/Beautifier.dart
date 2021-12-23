@@ -25,19 +25,20 @@ String getPrettyAmountStr(int amount) {
   return "${numberFormat.format(amount)}원";
 }
 
-String getProductName(Map item, String firstProductName) {
+String getOrderName(Map item, String firstProductName) {
   final int firstProductId = int.parse(
     item.entries.elementAt(0).key,
   );
-  int totalQty = 0;
+  final int firstProductQty = item.entries.elementAt(0).value;
+  int totalQtyExceptFirst = 0;
   item.forEach(
     (key, value) {
       if (int.parse(key) != firstProductId) {
-        totalQty += value as int;
+        totalQtyExceptFirst += value as int;
       }
     },
   );
-  return totalQty == 0
-      ? "$firstProductName"
-      : "$firstProductName 외 $totalQty 개";
+  return totalQtyExceptFirst == 0
+      ? "$firstProductName $firstProductQty개"
+      : "$firstProductName $firstProductQty개 외 $totalQtyExceptFirst 개";
 }

@@ -86,48 +86,41 @@ class RegisterPageState extends State<RegisterPage> {
                   H4PayInput(
                     title: "이름",
                     controller: name,
-                    isMultiLine: false,
                     validator: nameValidator,
                   ),
                   H4PayInput(
                     title: "아이디",
                     controller: id,
-                    isMultiLine: false,
                     validator: idValidator,
                     onEditingComplete: _checkUidValidity,
                   ),
                   H4PayInput(
                     title: "비밀번호",
                     controller: pw,
-                    isMultiLine: false,
                     validator: pwValidator,
                     isPassword: true,
                   ),
                   H4PayInput(
                     title: "비밀번호 확인",
                     controller: pwCheck,
-                    isMultiLine: false,
                     validator: (value) =>
                         pw.text == value ? null : "비밀번호가 일치하지 않습니다.",
                   ),
                   H4PayInput(
                     title: "학번",
                     controller: userAuth,
-                    isMultiLine: false,
                     validator: (value) =>
                         value!.length == 4 ? null : "학번은 4자리 숫자입니다.",
                   ),
                   H4PayInput(
                     title: "이메일",
                     controller: email,
-                    isMultiLine: false,
                     validator: emailValidator,
                   ),
                   H4PayInput.done(
-                    isTel: true,
+                    isNumber: true,
                     title: "휴대전화 번호",
                     controller: tel,
-                    isMultiLine: false,
                     validator: telValidator,
                     inputFormatters: [
                       MultiMaskedTextInputFormatter(

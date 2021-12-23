@@ -46,21 +46,18 @@ class ChangePWDialog extends H4PayDialog {
                     isPassword: true,
                     title: "기존 비밀번호",
                     controller: prevPassword,
-                    isMultiLine: false,
                     validator: null,
                   ),
                   H4PayInput(
                     isPassword: true,
                     title: "변경할 비밀번호",
                     controller: pw2Change,
-                    isMultiLine: false,
                     validator: pwValidator,
                   ),
                   H4PayInput.done(
                     isPassword: true,
                     title: "비밀번호 확인",
                     controller: pwCheck,
-                    isMultiLine: false,
                     validator: (value) =>
                         value == pw2Change.text ? null : "비밀번호가 일치하지 않습니다.",
                   )

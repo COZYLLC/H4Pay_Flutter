@@ -47,7 +47,16 @@ class WebViewExampleState extends State<WebViewExample> {
 
   @override
   Widget build(BuildContext context) {
-    final url = "https://h4pay.co.kr";
+    final url = dotenv.env['WEB_URL']!;
+    final Map<String, String> queryParams = {
+      "cashReceipt": widget.cashReceiptType,
+      "amount": widget.amount.toString(),
+      "orderId": widget.orderId,
+      "orderName": widget.orderName,
+      "customerName": widget.customerName,
+      "development": dotenv.env['TEST_MODE']!
+    };
+    final String uri = Uri.http(url, "/payment", queryParams).toString();
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -79,9 +88,7 @@ class WebViewExampleState extends State<WebViewExample> {
         ),
       ),
       body: WebView(
-        initialUrl: Uri.encodeFull(
-            "$url/payment?cashReceipt=${widget.cashReceiptType}&amount=${widget.amount}&orderId=${widget.orderId}&orderName=${widget.orderName}&customerName=${widget.customerName}&development=${dotenv.env['TEST_MODE']}"),
-        //"http://10.172.16.134:8080/payment/success/presuccess.html",
+        initialUrl: uri,
         javascriptMode: JavascriptMode.unrestricted,
         onWebViewCreated: (WebViewController webViewController) {
           _webViewController = webViewController;
@@ -125,7 +132,7 @@ class WebViewExampleState extends State<WebViewExample> {
             } catch (e) {
               return NavigationDecision.prevent;
             }
-          } else if (request.url.startsWith("$url/paySuccess")) {
+          } else if (request.url.startsWith("http://$url/paySuccess")) {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -136,7 +143,7 @@ class WebViewExampleState extends State<WebViewExample> {
               ),
             ).then(updateBadges);
             return NavigationDecision.prevent;
-          } else if (request.url.startsWith("$url/payFail")) {
+          } else if (request.url.startsWith("http://$url/payFail")) {
             Navigator.pop(context);
             return NavigationDecision.prevent;
           } else {
