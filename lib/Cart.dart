@@ -132,7 +132,8 @@ class CartState extends State<Cart> {
                               final idx = int.parse(
                                   cartMap.keys.elementAt(index) as String);
                               return CartCard(
-                                product: products![idx],
+                                product: products!.firstWhereOrNull(
+                                    (product) => product.id == idx)!,
                                 qty: cartMap['$idx'],
                               );
                             },
@@ -144,12 +145,9 @@ class CartState extends State<Cart> {
                                 text: '총 가격: ',
                                 children: <TextSpan>[
                                   TextSpan(
-                                    text: getPrettyAmountStr(
-                                      totalPrice,
-                                    ),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    text: getPrettyAmountStr(totalPrice),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),

@@ -41,7 +41,7 @@ class HomeState extends State<Home> {
 
   Future<Map> _fetchThings() async {
     Map data = {};
-    List<Product>? products = await fetchProduct('homePage');
+    List<Product>? products = await fetchProductOnlyVisible('homePage');
     products!.sort((a, b) => a.productName.compareTo(b.productName));
     data['product'] = products;
     data['notice'] = await fetchNotice();
