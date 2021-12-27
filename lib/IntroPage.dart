@@ -26,12 +26,6 @@ class EmptyAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => Size(0.0, 0.0);
 }
 
-class H4PayRoute {
-  final String route;
-  final String data;
-  H4PayRoute({required this.route, required this.data});
-}
-
 class IntroPage extends StatefulWidget {
   bool canGoBack;
   IntroPage({required this.canGoBack});
