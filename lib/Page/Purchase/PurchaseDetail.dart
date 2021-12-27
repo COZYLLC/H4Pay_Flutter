@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:h4pay/Payment.dart';
@@ -5,6 +6,7 @@ import 'package:h4pay/Product.dart';
 import 'package:h4pay/Purchase/Purchase.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/Util/Beautifier.dart';
+import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/main.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:wakelock/wakelock.dart';
@@ -44,6 +46,7 @@ class PurchaseDetailPageState extends State<PurchaseDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final Map item = widget.purchase.item;
     return Scaffold(
       appBar: H4PayAppbar(
         title: "주문 상세 내역",
@@ -108,6 +111,48 @@ class PurchaseDetailPageState extends State<PurchaseDetailPage> {
                             ],
                           )
                         : Container(),
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(top: 20, bottom: 5),
+                    child: const Text(
+                      "주문 품목",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 100,
+                    child: ListView.builder(
+                      itemCount: widget.purchase.item.length,
+                      shrinkWrap: true,
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (BuildContext context, int index) {
+                        final int idx = int.parse(item.keys.elementAt(index));
+                        final product = products
+                            .firstWhereOrNull((product) => product.id == idx);
+                        return CardWidget(
+                          margin: EdgeInsets.only(right: 5),
+                          child: Row(
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl: product!.img,
+                                height: 40,
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(product.productName),
+                                  Text("${item[idx.toString()]} 개")
+                                ],
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
