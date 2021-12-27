@@ -15,13 +15,14 @@ class WebViewExample extends StatefulWidget {
   final Type type;
 
   final String cashReceiptType;
-  WebViewExample(
-      {required this.amount,
-      required this.orderId,
-      required this.orderName,
-      required this.customerName,
-      required this.type,
-      required this.cashReceiptType});
+  WebViewExample({
+    required this.amount,
+    required this.orderId,
+    required this.orderName,
+    required this.customerName,
+    required this.type,
+    required this.cashReceiptType,
+  });
 
   @override
   WebViewExampleState createState() => WebViewExampleState();

@@ -284,7 +284,6 @@ class CartCardState extends State<CartCard> {
     CartState? parentState = context.findAncestorStateOfType<CartState>();
     return CardWidget(
       margin: EdgeInsets.symmetric(vertical: 9),
-      onClick: () {},
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           return WideCardScaffold(
@@ -298,7 +297,6 @@ class CartCardState extends State<CartCard> {
                     Container(
                       child: Text(
                         widget.product.productName.replaceAll(' | ', '\n'),
-                        //dummy.toString(),
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -472,9 +470,7 @@ class PurchaseCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PurchaseDetailPage(
-                purchase: purchase,
-              ),
+              builder: (context) => PurchaseDetailPage(purchase: purchase),
             ),
           ).then(disableWakeLock);
         },
