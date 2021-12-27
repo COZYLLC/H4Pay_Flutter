@@ -57,19 +57,21 @@ class Order extends Purchase {
       });
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
-        return H4PayResult(
+        return H4PayResult.purchase(
           success: jsonResponse['status'],
-          data: jsonResponse['message'],
+          data: this,
         );
       } else {
-        return H4PayResult(
+        return H4PayResult.network(
           success: false,
           data: "서버 오류입니다.",
         );
       }
     } catch (e) {
-      return H4PayResult(
-          success: false, data: "서버 응답 시간이 초과되었습니다. 인터넷 연결 상태를 확인하세요.");
+      return H4PayResult.network(
+        success: false,
+        data: "서버 응답 시간이 초과되었습니다. 인터넷 연결 상태를 확인하세요.",
+      );
     }
   }
 

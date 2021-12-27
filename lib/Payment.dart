@@ -28,7 +28,7 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
   AnimationController? _animationController;
   Animation<double>? _animation;
   SharedPreferences? _prefs;
-  Future<Purchase?>? _processFuture;
+  Future<H4PayResult>? _processFuture;
 
   @override
   void initState() {
@@ -44,83 +44,87 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
       child: FutureBuilder(
         future: _processFuture,
         builder: (context, snapshot) {
-          _animationController!.forward();
           if (snapshot.hasData) {
-            final Purchase? purchase = snapshot.data as Purchase;
-
-            return Scaffold(
-              appBar: H4PayAppbar(
-                title: "결제 완료",
-                height: 56.0,
-                canGoBack: false,
-              ),
-              body: Align(
-                alignment: Alignment.center,
-                child: Container(
-                  margin: EdgeInsets.all(40),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      AnimatedCheck(progress: _animation!, size: 200),
-                      Container(
-                        height: MediaQuery.of(context).size.height * 0.15,
-                      ),
-                      ReceiptText(title: "주문 번호", content: purchase!.orderId),
-                      Divider(
-                        color: Colors.black,
-                      ),
-                      ReceiptText(
-                        title: "주문 일시",
-                        content: getPrettyDateStr(purchase.date, true),
-                      ),
-                      ReceiptText(
-                        title: "만료 일시",
-                        content: getPrettyDateStr(purchase.expire, true),
-                      ),
-                      ReceiptText(title: "결제 방법", content: "토스"),
-                      Container(
-                        height: MediaQuery.of(context).size.height * 0.1,
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: H4PayButton(
-                              text: "홈으로 돌아가기",
-                              width: MediaQuery.of(context).size.width * 0.4,
-                              onClick: () {
-                                Navigator.pop(context);
-                              },
-                              backgroundColor: Theme.of(context).primaryColor,
+            final H4PayResult result = snapshot.data as H4PayResult;
+            if (result.success) {
+              _animationController!.forward();
+              final Purchase purchase = result.data as Purchase;
+              return Scaffold(
+                appBar: H4PayAppbar(
+                  title: "결제 완료",
+                  height: 56.0,
+                  canGoBack: false,
+                ),
+                body: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    margin: EdgeInsets.all(40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        AnimatedCheck(progress: _animation!, size: 200),
+                        Container(
+                          height: MediaQuery.of(context).size.height * 0.15,
+                        ),
+                        ReceiptText(title: "주문 번호", content: purchase.orderId),
+                        Divider(color: Colors.black),
+                        ReceiptText(
+                          title: "주문 일시",
+                          content: getPrettyDateStr(purchase.date, true),
+                        ),
+                        ReceiptText(
+                          title: "만료 일시",
+                          content: getPrettyDateStr(purchase.expire, true),
+                        ),
+                        ReceiptText(title: "결제 방법", content: "토스"),
+                        Container(
+                          height: MediaQuery.of(context).size.height * 0.1,
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: H4PayButton(
+                                text: "홈으로 돌아가기",
+                                width: MediaQuery.of(context).size.width * 0.4,
+                                onClick: () {
+                                  Navigator.pop(context);
+                                },
+                                backgroundColor: Theme.of(context).primaryColor,
+                              ),
                             ),
-                          ),
-                          Container(width: 10),
-                          Expanded(
-                            child: H4PayButton(
-                              text: "상세 정보 확인",
-                              width: MediaQuery.of(context).size.width * 0.4,
-                              onClick: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PurchaseDetailPage(
-                                      purchase: purchase,
+                            Container(width: 10),
+                            Expanded(
+                              child: H4PayButton(
+                                text: "상세 정보 확인",
+                                width: MediaQuery.of(context).size.width * 0.4,
+                                onClick: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PurchaseDetailPage(
+                                        purchase: purchase,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                              backgroundColor: Theme.of(context).primaryColor,
+                                  );
+                                },
+                                backgroundColor: Theme.of(context).primaryColor,
+                              ),
                             ),
-                          ),
-                        ],
-                      )
-                    ],
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
+              );
+            } else {
+              return Scaffold(
+                body: Center(child: Text("결제 실패")),
+              );
+            }
           } else {
             return Center(
               child: CircularProgressIndicator(),
@@ -144,14 +148,13 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
     );
   }
 
-  Future<Purchase?> _processPayment() async {
+  Future<H4PayResult> _processPayment() async {
     _prefs = await SharedPreferences.getInstance();
     final H4PayUser? user = await userFromStorage();
     if (user != null) {
       final Map<String, dynamic> tempPurchase =
           json.decode(_prefs!.getString('tempPurchase')!);
       final Map paymentData = widget.params;
-//     if (tempPurchase['orderId'] == paymentData['orderId']) {
       if (true) {
         final date = DateTime.now();
         final expire = date.add(
@@ -166,35 +169,22 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
           tempPurchase['uid'] = user.uid;
           final order = Order.fromJson(tempPurchase);
           final H4PayResult createResult = await order.create();
-          if (createResult.success) {
-            _prefs!.setString('cart', json.encode({}));
-            return order;
-          } else {
-            showSnackbar(
-                context, createResult.data, Colors.red, Duration(seconds: 1));
-          }
+          if (createResult.success) _prefs!.setString('cart', json.encode({}));
+          return createResult;
         } else {
           tempPurchase['uidfrom'] = user.uid;
           tempPurchase['extended'] = false;
           final gift = Gift.fromJson(tempPurchase);
           final H4PayResult createResult = await gift.create();
-          if (createResult.success) {
-            _prefs!.setString('cart', json.encode({}));
-            return gift;
-          } else {
-            showSnackbar(
-                context, createResult.data, Colors.red, Duration(seconds: 1));
-          }
+          if (createResult.success) _prefs!.setString('cart', json.encode({}));
+          return createResult;
         }
       }
     } else {
-      showSnackbar(
-        context,
-        "로그인 되어 있지 않은 것 같습니다!",
-        Colors.red,
-        Duration(seconds: 1),
+      return H4PayResult(
+        success: false,
+        data: "로그인 되어 있지 않은 것 같습니다!",
       );
-      return null;
     }
   }
 }
