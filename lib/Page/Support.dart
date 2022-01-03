@@ -1,19 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:h4pay/NoticeList.dart';
+import 'package:h4pay/Page/NoticeList.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/Setting.dart';
-import 'package:h4pay/Success.dart';
+import 'package:h4pay/Page/Success.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/main.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:h4pay/MyPage.dart';
+import 'package:h4pay/Page/Account/MyPage.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Card.dart';
-import 'package:h4pay/custompaint.dart';
+import 'package:h4pay/Util/custompaint.dart';
 import 'package:path/path.dart';
 import 'package:async/async.dart';
 

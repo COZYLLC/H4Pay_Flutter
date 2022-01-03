@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:h4pay/Seller.dart';
-import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/components/WebView.dart';

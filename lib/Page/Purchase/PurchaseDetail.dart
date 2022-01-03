@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:barcode_widget/barcode_widget.dart';
-import 'package:h4pay/Payment.dart';
+import 'package:h4pay/Page/Purchase/Payment.dart';
 import 'package:h4pay/Product.dart';
 import 'package:h4pay/Purchase/Purchase.dart';
 import 'package:h4pay/User.dart';

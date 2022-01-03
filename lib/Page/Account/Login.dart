@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/User.dart';
-import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/main.dart';
-import 'package:h4pay/validator.dart';
+import 'package:h4pay/Util/validator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {

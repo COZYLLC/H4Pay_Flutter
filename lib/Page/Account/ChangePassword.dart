@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/IntroPage.dart';
-import 'package:h4pay/Success.dart';
+import 'package:h4pay/Page/IntroPage.dart';
+import 'package:h4pay/Page/Success.dart';
 import 'package:h4pay/User.dart';
-import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
-import 'package:h4pay/validator.dart';
+import 'package:h4pay/Util/validator.dart';
 
 class ChangePWDialog extends H4PayDialog {
   final GlobalKey<FormState> formKey;

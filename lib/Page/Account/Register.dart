@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/Login.dart';
+import 'package:h4pay/Page/Account/Login.dart';
 import 'package:h4pay/Result.dart';
-import 'package:h4pay/Success.dart';
+import 'package:h4pay/Page/Success.dart';
 import 'package:h4pay/User.dart';
-import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/main.dart';
-import 'package:h4pay/mp.dart';
-import 'package:h4pay/validator.dart';
+import 'package:h4pay/Util/mp.dart';
+import 'package:h4pay/Util/validator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -20,11 +20,8 @@ class RegisterPage extends StatefulWidget {
 
 class RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
-  final name = TextEditingController();
-  final id = TextEditingController();
   final pw = TextEditingController();
   final pwCheck = TextEditingController();
-  final userAuth = TextEditingController();
   final email = TextEditingController();
   final tel = TextEditingController();
   String? selectedUserType;
@@ -42,8 +39,8 @@ class RegisterPageState extends State<RegisterPage> {
     }
   ];
 
-  _checkUidValidity() {
-    uidDuplicateCheck(id.text).then((isDuplicated) {
+  _checkEmailValidity() {
+    uidDuplicateCheck(email.text.split("@")[0]).then((isDuplicated) {
       if (!isDuplicated) {
         showCustomAlertDialog(
           context,
@@ -84,15 +81,14 @@ class RegisterPageState extends State<RegisterPage> {
               child: Column(
                 children: [
                   H4PayInput(
-                    title: "이름",
-                    controller: name,
-                    validator: nameValidator,
+                    title: "이메일",
+                    controller: email,
+                    validator: emailValidator,
+                    onEditingComplete: _checkEmailValidity,
                   ),
-                  H4PayInput(
-                    title: "아이디",
-                    controller: id,
-                    validator: idValidator,
-                    onEditingComplete: _checkUidValidity,
+                  Text(
+                    "이메일의 @(골뱅이) 앞의 것을 아이디로 자동 등록합니다.",
+                    style: TextStyle(color: Colors.red),
                   ),
                   H4PayInput(
                     title: "비밀번호",
@@ -105,17 +101,6 @@ class RegisterPageState extends State<RegisterPage> {
                     controller: pwCheck,
                     validator: (value) =>
                         pw.text == value ? null : "비밀번호가 일치하지 않습니다.",
-                  ),
-                  H4PayInput(
-                    title: "학번",
-                    controller: userAuth,
-                    validator: (value) =>
-                        value!.length == 4 ? null : "학번은 4자리 숫자입니다.",
-                  ),
-                  H4PayInput(
-                    title: "이메일",
-                    controller: email,
-                    validator: emailValidator,
                   ),
                   H4PayInput.done(
                     isNumber: true,
@@ -164,13 +149,9 @@ class RegisterPageState extends State<RegisterPage> {
                     onClick: () async {
                       if (_formKey.currentState!.validate()) {
                         final H4PayResult registerResult = await createUser(
-                          name.text,
-                          id.text,
+                          email.text.split("@")[0],
                           pw.text,
-                          userAuth.text,
-                          email.text,
                           tel.text,
-                          selectedUserType!,
                         );
                         if (registerResult.success == true) {
                           SharedPreferences prefs =

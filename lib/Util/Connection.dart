@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Setting.dart';
-import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';

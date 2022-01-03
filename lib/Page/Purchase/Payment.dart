@@ -7,7 +7,7 @@ import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
 import 'package:h4pay/Result.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/components/Button.dart';
-import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';

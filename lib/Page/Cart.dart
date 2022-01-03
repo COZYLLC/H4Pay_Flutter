@@ -6,7 +6,7 @@ import 'package:h4pay/Purchase/Order.dart';
 import 'package:h4pay/Product.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/Util/Beautifier.dart';
-import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/components/WebView.dart';

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:h4pay/Purchase/Gift.dart';
 import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
-import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Wakelock.dart';
 import 'package:h4pay/Voucher.dart';
 import 'package:h4pay/Page/Voucher/VoucherView.dart';

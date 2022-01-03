@@ -14,18 +14,28 @@ class H4PayUser {
   String? name;
   String? email;
   String? role;
+  String? tel;
   String token;
   final storage = new FlutterSecureStorage();
 
-  H4PayUser({this.uid, this.name, this.email, this.role, required this.token});
+  H4PayUser({
+    this.uid,
+    this.name,
+    this.email,
+    this.role,
+    this.tel,
+    required this.token,
+  });
 
   factory H4PayUser.fromjson(Map json) {
     return H4PayUser(
-        uid: json['uid'],
-        name: json['name'],
-        email: json['email'],
-        role: json['role'],
-        token: json['token']);
+      uid: json['uid'],
+      name: json['name'],
+      email: json['email'],
+      role: json['role'],
+      tel: json['tel'],
+      token: json['token'],
+    );
   }
 
   Future<bool> saveToStorage() async {
@@ -35,6 +45,7 @@ class H4PayUser {
       storage.write(key: 'name', value: this.name);
       storage.write(key: 'email', value: this.email);
       storage.write(key: 'role', value: this.role);
+      storage.write(key: 'tel', value: this.tel);
       storage.write(key: 'token', value: this.token);
       return true;
     } catch (e) {
@@ -168,36 +179,10 @@ Future<bool> changePassword(
 }
 
 Future<H4PayResult> createUser(
-  String name,
-  String uid,
-  String password,
-  String userAuth,
   String email,
+  String password,
   String tel,
-  String role,
 ) async {
-  bool isVerified = false;
-  switch (role) {
-    case 'A':
-      isVerified = userAuth == dotenv.env['AUTH_CODE_ADMIN_SYSTEM'];
-      break;
-    case 'AT':
-      isVerified = userAuth == dotenv.env['AUTH_CODE_ADMIN_TEACHER'];
-      break;
-    case 'T':
-      isVerified = userAuth == dotenv.env['AUTH_CODE_TEACHER'];
-      break;
-    case 'M':
-      isVerified = userAuth == dotenv.env['AUTH_CODE_MANAGER_STUDENT'];
-      break;
-    case 'S':
-      isVerified = true;
-      break;
-  }
-  if (!isVerified) {
-    return H4PayResult(success: false, data: "인증코드가 틀렸습니다.");
-  }
-
   final bytes = utf8.encode(password);
   final digest = sha256.convert(bytes);
 
@@ -207,15 +192,13 @@ Future<H4PayResult> createUser(
       'Content-Type': 'application/json; charset=UTF-8',
     },
     body: json.encode({
-      'name': name,
-      'uid': uid,
+      'uid': email.split("@")[0],
       'password': base64.encode(digest.bytes),
-      'studentid': role == 'S' ? userAuth : "",
-      'email': email,
       'aID': '',
       'gID': '',
+      'email': email,
       'tel': tel,
-      'role': role,
+      'role': 'S',
     }),
   );
   if (response.statusCode == 200) {

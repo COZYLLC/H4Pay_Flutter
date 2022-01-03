@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/mp.dart';
+import 'package:h4pay/Util/mp.dart';
 
 enum H4PayInputType { next, done }
 
@@ -59,12 +59,13 @@ class H4PayInputState extends State<H4PayInput> {
 
   @override
   Widget build(BuildContext context) {
-    BoxDecoration roundDecoration = BoxDecoration(
-      color: widget.backgroundColor ?? defaultBackgroundColor,
-      borderRadius: BorderRadius.circular(38),
-      border: Border.all(
-        color: widget.borderColor ?? defaultBorderColor,
+    InputDecoration roundDecoration = InputDecoration(
+      fillColor: widget.backgroundColor ?? defaultBackgroundColor,
+      filled: true,
+      border: new OutlineInputBorder(
+        borderRadius: const BorderRadius.all(const Radius.circular(38.0)),
       ),
+      contentPadding: new EdgeInsets.symmetric(vertical: 0.0, horizontal: 10.0),
     );
     Container titleText = Container(
       margin: EdgeInsets.only(bottom: 10),
@@ -79,29 +80,25 @@ class H4PayInputState extends State<H4PayInput> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           titleText,
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+          TextFormField(
+            obscureText: widget.isPassword ?? false,
+            controller: widget.controller,
             decoration: roundDecoration,
-            child: TextFormField(
-              obscureText: widget.isPassword ?? false,
-              controller: widget.controller,
-              decoration: InputDecoration(border: InputBorder.none),
-              textInputAction: widget.isMultiLine ?? false
-                  ? TextInputAction.newline
-                  : widget.type == H4PayInputType.done
-                      ? TextInputAction.done
-                      : TextInputAction.next,
-              keyboardType: widget.isNumber ?? false
-                  ? TextInputType.phone
-                  : widget.isMultiLine ?? false
-                      ? TextInputType.multiline
-                      : TextInputType.text,
-              maxLines: widget.isMultiLine ?? false ? null : 1,
-              minLines: widget.isMultiLine ?? false ? widget.minLines : null,
-              validator: widget.validator,
-              onEditingComplete: widget.onEditingComplete,
-              inputFormatters: widget.inputFormatters,
-            ),
+            textInputAction: widget.isMultiLine ?? false
+                ? TextInputAction.newline
+                : widget.type == H4PayInputType.done
+                    ? TextInputAction.done
+                    : TextInputAction.next,
+            keyboardType: widget.isNumber ?? false
+                ? TextInputType.phone
+                : widget.isMultiLine ?? false
+                    ? TextInputType.multiline
+                    : TextInputType.text,
+            maxLines: widget.isMultiLine ?? false ? null : 1,
+            minLines: widget.isMultiLine ?? false ? widget.minLines : null,
+            validator: widget.validator,
+            onEditingComplete: widget.onEditingComplete,
+            inputFormatters: widget.inputFormatters,
           ),
         ],
       ),
