@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Cart.dart';
 import 'package:h4pay/Event.dart';
 import 'package:h4pay/Notice.dart';
@@ -42,11 +44,21 @@ class HomeState extends State<Home> {
   Future<Map> _fetchThings() async {
     Map data = {};
     List<Product>? products = await fetchProductOnlyVisible('homePage');
-    products!.sort((a, b) => a.productName.compareTo(b.productName));
-    data['product'] = products;
-    data['notice'] = await fetchNotice();
-    data['event'] = await fetchEvent();
-    return data;
+    if (products == null) {
+      if (dotenv.env['TEST_MODE'] == 'FALSE') {
+        showSnackbar(context, "제품 정보를 불러올 수 없습니다. 앱을 종료합니다.", Colors.red,
+            Duration(seconds: 1));
+        Future.delayed(Duration(seconds: 1));
+        exit(0);
+      }
+      return {};
+    } else {
+      products.sort((a, b) => a.productName.compareTo(b.productName));
+      data['product'] = products;
+      data['notice'] = await fetchNotice();
+      data['event'] = await fetchEvent();
+      return data;
+    }
   }
 
   @override
@@ -184,9 +196,7 @@ class HomeState extends State<Home> {
       context,
       "장바구니에 추가되었습니다.",
       Colors.green,
-      Duration(
-        seconds: 1,
-      ),
+      Duration(seconds: 1),
     );
     final cartString = prefs.getString('cart'); // SharedPrefernce에서 장바구니 로드
     Map cartMap = {"$id": 1}; // 장바구니 데이터가 없을 때 초기 데이터.

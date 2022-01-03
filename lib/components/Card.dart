@@ -40,9 +40,7 @@ class _CardWidgetState extends State<CardWidget> {
       elevation: 2,
       margin: widget.margin,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(23),
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(23)),
       ),
       color: Colors.white,
       child: InkWell(
@@ -87,9 +85,7 @@ class AlertCard extends StatelessWidget {
           Center(
             child: Text(
               "장바구니에 추가되었습니다!",
-              style: TextStyle(
-                color: textColor,
-              ),
+              style: TextStyle(color: textColor),
             ),
           ),
         ],

@@ -4,7 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/AppLink.dart';
 import 'package:h4pay/Login.dart';
 import 'package:h4pay/Register.dart';
-import 'package:h4pay/Setting.dart';
 import 'package:h4pay/User.dart';
 import 'package:h4pay/Util.dart';
 import 'package:h4pay/Util/Connection.dart';
@@ -60,7 +59,7 @@ class IntroPageState extends State<IntroPage> {
                   context: context,
                   onClick: () {
                     Navigator.pop(context);
-                    showIpChangeDialog();
+                    showIpChangeDialog(context, _formKey, _ipController);
                   },
                 ),
               ],
@@ -254,7 +253,10 @@ class IntroPageState extends State<IntroPage> {
                     ),
                     dotenv.env['TEST_MODE'] == "TRUE"
                         ? InkWell(
-                            onTap: showIpChangeDialog,
+                            onTap: () {
+                              showIpChangeDialog(
+                                  context, _formKey, _ipController);
+                            },
                             child: Text(
                               "서버 IP 변경",
                               style: TextStyle(
@@ -272,64 +274,5 @@ class IntroPageState extends State<IntroPage> {
         ),
       ),
     );
-  }
-
-  showIpChangeDialog() {
-    showCustomAlertDialog(
-        context,
-        H4PayDialog(
-          title: "서버 URL 변경",
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                  "서버 URL을 프로토콜, 포트, Route와 함께 입력해주세요. ex) https://yoon-lab.xyz:23408/api"),
-              Form(
-                key: _formKey,
-                child: TextFormField(
-                  controller: _ipController,
-                  validator: (value) {
-                    return value!.isNotEmpty ? null : "URL을 입력해주세요.";
-                  },
-                ),
-              )
-            ],
-          ),
-          actions: [
-            H4PayOkButton(
-              context: context,
-              onClick: () async {
-                FocusScope.of(context).requestFocus(FocusNode());
-                if (_formKey.currentState!.validate()) {
-                  final _prefs = await SharedPreferences.getInstance();
-                  _prefs.setString(
-                    'API_URL',
-                    _ipController.text,
-                  );
-                  API_URL = _ipController.text;
-                  print("API URL newly setted: $API_URL");
-                  final connStatus = await connectionCheck();
-                  if (connStatus) {
-                    Navigator.pop(context);
-                    showSnackbar(
-                      context,
-                      "IP '${_ipController.text}' 로 서버 URL을 설정합니다.",
-                      Colors.green,
-                      Duration(seconds: 1),
-                    );
-                  } else {
-                    showSnackbar(
-                      context,
-                      "IP '${_ipController.text}' 로 연결을 시도했지만 잘 안 되는 것 같네요...",
-                      Colors.red,
-                      Duration(seconds: 1),
-                    );
-                  }
-                }
-              },
-            )
-          ],
-        ),
-        true);
   }
 }
