@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/Purchase/Gift.dart';
-import 'package:h4pay/Purchase/Order.dart';
-import 'package:h4pay/Product.dart';
-import 'package:h4pay/Purchase/Purchase.dart';
+import 'package:h4pay/Network/Gift.dart';
+import 'package:h4pay/Network/Order.dart';
+import 'package:h4pay/Network/Product.dart';
+import 'package:h4pay/Page/Error.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Product.dart';
 import 'package:h4pay/components/Card.dart';
-import 'package:h4pay/User.dart';
+import 'package:h4pay/model/Purchase/Gift.dart';
+import 'package:h4pay/model/Purchase/Order.dart';
+import 'package:h4pay/model/Purchase/Purchase.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:collection/collection.dart';
 import 'package:h4pay/main.dart';
 
@@ -85,8 +90,15 @@ class PurchaseListState extends State<PurchaseList> {
               },
             );
           }
+        } else if (snapshot.hasError) {
+          return ErrorPage(
+            title: "서버 오류가 발생했습니다.",
+            description: "${(snapshot.error as NetworkException).statusCode}",
+          );
         } else {
-          return CircularProgressIndicator();
+          return Center(
+            child: CircularProgressIndicator(),
+          );
         }
       },
     );

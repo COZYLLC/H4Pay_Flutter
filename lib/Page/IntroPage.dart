@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/AppLink.dart';
 import 'package:h4pay/Page/Account/Login.dart';
 import 'package:h4pay/Page/Account/Register.dart';
-import 'package:h4pay/User.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Connection.dart';
 import 'package:h4pay/components/Button.dart';

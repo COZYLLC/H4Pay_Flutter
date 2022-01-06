@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/Event.dart';
-import 'package:h4pay/Notice.dart';
+import 'package:h4pay/Network/Event.dart';
+import 'package:h4pay/Network/Notice.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Event.dart';
+import 'package:h4pay/model/Notice.dart';
 import 'package:h4pay/Page/Purchase/PurchaseList.dart';
 import 'package:h4pay/components/Card.dart';
 
@@ -29,6 +32,11 @@ class NoticeListPage extends ListPage {
                   ),
                 );
               }
+            } else if (snapshot.hasError) {
+              showServerErrorSnackbar(
+                context,
+                snapshot.error as NetworkException,
+              );
             } else {
               return CenterInScroll(
                 child: CircularProgressIndicator(),
@@ -76,6 +84,11 @@ class EventListPage extends ListPage {
                   child: Text("이벤트가 없는 것 같아요."),
                 );
               }
+            } else if (snapshot.hasError) {
+              showServerErrorSnackbar(
+                context,
+                snapshot.error as NetworkException,
+              );
             } else {
               return CenterInScroll(
                 child: CircularProgressIndicator(),

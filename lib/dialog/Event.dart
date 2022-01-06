@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:h4pay/Event.dart';
+import 'package:h4pay/model/Event.dart';
 import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
 

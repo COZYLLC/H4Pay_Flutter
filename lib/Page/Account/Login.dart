@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:h4pay/Result.dart';
-import 'package:h4pay/User.dart';
+import 'package:h4pay/Network/User.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Input.dart';
@@ -69,9 +70,9 @@ class LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 onClick: () async {
                   if (_loginFormKey.currentState!.validate()) {
-                    final String? accessToken =
-                        await login(_idController.text, _pwController.text);
-                    if (accessToken != null) {
+                    try {
+                      final String accessToken =
+                          await login(_idController.text, _pwController.text);
                       final H4PayUser? user = await tokenCheck(accessToken);
                       if (user != null) {
                         await user.saveToStorage();
@@ -79,20 +80,27 @@ class LoginPageState extends State<LoginPage> {
                             await SharedPreferences.getInstance();
                         navigateRoute(
                           context,
-                          MyHomePage(
-                            prefs: prefs,
-                          ),
+                          MyHomePage(prefs: prefs),
+                        );
+                      } else {
+                        throw UserNotFoundException();
+                      }
+                    } on NetworkException catch (e) {
+                      if (e.statusCode == 400) {
+                        showSnackbar(
+                          context,
+                          "아이디 혹은 비밀번호가 틀렸습니다.",
+                          Colors.red,
+                          Duration(seconds: 3),
+                        );
+                      } else {
+                        showSnackbar(
+                          context,
+                          "(${e.statusCode}) 서버 오류가 발생했습니다. 고객센터로 문의해주세요.",
+                          Colors.red,
+                          Duration(seconds: 3),
                         );
                       }
-                    } else {
-                      showSnackbar(
-                        context,
-                        "아이디 혹은 비밀번호가 틀렸습니다.",
-                        Colors.red,
-                        Duration(
-                          seconds: 1,
-                        ),
-                      );
                     }
                   }
                 },
@@ -154,18 +162,20 @@ class AccountFindPageState extends State<AccountFindPage> {
               onClick: () async {
                 if (_findIdFormKey.currentState!.validate()) {
                   // 입력값이 정상이면
-                  final H4PayResult findResult = await findId(
-                    _nameController.text,
-                    _emailController.text,
-                  );
-                  showSnackbar(
-                    context,
-                    findResult.success
-                        ? "아이디가 메일로 전송되었어요. 메일이 도착하지 않았으면 스팸함을 확인해보세요."
-                        : findResult.data,
-                    findResult.success ? Colors.green : Colors.red,
-                    Duration(seconds: 1),
-                  );
+                  try {
+                    await findId(
+                      _nameController.text,
+                      _emailController.text,
+                    );
+                    showSnackbar(
+                      context,
+                      "아이디가 메일로 전송되었어요. 메일이 도착하지 않았으면 스팸함을 확인해보세요.",
+                      Colors.green,
+                      Duration(seconds: 3),
+                    );
+                  } on NetworkException catch (e) {
+                    showServerErrorSnackbar(context, e);
+                  }
                 }
               },
               backgroundColor: Color(0xff5B82D1),
@@ -202,19 +212,21 @@ class AccountFindPageState extends State<AccountFindPage> {
               onClick: () async {
                 if (_findPwFormKey.currentState!.validate()) {
                   // 입력값이 정상이면
-                  final H4PayResult findResult = await findPw(
-                    _nameController.text,
-                    _emailController.text,
-                    _idController.text,
-                  );
-                  showSnackbar(
-                    context,
-                    findResult.success
-                        ? "새로운 비밀번호가 메일로 전송되었어요. 메일이 도착하지 않았으면 스팸함을 확인해보세요."
-                        : findResult.data,
-                    findResult.success ? Colors.green : Colors.red,
-                    Duration(seconds: 1),
-                  );
+                  try {
+                    await findPw(
+                      _nameController.text,
+                      _emailController.text,
+                      _idController.text,
+                    );
+                    showSnackbar(
+                      context,
+                      "새로운 비밀번호가 메일로 전송되었어요. 메일이 도착하지 않았으면 스팸함을 확인해보세요.",
+                      Colors.green,
+                      Duration(seconds: 3),
+                    );
+                  } on NetworkException catch (e) {
+                    showServerErrorSnackbar(context, e);
+                  }
                 }
               },
               backgroundColor: Color(0xff5B82D1),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:h4pay/Network/User.dart';
 import 'package:h4pay/Page/IntroPage.dart';
 import 'package:h4pay/Page/Success.dart';
-import 'package:h4pay/User.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Input.dart';
@@ -82,7 +84,8 @@ class ChangePWDialog extends H4PayDialog {
 
   Future _changePassword(BuildContext context) async {
     if (formKey.currentState!.validate()) {
-      if (await changePassword(user, prevPassword.text, pw2Change.text)) {
+      try {
+        await changePassword(user, prevPassword.text, pw2Change.text);
         navigateRoute(
           context,
           SuccessPage(
@@ -105,11 +108,11 @@ class ChangePWDialog extends H4PayDialog {
             ],
           ),
         );
-      } else {
+      } on NetworkException catch (e) {
         Navigator.pop(context);
         showSnackbar(
           context,
-          "비밀번호 변경에 실패했습니다.",
+          "(${e.statusCode}): 비밀번호 변경에 실패했습니다.",
           Colors.red,
           Duration(seconds: 1),
         );

@@ -4,20 +4,24 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:h4pay/Network/Gift.dart';
+import 'package:h4pay/Network/Order.dart';
+import 'package:h4pay/Network/Voucher.dart';
 import 'package:h4pay/Page/Cart.dart';
 import 'package:h4pay/Page/IntroPage.dart';
 import 'package:h4pay/Page/NoticeList.dart';
-import 'package:h4pay/Purchase/Gift.dart';
 import 'package:h4pay/Page/Home.dart';
 import 'package:h4pay/Page/Account/MyPage.dart';
-import 'package:h4pay/Purchase/Order.dart';
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Page/Support.dart';
-import 'package:h4pay/User.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Purchase/Gift.dart';
+import 'package:h4pay/model/Purchase/Order.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Connection.dart';
-import 'package:h4pay/Voucher.dart';
+import 'package:h4pay/model/Voucher.dart';
 import 'package:h4pay/Util/creatematerialcolor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -182,33 +186,45 @@ class MyHomePageState extends State<MyHomePage> {
       await Future.delayed(Duration(seconds: 3));
       exit(0);
     }
-    final orders = await fetchOrder(user.uid);
-    final gifts = await fetchGift(user.uid);
-    final vouchers = await fetchVouchers(user.uid!);
+    List<Order> orders;
+    List<Gift> gifts;
+    List<Voucher> vouchers;
+
+    try {
+      orders = await fetchOrder(user.uid);
+      gifts = await fetchGift(user.uid);
+      vouchers = await fetchVouchers(user.uid!);
+    } on NetworkException catch (e) {
+      showSnackbar(
+        context,
+        "(${e.statusCode}) 서버 오류가 발생했습니다. 고객센터로 문의해주세요.",
+        Colors.red,
+        Duration(seconds: 3),
+      );
+      return;
+    }
 
     int orderCount = 0;
     int giftCount = 0;
     int voucherCount = 0;
-    if (orders != null) {
-      orders.forEach(
-        (order) => {
-          if (!order.exchanged) orderCount++,
-        },
-      );
-    }
-    if (gifts != null) {
-      gifts.forEach(
-        (gift) => {if (!gift.exchanged && gift.uidto == user.uid) giftCount++},
-      );
-    }
-    if (vouchers != null) {
-      vouchers.forEach((voucher) => {
-            if (!voucher.exchanged &&
-                DateTime.parse(voucher.expire).millisecondsSinceEpoch >
-                    DateTime.now().millisecondsSinceEpoch)
-              voucherCount++
-          });
-    }
+
+    orders.forEach(
+      (order) => {
+        if (!order.exchanged) orderCount++,
+      },
+    );
+    gifts.forEach(
+      (gift) => {if (!gift.exchanged && gift.uidto == user.uid) giftCount++},
+    );
+    vouchers.forEach(
+      (voucher) => {
+        if (!voucher.exchanged &&
+            DateTime.parse(voucher.expire).millisecondsSinceEpoch >
+                DateTime.now().millisecondsSinceEpoch)
+          voucherCount++
+      },
+    );
+
     setState(() {
       badges['order'] = orderCount;
       badges['gift'] = giftCount;

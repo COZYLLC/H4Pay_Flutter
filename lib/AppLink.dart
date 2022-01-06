@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:h4pay/Purchase/Gift.dart';
+import 'package:h4pay/Network/Gift.dart';
+import 'package:h4pay/Network/Voucher.dart';
 import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Wakelock.dart';
-import 'package:h4pay/Voucher.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Purchase/Gift.dart';
+import 'package:h4pay/model/Voucher.dart';
 import 'package:h4pay/Page/Voucher/VoucherView.dart';
 import 'package:h4pay/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,17 +22,17 @@ class H4PayRoute {
 
 Future<Widget?> appLinkToRoute(H4PayRoute route) async {
   if (route.route == 'giftView') {
-    final Gift? gift = await fetchGiftDetail(route.data!);
-    if (gift != null) {
+    try {
+      final Gift gift = await fetchGiftDetail(route.data!);
       return PurchaseDetailPage(purchase: gift);
-    } else {
+    } on NetworkException {
       return null;
     }
   } else if (route.route == 'voucherView') {
-    final Voucher? voucher = await fetchVoucherDetail(route.data!);
-    if (voucher != null) {
+    try {
+      final Voucher voucher = await fetchVoucherDetail(route.data!);
       return VoucherDetailPage(voucher: voucher);
-    } else {
+    } on NetworkException {
       return null;
     }
   } else if (route.route == 'main') {

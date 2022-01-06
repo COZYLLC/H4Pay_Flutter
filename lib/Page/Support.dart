@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:h4pay/Page/NoticeList.dart';
-import 'package:h4pay/Result.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Page/Success.dart';
-import 'package:h4pay/User.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/main.dart';
 import 'package:http/http.dart' as http;
@@ -279,8 +279,8 @@ class SupportFormPageState extends State<SupportFormPage> {
     );
   }
 
-  Future<H4PayResult> _upload(String uid, String email, String title,
-      String category, String content, File? img) async {
+  Future<bool> _upload(String uid, String email, String title, String category,
+      String content, File? img) async {
     var uri = Uri.parse("$API_URL/upload");
     var request = new http.MultipartRequest("POST", uri);
 
@@ -304,12 +304,9 @@ class SupportFormPageState extends State<SupportFormPage> {
     if (response.statusCode == 200) {
       final responseString = await response.stream.bytesToString();
       final jsonResponse = json.decode(responseString);
-      return H4PayResult(
-        success: jsonResponse['status'],
-        data: jsonResponse['message'],
-      );
+      return jsonResponse['status'];
     } else {
-      return H4PayResult(success: false, data: "서버 오류입니다.");
+      throw NetworkException(response.statusCode);
     }
   }
 }

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:h4pay/Network/User.dart';
 import 'package:h4pay/Page/Account/Login.dart';
-import 'package:h4pay/Result.dart';
 import 'package:h4pay/Page/Success.dart';
-import 'package:h4pay/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
+import 'package:h4pay/exception.dart';
 import 'package:h4pay/main.dart';
 import 'package:h4pay/Util/mp.dart';
 import 'package:h4pay/Util/validator.dart';
@@ -41,7 +41,12 @@ class RegisterPageState extends State<RegisterPage> {
 
   _checkEmailValidity() {
     uidDuplicateCheck(email.text.split("@")[0]).then((isDuplicated) {
-      if (!isDuplicated) {
+      if (isDuplicated) {
+        do {
+          FocusScope.of(context).nextFocus();
+        } while (FocusScope.of(context).focusedChild!.context!.widget
+            is! EditableText);
+      } else if (!isDuplicated) {
         showCustomAlertDialog(
           context,
           H4PayDialog(
@@ -58,12 +63,9 @@ class RegisterPageState extends State<RegisterPage> {
           ),
           true,
         );
-      } else {
-        do {
-          FocusScope.of(context).nextFocus();
-        } while (FocusScope.of(context).focusedChild!.context!.widget
-            is! EditableText);
       }
+    }).catchError((e) {
+      showServerErrorSnackbar(context, e);
     });
   }
 
@@ -148,51 +150,50 @@ class RegisterPageState extends State<RegisterPage> {
                     text: "회원가입",
                     onClick: () async {
                       if (_formKey.currentState!.validate()) {
-                        final H4PayResult registerResult = await createUser(
-                          email.text.split("@")[0],
-                          pw.text,
-                          tel.text,
-                        );
-                        if (registerResult.success == true) {
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SuccessPage(
-                                title: "가입 완료",
-                                canGoBack: false,
-                                successText: "회원가입이 완료되었습니다.",
-                                bottomDescription: [Text("더 간편한 매점을 이용해보세요!")],
-                                actions: [
-                                  H4PayButton(
-                                    text: "로그인 하러 가기",
-                                    onClick: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              LoginPage(canGoBack: false),
-                                        ),
-                                      );
-                                    },
-                                    backgroundColor:
-                                        Theme.of(context).primaryColor,
-                                    width: double.infinity,
-                                  )
-                                ],
+                        try {
+                          final bool registerResult = await createUser(
+                            email.text.split("@")[0],
+                            pw.text,
+                            tel.text,
+                          );
+                          if (registerResult) {
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SuccessPage(
+                                  title: "가입 완료",
+                                  canGoBack: false,
+                                  successText: "회원가입이 완료되었습니다.",
+                                  bottomDescription: [
+                                    Text("더 간편한 매점을 이용해보세요!")
+                                  ],
+                                  actions: [
+                                    H4PayButton(
+                                      text: "로그인 하러 가기",
+                                      onClick: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                LoginPage(canGoBack: false),
+                                          ),
+                                        );
+                                      },
+                                      backgroundColor:
+                                          Theme.of(context).primaryColor,
+                                      width: double.infinity,
+                                    )
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        } else if (registerResult.success == false) {
-                          showSnackbar(
-                            context,
-                            registerResult.data,
-                            Colors.red,
-                            Duration(
-                              seconds: 1,
-                            ),
-                          );
+                            );
+                          } else if (registerResult) {
+                            throw NetworkException(400);
+                          }
+                        } on NetworkException catch (e) {
+                          showServerErrorSnackbar(context, e);
                         }
                       }
                     },

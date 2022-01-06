@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:h4pay/Purchase/Gift.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
+import 'package:h4pay/model/Purchase/Gift.dart';
 
 int? lastTimeBackPressed;
 
@@ -98,8 +98,8 @@ class OkCancelGroup extends StatelessWidget {
   }
 }
 
-showCustomAlertDialog(BuildContext context, H4PayDialog dialog,
-    bool dismissable) async {
+showCustomAlertDialog(
+    BuildContext context, H4PayDialog dialog, bool dismissable) async {
   await showDialog(
     context: context,
     barrierDismissible: dismissable, // user must tap button!

@@ -5,10 +5,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:h4pay/Network/Event.dart';
+import 'package:h4pay/Network/Notice.dart';
+import 'package:h4pay/Network/Product.dart';
 import 'package:h4pay/Page/Cart.dart';
-import 'package:h4pay/Event.dart';
-import 'package:h4pay/Notice.dart';
-import 'package:h4pay/Product.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Event.dart';
+import 'package:h4pay/model/Notice.dart';
+import 'package:h4pay/model/Product.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/dialog/Event.dart';
@@ -43,21 +47,21 @@ class HomeState extends State<Home> {
 
   Future<Map> _fetchThings() async {
     Map data = {};
-    List<Product>? products = await fetchProductOnlyVisible('homePage');
-    if (products == null) {
-      if (dotenv.env['TEST_MODE'] == 'FALSE') {
-        showSnackbar(context, "제품 정보를 불러올 수 없습니다. 앱을 종료합니다.", Colors.red,
-            Duration(seconds: 1));
-        Future.delayed(Duration(seconds: 1));
-        exit(0);
-      }
-      return {};
-    } else {
+    try {
+      List<Product> products = await fetchProductOnlyVisible('homePage');
       products.sort((a, b) => a.productName.compareTo(b.productName));
       data['product'] = products;
       data['notice'] = await fetchNotice();
       data['event'] = await fetchEvent();
       return data;
+    } on NetworkException catch (e) {
+      if (dotenv.env['TEST_MODE'] == 'FALSE') {
+        showServerErrorSnackbar(
+          context,
+          e,
+        );
+      }
+      return {};
     }
   }
 

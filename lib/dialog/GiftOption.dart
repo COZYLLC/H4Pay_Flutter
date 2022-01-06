@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:h4pay/Product.dart';
-import 'package:h4pay/Purchase/Gift.dart';
-import 'package:h4pay/Purchase/Order.dart';
-import 'package:h4pay/Result.dart';
-import 'package:h4pay/User.dart';
+import 'package:h4pay/Network/Gift.dart';
+import 'package:h4pay/Network/Order.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Product.dart';
+import 'package:h4pay/model/Purchase/Gift.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/components/Input.dart';
@@ -83,15 +84,19 @@ class GiftOptionDialog extends H4PayDialog {
             if (!formKey.currentState!.validate()) {
               return;
             }
-            final H4PayResult result = await checkUserValid(studentId.text);
-            if (result.success) {
+            try {
+              final List<String> result = await checkUserValid(studentId.text);
               _sendGift(
-                  result.data, product, studentId.text, int.parse(qty.text));
-            } else {
+                result[0],
+                product,
+                studentId.text,
+                int.parse(qty.text),
+              );
+            } on InvalidTargetException catch (e) {
               Navigator.pop(context);
               showSnackbar(
                 context,
-                result.data,
+                e.users[0],
                 Colors.red,
                 Duration(seconds: 1),
               );

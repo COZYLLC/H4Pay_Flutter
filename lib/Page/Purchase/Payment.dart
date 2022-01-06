@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:h4pay/Purchase/Gift.dart';
-import 'package:h4pay/Purchase/Order.dart';
-import 'package:h4pay/Purchase/Purchase.dart';
+import 'package:h4pay/Page/Error.dart';
 import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
-import 'package:h4pay/Result.dart';
-import 'package:h4pay/User.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Purchase/Gift.dart';
+import 'package:h4pay/model/Purchase/Order.dart';
+import 'package:h4pay/model/Purchase/Purchase.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:h4pay/components/Button.dart';
-import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,7 +28,7 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
   AnimationController? _animationController;
   Animation<double>? _animation;
   SharedPreferences? _prefs;
-  Future<H4PayResult>? _processFuture;
+  Future<Purchase>? _processFuture;
 
   @override
   void initState() {
@@ -45,86 +45,84 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
         future: _processFuture,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            final H4PayResult result = snapshot.data as H4PayResult;
-            if (result.success) {
-              _animationController!.forward();
-              final Purchase purchase = result.data as Purchase;
-              return Scaffold(
-                appBar: H4PayAppbar(
-                  title: "결제 완료",
-                  height: 56.0,
-                  canGoBack: false,
-                ),
-                body: Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    margin: EdgeInsets.all(40),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        AnimatedCheck(progress: _animation!, size: 200),
-                        Container(
-                          height: MediaQuery.of(context).size.height * 0.15,
-                        ),
-                        ReceiptText(title: "주문 번호", content: purchase.orderId),
-                        Divider(color: Colors.black),
-                        ReceiptText(
-                          title: "주문 일시",
-                          content: getPrettyDateStr(purchase.date, true),
-                        ),
-                        ReceiptText(
-                          title: "만료 일시",
-                          content: getPrettyDateStr(purchase.expire, true),
-                        ),
-                        ReceiptText(title: "결제 방법", content: "토스"),
-                        Container(
-                          height: MediaQuery.of(context).size.height * 0.1,
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: H4PayButton(
-                                text: "홈으로 돌아가기",
-                                width: MediaQuery.of(context).size.width * 0.4,
-                                onClick: () {
-                                  Navigator.pop(context);
-                                },
-                                backgroundColor: Theme.of(context).primaryColor,
-                              ),
+            _animationController!.forward();
+            final Purchase purchase = snapshot.data as Purchase;
+            return Scaffold(
+              appBar: H4PayAppbar(
+                title: "결제 완료",
+                height: 56.0,
+                canGoBack: false,
+              ),
+              body: Align(
+                alignment: Alignment.center,
+                child: Container(
+                  margin: EdgeInsets.all(40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      AnimatedCheck(progress: _animation!, size: 200),
+                      Container(
+                        height: MediaQuery.of(context).size.height * 0.15,
+                      ),
+                      ReceiptText(title: "주문 번호", content: purchase.orderId),
+                      Divider(color: Colors.black),
+                      ReceiptText(
+                        title: "주문 일시",
+                        content: getPrettyDateStr(purchase.date, true),
+                      ),
+                      ReceiptText(
+                        title: "만료 일시",
+                        content: getPrettyDateStr(purchase.expire, true),
+                      ),
+                      ReceiptText(title: "결제 방법", content: "토스"),
+                      Container(
+                        height: MediaQuery.of(context).size.height * 0.1,
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: H4PayButton(
+                              text: "홈으로 돌아가기",
+                              width: MediaQuery.of(context).size.width * 0.4,
+                              onClick: () {
+                                Navigator.pop(context);
+                              },
+                              backgroundColor: Theme.of(context).primaryColor,
                             ),
-                            Container(width: 10),
-                            Expanded(
-                              child: H4PayButton(
-                                text: "상세 정보 확인",
-                                width: MediaQuery.of(context).size.width * 0.4,
-                                onClick: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PurchaseDetailPage(
-                                        purchase: purchase,
-                                      ),
+                          ),
+                          Container(width: 10),
+                          Expanded(
+                            child: H4PayButton(
+                              text: "상세 정보 확인",
+                              width: MediaQuery.of(context).size.width * 0.4,
+                              onClick: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PurchaseDetailPage(
+                                      purchase: purchase,
                                     ),
-                                  );
-                                },
-                                backgroundColor: Theme.of(context).primaryColor,
-                              ),
+                                  ),
+                                );
+                              },
+                              backgroundColor: Theme.of(context).primaryColor,
                             ),
-                          ],
-                        )
-                      ],
-                    ),
+                          ),
+                        ],
+                      )
+                    ],
                   ),
                 ),
-              );
-            } else {
-              return Scaffold(
-                body: Center(child: Text("결제 실패")),
-              );
-            }
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return ErrorPage(
+              title: "결제 오류가 발생했습니다.",
+              description: "${(snapshot.error as NetworkException).statusCode}",
+            );
           } else {
             return Center(
               child: CircularProgressIndicator(),
@@ -148,7 +146,7 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
     );
   }
 
-  Future<H4PayResult> _processPayment() async {
+  Future<Purchase> _processPayment() async {
     _prefs = await SharedPreferences.getInstance();
     final H4PayUser? user = await userFromStorage();
     if (user != null) {
@@ -168,23 +166,20 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
         if (tempPurchase['type'] == 'Order') {
           tempPurchase['uid'] = user.uid;
           final order = Order.fromJson(tempPurchase);
-          final H4PayResult createResult = await order.create();
-          if (createResult.success) _prefs!.setString('cart', json.encode({}));
-          return createResult;
+          await order.create();
+          _prefs!.setString('cart', json.encode({}));
+          return order;
         } else {
           tempPurchase['uidfrom'] = user.uid;
           tempPurchase['extended'] = false;
           final gift = Gift.fromJson(tempPurchase);
-          final H4PayResult createResult = await gift.create();
-          if (createResult.success) _prefs!.setString('cart', json.encode({}));
-          return createResult;
+          await gift.create();
+          _prefs!.setString('cart', json.encode({}));
+          return gift;
         }
       }
     } else {
-      return H4PayResult(
-        success: false,
-        data: "로그인 되어 있지 않은 것 같습니다!",
-      );
+      throw UserNotFoundException();
     }
   }
 }

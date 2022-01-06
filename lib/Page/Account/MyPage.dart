@@ -1,15 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:h4pay/Network/User.dart';
 import 'package:h4pay/Page/Account/ChangePassword.dart';
-import 'package:h4pay/Purchase/Gift.dart';
 import 'package:h4pay/H4PayInfo.dart';
 import 'package:h4pay/Page/IntroPage.dart';
-import 'package:h4pay/Purchase/Order.dart';
 import 'package:h4pay/Page/Purchase/PurchaseList.dart';
 import 'package:h4pay/Page/Voucher/VoucherList.dart';
-import 'package:h4pay/Result.dart';
 import 'package:h4pay/Page/Success.dart';
-import 'package:h4pay/User.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Purchase/Gift.dart';
+import 'package:h4pay/model/Purchase/Order.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/main.dart';
@@ -325,34 +326,38 @@ class MyInfoPageState extends State<MyInfoPage> {
   final TextEditingController pwCheck = TextEditingController();
 
   _withdraw(H4PayUser user) async {
-    final H4PayResult withdrawResult = await withdraw(user.uid!, user.name!);
-    if (withdrawResult.success) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SuccessPage(
-            canGoBack: false,
-            title: "회원 탈퇴 완료",
-            successText: "다음 번에 다시 뵐 수 있길 희망할게요.",
-            bottomDescription: [Text("회원탈퇴가 정상적으로 처리되었습니다.")],
-            actions: [
-              H4PayButton(
-                text: "홈으로 돌아가기",
-                onClick: () {
-                  navigateRoute(
-                    context,
-                    IntroPage(
-                      canGoBack: false,
-                    ),
-                  );
-                },
-                backgroundColor: Theme.of(context).primaryColor,
-                width: double.infinity,
-              )
-            ],
+    try {
+      final bool withdrawResult = await withdraw(user.uid!, user.name!);
+      if (withdrawResult) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SuccessPage(
+              canGoBack: false,
+              title: "회원 탈퇴 완료",
+              successText: "다음 번에 다시 뵐 수 있길 희망할게요.",
+              bottomDescription: [Text("회원탈퇴가 정상적으로 처리되었습니다.")],
+              actions: [
+                H4PayButton(
+                  text: "홈으로 돌아가기",
+                  onClick: () {
+                    navigateRoute(
+                      context,
+                      IntroPage(
+                        canGoBack: false,
+                      ),
+                    );
+                  },
+                  backgroundColor: Theme.of(context).primaryColor,
+                  width: double.infinity,
+                )
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      }
+    } on NetworkException catch (e) {
+      showServerErrorSnackbar(context, e);
     }
   }
 

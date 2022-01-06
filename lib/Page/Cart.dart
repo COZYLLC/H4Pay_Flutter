@@ -2,9 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:h4pay/Purchase/Order.dart';
-import 'package:h4pay/Product.dart';
-import 'package:h4pay/User.dart';
+import 'package:h4pay/Network/Order.dart';
+import 'package:h4pay/Network/Product.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Product.dart';
+import 'package:h4pay/model/Purchase/Order.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
@@ -89,7 +92,11 @@ class CartState extends State<Cart> {
   @override
   void initState() {
     super.initState();
-    _fetchProduct = fetchProduct('cartPage');
+    try {
+      _fetchProduct = fetchProduct('cartPage');
+    } on NetworkException catch (e) {
+      showServerErrorSnackbar(context, e);
+    }
     loadCart();
   }
 

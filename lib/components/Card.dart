@@ -1,18 +1,19 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:h4pay/Network/Order.dart';
 import 'package:h4pay/Page/Cart.dart';
-import 'package:h4pay/Event.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Event.dart';
 import 'package:h4pay/Page/Voucher/VoucherView.dart';
-import 'package:h4pay/Purchase/Gift.dart';
 import 'package:h4pay/Page/Home.dart';
-import 'package:h4pay/Notice.dart';
-import 'package:h4pay/Purchase/Order.dart';
-import 'package:h4pay/Purchase/Purchase.dart';
+import 'package:h4pay/model/Notice.dart';
 import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
-import 'package:h4pay/Product.dart';
+import 'package:h4pay/model/Product.dart';
 import 'package:h4pay/Page/Purchase/PurchaseList.dart';
 import 'package:h4pay/Util/Wakelock.dart';
-import 'package:h4pay/Voucher.dart';
+import 'package:h4pay/model/Purchase/Gift.dart';
+import 'package:h4pay/model/Purchase/Purchase.dart';
+import 'package:h4pay/model/Voucher.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:blur/blur.dart';
@@ -425,28 +426,32 @@ class PurchaseCard extends StatelessWidget {
   }
 
   _extend(context) async {
-    final extendRes = await (purchase as Gift).extend();
-    if (extendRes.success) {
-      PurchaseListState? parentState =
-          context.findAncestorStateOfType<PurchaseListState>();
-      parentState!.setState(() {
-        parentState.componentKey++;
-      });
+    try {
+      final extended = await (purchase as Gift).extend();
+      if (extended) {
+        PurchaseListState? parentState =
+            context.findAncestorStateOfType<PurchaseListState>();
+        parentState!.setState(() {
+          parentState.componentKey++;
+        });
+        showSnackbar(
+          context,
+          "기간 연장이 완료되었습니다!",
+          Colors.green,
+          Duration(seconds: 1),
+        );
+      } else {
+        throw NetworkException(400);
+      }
+    } on NetworkException catch (e) {
       showSnackbar(
         context,
-        "기간 연장이 완료되었습니다!",
-        Colors.green,
-        Duration(seconds: 1),
-      );
-    } else {
-      showSnackbar(
-        context,
-        extendRes.data,
+        "(${e.statusCode}) 서버 오류입니다. 고객센터에 문의 바랍니다.",
         Colors.red,
         Duration(seconds: 1),
       );
+      Navigator.pop(context);
     }
-    Navigator.pop(context);
   }
 
   @override
