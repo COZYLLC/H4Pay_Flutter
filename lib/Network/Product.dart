@@ -13,7 +13,7 @@ Future<List<Product>> fetchProduct(String from) async {
   if (response.statusCode == 200) {
     final jsonResponse = jsonDecode(response.body);
 
-    List productsJson = jsonResponse['list'];
+    List productsJson = jsonResponse['result'];
     List<Product> products =
         productsJson.map((e) => Product.fromList(e)).toList();
     return products;

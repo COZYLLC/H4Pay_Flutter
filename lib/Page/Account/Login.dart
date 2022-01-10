@@ -86,21 +86,19 @@ class LoginPageState extends State<LoginPage> {
                         throw UserNotFoundException();
                       }
                     } on NetworkException catch (e) {
-                      if (e.statusCode == 400) {
-                        showSnackbar(
-                          context,
-                          "아이디 혹은 비밀번호가 틀렸습니다.",
-                          Colors.red,
-                          Duration(seconds: 3),
-                        );
-                      } else {
-                        showSnackbar(
-                          context,
-                          "(${e.statusCode}) 서버 오류가 발생했습니다. 고객센터로 문의해주세요.",
-                          Colors.red,
-                          Duration(seconds: 3),
-                        );
-                      }
+                      showSnackbar(
+                        context,
+                        "(${e.statusCode}) 서버 오류가 발생했습니다. 고객센터로 문의해주세요.",
+                        Colors.red,
+                        Duration(seconds: 3),
+                      );
+                    } on UserNotFoundException {
+                      showSnackbar(
+                        context,
+                        "아이디 혹은 비밀번호가 틀렸습니다.",
+                        Colors.red,
+                        Duration(seconds: 3),
+                      );
                     }
                   }
                 },

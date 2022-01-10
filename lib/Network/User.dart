@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:h4pay/Network/Network.dart';
+import 'package:http/http.dart' as http;
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/User.dart';
@@ -13,7 +14,7 @@ Future<String> login(String id, String pw) async {
   final bytes = utf8.encode(pw);
   final digest = sha256.convert(bytes);
 
-  final response = await post(
+  final response = await http.post(
     Uri.parse("$API_URL/users/login"),
     body: {
       'uid': id,
@@ -21,8 +22,10 @@ Future<String> login(String id, String pw) async {
     },
   );
   if (response.statusCode == 200) {
-    final jsonResponse = json.decode(response.body);
-    final String accessToken = jsonResponse['accessToken'];
+    final String? accessToken = response.headers['x-access-token'];
+    if (accessToken == null) {
+      throw UserNotFoundException();
+    }
     return accessToken;
   } else {
     throw NetworkException(response.statusCode);
@@ -54,14 +57,19 @@ Future<bool> uidDuplicateCheck(String uid) async {
 }
 
 Future<H4PayUser?> tokenCheck(String _token) async {
-  final response = await post(
+  final response = await http.post(
     Uri.parse("$API_URL/users/tokencheck"),
+    headers: {
+      "X-Access-Token": _token,
+    },
   );
   if (response.statusCode == 200) {
     final jsonResponse = json.decode(response.body);
+    print(response.body);
     final message = jsonResponse['message'];
-    message['token'] = _token;
-    return H4PayUser.fromjson(message);
+    final Map userJson = jsonResponse['result'];
+    userJson['token'] = _token;
+    return H4PayUser.fromjson(userJson);
   } else {
     throw NetworkException(response.statusCode);
   }

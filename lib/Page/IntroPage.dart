@@ -2,8 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/AppLink.dart';
+import 'package:h4pay/Network/Maintenance.dart';
 import 'package:h4pay/Page/Account/Login.dart';
 import 'package:h4pay/Page/Account/Register.dart';
+import 'package:h4pay/Util/Beautifier.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Maintenance.dart';
 import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Connection.dart';
@@ -41,8 +45,6 @@ class IntroPageState extends State<IntroPage> {
   void initState() {
     super.initState();
     registerListener(context);
-    checkUpdate();
-
     connectionCheck().then((connected) async {
       if (!connected) {
         if (dotenv.env['TEST_MODE'] == "TRUE") {
@@ -88,6 +90,40 @@ class IntroPageState extends State<IntroPage> {
           );
         }
       } else {
+        try {
+          final Maintenence maintenance = await fetchMaintenence();
+          if (maintenance.start.millisecondsSinceEpoch <
+                  DateTime.now().millisecondsSinceEpoch &&
+              maintenance.end.millisecondsSinceEpoch >
+                  DateTime.now().millisecondsSinceEpoch) {
+            showCustomAlertDialog(
+              context,
+              H4PayDialog(
+                title: maintenance.title,
+                content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(maintenance.detail),
+                    Text(
+                        "시작: ${dateFormat.format(maintenance.start)},\n종료: ${dateFormat.format(maintenance.end)}"),
+                    H4PayButton(
+                      text: "확인",
+                      onClick: () {
+                        exit(0);
+                      },
+                      backgroundColor: Colors.red,
+                      width: double.infinity,
+                    )
+                  ],
+                ),
+              ),
+              false,
+            );
+          }
+        } on NetworkException {
+          debugPrint("no maintenance");
+        }
+        checkUpdate();
         final Widget? route = await initUniLinks(context);
         if (route != null) {
           Navigator.push(

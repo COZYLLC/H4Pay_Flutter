@@ -162,7 +162,8 @@ class MyHomePageState extends State<MyHomePage> {
   Future<String> fetchStoreState() async {
     final response = await http.get(Uri.parse('$API_URL/store'));
     if (response.statusCode == 200) {
-      bool state = jsonDecode(response.body)['isOpened'];
+      final Map jsonResponse = json.decode(response.body);
+      bool state = jsonResponse['result'];
       if (state) {
         return 'OPEN';
       } else {
