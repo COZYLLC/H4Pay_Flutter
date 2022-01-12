@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:h4pay/Network/Event.dart';
 import 'package:h4pay/Network/Notice.dart';
+import 'package:h4pay/Page/Error.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Event.dart';
 import 'package:h4pay/model/Notice.dart';
@@ -36,6 +37,11 @@ class NoticeListPage extends ListPage {
               showServerErrorSnackbar(
                 context,
                 snapshot.error as NetworkException,
+              );
+              return ErrorPage(
+                title: "결제 오류가 발생했습니다.",
+                description:
+                    "${(snapshot.error as NetworkException).statusCode}",
               );
             } else {
               return CenterInScroll(
@@ -87,7 +93,12 @@ class EventListPage extends ListPage {
             } else if (snapshot.hasError) {
               showServerErrorSnackbar(
                 context,
-                snapshot.error as NetworkException,
+                snapshot.error as Exception,
+              );
+              return ErrorPage(
+                title: "결제 오류가 발생했습니다.",
+                description:
+                    "${(snapshot.error as NetworkException).statusCode}",
               );
             } else {
               return CenterInScroll(

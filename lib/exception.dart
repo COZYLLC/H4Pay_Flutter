@@ -16,11 +16,10 @@ class InvalidTargetException implements Exception {
   InvalidTargetException({required this.users});
 }
 
-void showServerErrorSnackbar(BuildContext context, NetworkException e,
-    {String? msg}) {
+void showServerErrorSnackbar(BuildContext context, Exception e, {String? msg}) {
   showSnackbar(
     context,
-    msg ?? "(${e.statusCode}) 서버 오류가 발생했습니다. 고객센터로 문의해주세요.",
+    msg ?? "(${e.toString}) 서버 오류가 발생했습니다. 고객센터로 문의해주세요.",
     Colors.red,
     Duration(seconds: 3),
   );

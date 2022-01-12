@@ -110,7 +110,7 @@ class ListPage extends StatefulWidget {
   final String? appBarTitle;
   final Type type;
   final Future dataFuture;
-  final builder;
+  final Widget Function(BuildContext, AsyncSnapshot) builder;
 
   const ListPage(
       {Key? key,

@@ -60,6 +60,14 @@ class HomeState extends State<Home> {
         );
       }
       return {};
+    } on UserNotFoundException {
+      showSnackbar(
+        context,
+        "사용자 정보를 불러올 수 없습니다.",
+        Colors.red,
+        Duration(seconds: 3),
+      );
+      return {};
     }
   }
 
