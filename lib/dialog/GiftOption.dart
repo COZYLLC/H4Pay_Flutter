@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:h4pay/Network/Gift.dart';
-import 'package:h4pay/Network/Order.dart';
+import 'package:h4pay/Network/H4PayService.dart';
+import 'package:h4pay/Util/Generator.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Product.dart';
 import 'package:h4pay/model/Purchase/Gift.dart';
@@ -12,15 +12,28 @@ import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
+import 'package:h4pay/model/UserValidResponse.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GiftOptionDialog extends H4PayDialog {
+  final H4PayService service = getService();
   final BuildContext context;
   final GlobalKey<FormState> formKey;
   final TextEditingController studentId;
   final TextEditingController qty;
   final SharedPreferences prefs;
   final Product product;
+
+  Future<List<String>?> _nameFromStudentId(String studentId) async {
+    try {
+      final UserValidResponse response = await service.nameFromStudentId({
+        'users': json.encode([studentId])
+      });
+      if (response.isValid) return response.users;
+    } catch (e) {
+      return null;
+    }
+  }
 
   GiftOptionDialog(
       {required this.context,
@@ -84,23 +97,22 @@ class GiftOptionDialog extends H4PayDialog {
             if (!formKey.currentState!.validate()) {
               return;
             }
-            try {
-              final List<String> result = await checkUserValid(studentId.text);
+            final List<String>? result =
+                await _nameFromStudentId(studentId.text);
+            if (result != null)
               _sendGift(
                 result[0],
                 product,
                 studentId.text,
                 int.parse(qty.text),
               );
-            } on InvalidTargetException catch (e) {
-              Navigator.pop(context);
+            else
               showSnackbar(
                 context,
-                e.users[0],
+                "하나 이상의 학번이 존재하지 않습니다.",
                 Colors.red,
                 Duration(seconds: 1),
               );
-            }
           },
           cancelClicked: () {
             Navigator.pop(context);

@@ -1,8 +1,8 @@
-import 'dart:async';
-import 'package:h4pay/Setting.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'Product.g.dart';
+
+@JsonSerializable()
 class Product {
   final int id;
   final String productName;
@@ -22,15 +22,6 @@ class Product {
     required this.isVisible,
   });
 
-  factory Product.fromList(Map<String, dynamic> json) {
-    return Product(
-      id: json['id'],
-      desc: json['desc'],
-      img: json['img'],
-      price: json['price'],
-      productName: json['productName'],
-      soldout: json['soldout'],
-      isVisible: json['isVisible'],
-    );
-  }
+  factory Product.fromJson(Map<String, dynamic> json) =>
+      _$ProductFromJson(json);
 }

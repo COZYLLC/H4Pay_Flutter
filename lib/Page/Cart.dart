@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:h4pay/Network/Order.dart';
-import 'package:h4pay/Network/Product.dart';
+import 'package:h4pay/Network/H4PayService.dart';
+import 'package:h4pay/Util/Generator.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Product.dart';
 import 'package:h4pay/model/Purchase/Order.dart';
@@ -54,7 +54,9 @@ class Cart extends StatefulWidget {
 
 class CartState extends State<Cart> {
   final SharedPreferences prefs;
+  final H4PayService service = getService();
   CartState(this.prefs);
+
   int totalPrice = 0;
 
   Map cartMap = {};
@@ -93,7 +95,7 @@ class CartState extends State<Cart> {
   void initState() {
     super.initState();
     try {
-      _fetchProduct = fetchProduct('cartPage');
+      _fetchProduct = service.getProducts();
     } on NetworkException catch (e) {
       showServerErrorSnackbar(context, e);
     }
@@ -253,7 +255,7 @@ class CartState extends State<Cart> {
   }
 
   _payment() async {
-    products = await fetchProduct("payment");
+    products = await service.getProducts();
     final List<String?>? soldoutList = checkSoldout();
     if (soldoutList != null) {
       var soldoutString = "";

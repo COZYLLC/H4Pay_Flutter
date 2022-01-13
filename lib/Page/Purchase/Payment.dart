@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Error.dart';
 import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
 import 'package:h4pay/exception.dart';
@@ -29,6 +30,7 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
   Animation<double>? _animation;
   SharedPreferences? _prefs;
   Future<Purchase>? _processFuture;
+  final H4PayService service = getService();
 
   @override
   void initState() {
@@ -166,16 +168,24 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
         if (tempPurchase['type'] == 'Order') {
           tempPurchase['uid'] = user.uid;
           final order = Order.fromJson(tempPurchase);
-          await order.create();
-          _prefs!.setString('cart', json.encode({}));
-          return order;
+          service.createOrder(order.toJson()).then((res) {
+            _prefs!.setString('cart', json.encode({}));
+            return order;
+          }).catchError((err) {
+            throw err;
+          });
+          throw NetworkException(400);
         } else {
           tempPurchase['uidfrom'] = user.uid;
           tempPurchase['extended'] = false;
           final gift = Gift.fromJson(tempPurchase);
-          await gift.create();
-          _prefs!.setString('cart', json.encode({}));
-          return gift;
+          service.createGift(gift.toJson()).then((res) {
+            _prefs!.setString('cart', json.encode({}));
+            return gift;
+          }).catchError((err) {
+            throw err;
+          });
+          throw NetworkException(400);
         }
       }
     } else {

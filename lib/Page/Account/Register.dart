@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/Network/User.dart';
+import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Account/Login.dart';
 import 'package:h4pay/Page/Success.dart';
 import 'package:h4pay/Util/Dialog.dart';
+import 'package:h4pay/Util/Encryption.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/components/WebView.dart';
@@ -19,6 +20,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class RegisterPageState extends State<RegisterPage> {
+  final H4PayService service = getService();
   final _formKey = GlobalKey<FormState>();
   final pw = TextEditingController();
   final pwCheck = TextEditingController();
@@ -40,7 +42,9 @@ class RegisterPageState extends State<RegisterPage> {
   ];
 
   _checkEmailValidity() {
-    uidDuplicateCheck(email.text.split("@")[0]).then((isDuplicated) {
+    service.checkUidValid(
+      {'uid': email.text.split("@")[0]},
+    ).then((isDuplicated) {
       if (isDuplicated) {
         do {
           FocusScope.of(context).nextFocus();
@@ -150,51 +154,49 @@ class RegisterPageState extends State<RegisterPage> {
                     text: "회원가입",
                     onClick: () async {
                       if (_formKey.currentState!.validate()) {
-                        try {
-                          final bool registerResult = await createUser(
-                            email.text.split("@")[0],
-                            pw.text,
-                            tel.text,
-                          );
-                          if (registerResult) {
-                            SharedPreferences prefs =
-                                await SharedPreferences.getInstance();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SuccessPage(
-                                  title: "가입 완료",
-                                  canGoBack: false,
-                                  successText: "회원가입이 완료되었습니다.",
-                                  bottomDescription: [
-                                    Text("더 간편한 매점을 이용해보세요!")
-                                  ],
-                                  actions: [
-                                    H4PayButton(
-                                      text: "로그인 하러 가기",
-                                      onClick: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                LoginPage(canGoBack: false),
-                                          ),
-                                        );
-                                      },
-                                      backgroundColor:
-                                          Theme.of(context).primaryColor,
-                                      width: double.infinity,
-                                    )
-                                  ],
-                                ),
+                        final requestBody = {
+                          'uid': email.text.split("@")[0],
+                          'password': encryptPassword(pw.text),
+                          'aID': '',
+                          'gID': '',
+                          'email': email.text,
+                          'tel': tel.text,
+                          'role': 'S',
+                        };
+                        service.register(requestBody).then((response) async {
+                          SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SuccessPage(
+                                title: "가입 완료",
+                                canGoBack: false,
+                                successText: "회원가입이 완료되었습니다.",
+                                bottomDescription: [Text("더 간편한 매점을 이용해보세요!")],
+                                actions: [
+                                  H4PayButton(
+                                    text: "로그인 하러 가기",
+                                    onClick: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              LoginPage(canGoBack: false),
+                                        ),
+                                      );
+                                    },
+                                    backgroundColor:
+                                        Theme.of(context).primaryColor,
+                                    width: double.infinity,
+                                  )
+                                ],
                               ),
-                            );
-                          } else if (registerResult) {
-                            throw NetworkException(400);
-                          }
-                        } on NetworkException catch (e) {
-                          showServerErrorSnackbar(context, e);
-                        }
+                            ),
+                          );
+                        }).catchError((err) {
+                          showServerErrorSnackbar(context, err);
+                        });
                       }
                     },
                     backgroundColor: Theme.of(context).primaryColor,

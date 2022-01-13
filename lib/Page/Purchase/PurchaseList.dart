@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/Network/Gift.dart';
-import 'package:h4pay/Network/Order.dart';
-import 'package:h4pay/Network/Product.dart';
+import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Error.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Product.dart';
@@ -25,16 +23,18 @@ class PurchaseList extends StatefulWidget {
 class PurchaseListState extends State<PurchaseList> {
   int componentKey = 0;
   final String title;
+  final H4PayService service = getService();
   PurchaseListState({required this.title});
 
   Future<Map> _loadThings() async {
     final H4PayUser? user = await userFromStorage();
+    final String uid = user!.uid!;
     final List<Purchase>? purchases = widget.type == Order
-        ? await fetchOrder(user!.uid)
+        ? await service.getOrders(uid)
         : widget.type == Gift
-            ? await fetchGift(user!.uid)
-            : await fetchSentGift(user!.uid);
-    final List<Product>? products = await fetchProduct('orderList');
+            ? await service.getGifts({"uid": uid})
+            : await service.getSentGifts({"uid": uid});
+    final List<Product>? products = await service.getProducts();
     return {
       'purchases': purchases,
       'products': products,

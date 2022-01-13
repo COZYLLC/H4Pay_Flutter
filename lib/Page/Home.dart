@@ -3,9 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:h4pay/Network/Event.dart';
-import 'package:h4pay/Network/Notice.dart';
-import 'package:h4pay/Network/Product.dart';
+import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Cart.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Event.dart';
@@ -30,6 +28,7 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> {
   final SharedPreferences prefs;
   final GlobalKey _carouselKey = GlobalKey();
+  final H4PayService service = getService();
   int? currentTile;
   bool cartClicked = false;
   bool moving = false;
@@ -46,11 +45,11 @@ class HomeState extends State<Home> {
   Future<Map> _fetchThings() async {
     Map data = {};
     try {
-      List<Product> products = await fetchProductOnlyVisible('homePage');
+      List<Product> products = await service.getVisibleProducts();
       products.sort((a, b) => a.productName.compareTo(b.productName));
       data['product'] = products;
-      data['notice'] = await fetchNotice();
-      data['event'] = await fetchEvent();
+      data['notice'] = await service.getNotices();
+      data['event'] = await service.getAllEvents();
       return data;
     } on NetworkException catch (e) {
       if (dotenv.env['TEST_MODE'] == 'FALSE') {

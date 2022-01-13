@@ -1,3 +1,7 @@
+import 'package:json_annotation/json_annotation.dart';
+part 'Notice.g.dart';
+
+@JsonSerializable()
 class Notice {
   final String id;
   final String title;
@@ -12,13 +16,5 @@ class Notice {
       required this.img,
       required this.date});
 
-  factory Notice.fromList(Map<String, dynamic> json) {
-    return Notice(
-      id: json['id'],
-      title: json['title'],
-      content: json['content'],
-      img: json['img'],
-      date: json['date'],
-    );
-  }
+  factory Notice.fromJson(Map<String, dynamic> json) => _$NoticeFromJson(json);
 }

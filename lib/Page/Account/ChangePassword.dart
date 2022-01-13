@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/Network/User.dart';
+import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/IntroPage.dart';
 import 'package:h4pay/Page/Success.dart';
-import 'package:h4pay/exception.dart';
+import 'package:h4pay/Util/Encryption.dart';
 import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
@@ -11,6 +11,7 @@ import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/Util/validator.dart';
 
 class ChangePWDialog extends H4PayDialog {
+  final H4PayService service = getService();
   final GlobalKey<FormState> formKey;
   final TextEditingController prevPassword;
   final TextEditingController pw2Change;
@@ -84,8 +85,11 @@ class ChangePWDialog extends H4PayDialog {
 
   Future _changePassword(BuildContext context) async {
     if (formKey.currentState!.validate()) {
-      try {
-        await changePassword(user, prevPassword.text, pw2Change.text);
+      service.changePassword({
+        'user': user.uid,
+        'password': encryptPassword(prevPassword.text),
+        'cpassword': encryptPassword(pw2Change.text)
+      }).then((response) {
         navigateRoute(
           context,
           SuccessPage(
@@ -108,15 +112,15 @@ class ChangePWDialog extends H4PayDialog {
             ],
           ),
         );
-      } on NetworkException catch (e) {
+      }).catchError((err) {
         Navigator.pop(context);
         showSnackbar(
           context,
-          "(${e.statusCode}): 비밀번호 변경에 실패했습니다.",
+          "($err): 비밀번호 변경에 실패했습니다.",
           Colors.red,
           Duration(seconds: 1),
         );
-      }
+      });
     }
   }
 }

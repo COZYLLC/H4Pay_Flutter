@@ -1,10 +1,9 @@
-import 'dart:async';
-
 import 'package:h4pay/model/Notice.dart';
-import 'package:h4pay/Setting.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'Event.g.dart';
+
+@JsonSerializable()
 class Event extends Notice {
   final String id;
   final String title;
@@ -34,17 +33,6 @@ class Event extends Notice {
           img: img,
         );
 
-  factory Event.fromList(Map<String, dynamic> json) {
-    return Event(
-      id: json['id'],
-      title: json['name'],
-      start: json['start'],
-      end: json['end'],
-      qty: json['qty'],
-      totalqty: json['totalqty'],
-      price: json['amount'],
-      content: json['desc'],
-      img: json['img'],
-    );
-  }
+  factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);
+  Map<String, dynamic> toJson() => _$EventToJson(this);
 }

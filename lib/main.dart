@@ -4,9 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:h4pay/Network/Gift.dart';
-import 'package:h4pay/Network/Order.dart';
-import 'package:h4pay/Network/Voucher.dart';
+import 'package:h4pay/Network/H4PayService.dart';
+
 import 'package:h4pay/Page/Cart.dart';
 import 'package:h4pay/Page/IntroPage.dart';
 import 'package:h4pay/Page/NoticeList.dart';
@@ -25,6 +24,7 @@ import 'package:h4pay/model/Voucher.dart';
 import 'package:h4pay/Util/creatematerialcolor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 
 Future main() async {
   if (kReleaseMode) {
@@ -147,7 +147,7 @@ class MyHomePage extends StatefulWidget {
 
 class MyHomePageState extends State<MyHomePage> {
   int _currentIdx = 2;
-
+  final H4PayService service = getService();
   int giftBadgeCount = 0;
   int accountBadgeCount = 0;
   int voucherBadgeCount = 0;
@@ -192,9 +192,9 @@ class MyHomePageState extends State<MyHomePage> {
     List<Voucher> vouchers;
 
     try {
-      orders = await fetchOrder(user.uid);
-      gifts = await fetchGift(user.uid);
-      vouchers = await fetchVouchers(user.uid!);
+      orders = [];
+      gifts = [];
+      vouchers = await service.getVouchers(user.tel!);
     } on NetworkException catch (e) {
       showSnackbar(
         context,

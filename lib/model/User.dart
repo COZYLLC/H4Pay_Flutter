@@ -1,14 +1,18 @@
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:h4pay/Network/User.dart';
+import 'package:h4pay/Network/H4PayService.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'User.g.dart';
+
+@JsonSerializable()
 class H4PayUser {
   String? uid;
   String? name;
   String? email;
   String? role;
   String? tel;
-  String token;
+  String? token;
   final storage = new FlutterSecureStorage();
 
   H4PayUser({
@@ -17,19 +21,11 @@ class H4PayUser {
     this.email,
     this.role,
     this.tel,
-    required this.token,
+    this.token,
   });
 
-  factory H4PayUser.fromjson(Map json) {
-    return H4PayUser(
-      uid: json['uid'],
-      name: json['name'],
-      email: json['email'],
-      role: json['role'],
-      tel: json['tel'],
-      token: json['token'],
-    );
-  }
+  factory H4PayUser.fromJson(Map<String, dynamic> json) =>
+      _$H4PayUserFromJson(json);
 
   Future<bool> saveToStorage() async {
     try {
@@ -50,10 +46,20 @@ class H4PayUser {
 Future<H4PayUser?> userFromStorage() async {
   final storage = new FlutterSecureStorage();
   try {
-    final Map userJson = await storage.readAll();
-    final H4PayUser user = H4PayUser.fromjson(userJson);
-    return await tokenCheck(user.token);
+    final Map<String, dynamic> userJson = await storage.readAll();
+    final H4PayUser user = H4PayUser.fromJson(userJson);
+    return await getService().tokenCheck(user.token!);
   } catch (e) {
     return null;
+  }
+}
+
+Future<bool> logout() async {
+  try {
+    final storage = new FlutterSecureStorage();
+    await storage.deleteAll();
+    return true;
+  } catch (e) {
+    return false;
   }
 }

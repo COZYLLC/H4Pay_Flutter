@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/Network/Event.dart';
-import 'package:h4pay/Network/Notice.dart';
+import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Error.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Event.dart';
@@ -13,7 +12,7 @@ class NoticeListPage extends ListPage {
       : super(
           withAppBar: true,
           type: Notice,
-          dataFuture: fetchNotice(),
+          dataFuture: getService().getNotices(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               List<Notice> data = snapshot.data;
@@ -72,7 +71,7 @@ class EventListPage extends ListPage {
       : super(
           withAppBar: true,
           type: Event,
-          dataFuture: fetchEvent(),
+          dataFuture: getService().getAllEvents(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               List data = snapshot.data as List;

@@ -1,7 +1,8 @@
-import 'dart:convert';
-import 'package:h4pay/Setting.dart';
-import 'package:http/http.dart' as http;
+import 'package:json_annotation/json_annotation.dart';
 
+part 'Voucher.g.dart';
+
+@JsonSerializable()
 class Voucher {
   final String id;
   final Map issuer;
@@ -23,15 +24,5 @@ class Voucher {
     this.item,
   });
 
-  factory Voucher.fromJson(json) {
-    return Voucher(
-        id: json['id'],
-        issuer: json['issuer'],
-        amount: json['amount'],
-        message: json['message'],
-        date: json['date'],
-        expire: json['expire'],
-        exchanged: json['exchanged'],
-        item: json['item']);
-  }
+  factory Voucher.fromJson(json) => _$VoucherFromJson(json);
 }

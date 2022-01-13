@@ -91,7 +91,7 @@ class IntroPageState extends State<IntroPage> {
         }
       } else {
         try {
-          final Maintenence maintenance = await fetchMaintenence();
+          final Maintenance maintenance = await fetchMaintenence();
           if (maintenance.start.millisecondsSinceEpoch <
                   DateTime.now().millisecondsSinceEpoch &&
               maintenance.end.millisecondsSinceEpoch >

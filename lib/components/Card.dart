@@ -1,8 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:h4pay/Network/Order.dart';
+import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Cart.dart';
-import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Event.dart';
 import 'package:h4pay/Page/Voucher/VoucherView.dart';
 import 'package:h4pay/Page/Home.dart';
@@ -11,7 +10,6 @@ import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
 import 'package:h4pay/model/Product.dart';
 import 'package:h4pay/Page/Purchase/PurchaseList.dart';
 import 'package:h4pay/Util/Wakelock.dart';
-import 'package:h4pay/model/Purchase/Gift.dart';
 import 'package:h4pay/model/Purchase/Purchase.dart';
 import 'package:h4pay/model/Voucher.dart';
 import 'package:h4pay/components/Button.dart';
@@ -401,8 +399,7 @@ class PurchaseCard extends StatelessWidget {
   }) : super(key: key);
 
   _cancel(context) async {
-    final isCanceled = await cancelOrder(purchase.orderId);
-    if (isCanceled) {
+    getService().cancelOrder(purchase.orderId).then((response) {
       showSnackbar(
         context,
         "취소 처리 되었습니다.",
@@ -414,44 +411,41 @@ class PurchaseCard extends StatelessWidget {
       parentState!.setState(() {
         parentState.componentKey++;
       });
-    } else {
+      Navigator.pop(context, "OK");
+    }).catchError((err) {
       showSnackbar(
         context,
         "취소 처리에 실패했습니다.",
         Colors.red,
         Duration(seconds: 1),
       );
-    }
-    Navigator.pop(context, "OK");
+      Navigator.pop(context, "OK");
+    });
   }
 
   _extend(context) async {
-    try {
-      final extended = await (purchase as Gift).extend();
-      if (extended) {
-        PurchaseListState? parentState =
-            context.findAncestorStateOfType<PurchaseListState>();
-        parentState!.setState(() {
-          parentState.componentKey++;
-        });
-        showSnackbar(
-          context,
-          "기간 연장이 완료되었습니다!",
-          Colors.green,
-          Duration(seconds: 1),
-        );
-      } else {
-        throw NetworkException(400);
-      }
-    } on NetworkException catch (e) {
+    final H4PayService service = getService();
+    service.extendGift(purchase.orderId).then((response) {
+      PurchaseListState? parentState =
+          context.findAncestorStateOfType<PurchaseListState>();
+      parentState!.setState(() {
+        parentState.componentKey++;
+      });
       showSnackbar(
         context,
-        "(${e.statusCode}) 서버 오류입니다. 고객센터에 문의 바랍니다.",
+        "기간 연장이 완료되었습니다!",
+        Colors.green,
+        Duration(seconds: 1),
+      );
+    }).catchError((err) {
+      showSnackbar(
+        context,
+        "(${err.statusCode}) 서버 오류입니다. 고객센터에 문의 바랍니다.",
         Colors.red,
         Duration(seconds: 1),
       );
       Navigator.pop(context);
-    }
+    });
   }
 
   @override

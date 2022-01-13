@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:h4pay/Network/User.dart';
+import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Account/ChangePassword.dart';
 import 'package:h4pay/H4PayInfo.dart';
 import 'package:h4pay/Page/IntroPage.dart';
@@ -321,44 +321,42 @@ class MyInfoPage extends StatefulWidget {
 
 class MyInfoPageState extends State<MyInfoPage> {
   final _formKey = GlobalKey<FormState>();
+  final H4PayService service = getService();
   final TextEditingController prevPassword = TextEditingController();
   final TextEditingController pw2Change = TextEditingController();
   final TextEditingController pwCheck = TextEditingController();
 
   _withdraw(H4PayUser user) async {
-    try {
-      final bool withdrawResult = await withdraw(user.uid!, user.name!);
-      if (withdrawResult) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SuccessPage(
-              canGoBack: false,
-              title: "회원 탈퇴 완료",
-              successText: "다음 번에 다시 뵐 수 있길 희망할게요.",
-              bottomDescription: [Text("회원탈퇴가 정상적으로 처리되었습니다.")],
-              actions: [
-                H4PayButton(
-                  text: "홈으로 돌아가기",
-                  onClick: () {
-                    navigateRoute(
-                      context,
-                      IntroPage(
-                        canGoBack: false,
-                      ),
-                    );
-                  },
-                  backgroundColor: Theme.of(context).primaryColor,
-                  width: double.infinity,
-                )
-              ],
-            ),
+    service.withdraw({'uid': user.uid!, 'name': user.name!}).then((response) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SuccessPage(
+            canGoBack: false,
+            title: "회원 탈퇴 완료",
+            successText: "다음 번에 다시 뵐 수 있길 희망할게요.",
+            bottomDescription: [Text("회원탈퇴가 정상적으로 처리되었습니다.")],
+            actions: [
+              H4PayButton(
+                text: "홈으로 돌아가기",
+                onClick: () {
+                  navigateRoute(
+                    context,
+                    IntroPage(
+                      canGoBack: false,
+                    ),
+                  );
+                },
+                backgroundColor: Theme.of(context).primaryColor,
+                width: double.infinity,
+              )
+            ],
           ),
-        );
-      }
-    } on NetworkException catch (e) {
-      showServerErrorSnackbar(context, e);
-    }
+        ),
+      );
+    }).catchError((err) {
+      showServerErrorSnackbar(context, err);
+    });
   }
 
   @override

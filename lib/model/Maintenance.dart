@@ -1,16 +1,16 @@
-class Maintenence {
+class Maintenance {
   final String title;
   final String detail;
   final DateTime start;
   final DateTime end;
-  Maintenence({
+  Maintenance({
     required this.title,
     required this.detail,
     required this.start,
     required this.end,
   });
-  factory Maintenence.fromJson(Map json) {
-    return Maintenence(
+  factory Maintenance.fromJson(Map json) {
+    return Maintenance(
       title: json['title'],
       detail: json['detail'],
       start: DateTime.fromMillisecondsSinceEpoch(
@@ -20,13 +20,5 @@ class Maintenence {
         int.parse(json['start']["\$date"]["\$numberLong"]),
       ),
     );
-  }
-  Map toJson(Maintenence maintenence) {
-    return {
-      title: maintenence.title,
-      detail: maintenence.detail,
-      start: maintenence.start,
-      end: maintenence.end
-    };
   }
 }

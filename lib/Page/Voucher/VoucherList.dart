@@ -1,7 +1,6 @@
 import 'package:collection/src/iterable_extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:h4pay/Network/Product.dart';
-import 'package:h4pay/Network/Voucher.dart';
+import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Purchase/PurchaseList.dart';
 import 'package:h4pay/model/Product.dart';
 import 'package:h4pay/model/User.dart';
@@ -15,11 +14,13 @@ class VoucherList extends StatefulWidget {
 
 class VoucherListState extends State<VoucherList> {
   int componentKey = 0;
+  final H4PayService service = getService();
 
   Future<Map> _loadThings() async {
     final H4PayUser? user = await userFromStorage();
-    final List<Voucher> vouchers = await fetchVouchers(user!.tel!);
-    final List<Product> products = await fetchProduct('voucherList');
+    final String uid = user!.uid!;
+    final List<Voucher> vouchers = await service.getVouchers(uid);
+    final List<Product> products = await service.getProducts();
     return {
       "vouchers": vouchers,
       "products": products,

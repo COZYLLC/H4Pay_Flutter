@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:h4pay/Network/User.dart';
+import 'package:h4pay/Network/H4PayService.dart';
+import 'package:h4pay/Util/Encryption.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
@@ -10,6 +11,7 @@ import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/main.dart';
 import 'package:h4pay/Util/validator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
 
 class LoginPage extends StatefulWidget {
   bool canGoBack;
@@ -70,36 +72,40 @@ class LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 onClick: () async {
                   if (_loginFormKey.currentState!.validate()) {
-                    try {
-                      final String accessToken =
-                          await login(_idController.text, _pwController.text);
-                      final H4PayUser? user = await tokenCheck(accessToken);
-                      if (user != null) {
-                        await user.saveToStorage();
+                    final service = getService();
+                    service.login({
+                      "uid": _idController.text,
+                      "password": encryptPassword(_pwController.text),
+                    }).then((value) {
+                      final headers = value.response.headers.map;
+                      final token = headers['x-access-token']![0];
+                      service.tokenCheck(token).then((user) async {
+                        user.saveToStorage();
                         final SharedPreferences prefs =
                             await SharedPreferences.getInstance();
                         navigateRoute(
                           context,
                           MyHomePage(prefs: prefs),
                         );
+                      });
+                    }).catchError((err) {
+                      final code = (err as DioError).response!.statusCode;
+                      if (code == 400) {
+                        showSnackbar(
+                          context,
+                          "아이디 혹은 비밀번호가 틀렸습니다.",
+                          Colors.red,
+                          Duration(seconds: 3),
+                        );
                       } else {
-                        throw UserNotFoundException();
+                        showSnackbar(
+                          context,
+                          "($code) 서버 오류가 발생했습니다. 고객센터로 문의해주세요.",
+                          Colors.red,
+                          Duration(seconds: 3),
+                        );
                       }
-                    } on NetworkException catch (e) {
-                      showSnackbar(
-                        context,
-                        "(${e.statusCode}) 서버 오류가 발생했습니다. 고객센터로 문의해주세요.",
-                        Colors.red,
-                        Duration(seconds: 3),
-                      );
-                    } on UserNotFoundException {
-                      showSnackbar(
-                        context,
-                        "아이디 혹은 비밀번호가 틀렸습니다.",
-                        Colors.red,
-                        Duration(seconds: 3),
-                      );
-                    }
+                    });
                   }
                 },
                 backgroundColor: Theme.of(context).primaryColor,
@@ -118,6 +124,7 @@ class AccountFindPage extends StatefulWidget {
 }
 
 class AccountFindPageState extends State<AccountFindPage> {
+  final H4PayService service = getService();
   final GlobalKey<FormState> _findIdFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _findPwFormKey = GlobalKey<FormState>();
 
@@ -160,20 +167,19 @@ class AccountFindPageState extends State<AccountFindPage> {
               onClick: () async {
                 if (_findIdFormKey.currentState!.validate()) {
                   // 입력값이 정상이면
-                  try {
-                    await findId(
-                      _nameController.text,
-                      _emailController.text,
-                    );
+                  service.findUid({
+                    'name': _nameController.text,
+                    'email': _emailController.text
+                  }).then((response) {
                     showSnackbar(
                       context,
                       "아이디가 메일로 전송되었어요. 메일이 도착하지 않았으면 스팸함을 확인해보세요.",
                       Colors.green,
                       Duration(seconds: 3),
                     );
-                  } on NetworkException catch (e) {
-                    showServerErrorSnackbar(context, e);
-                  }
+                  }).catchError((err) {
+                    showServerErrorSnackbar(context, err);
+                  });
                 }
               },
               backgroundColor: Color(0xff5B82D1),
@@ -210,21 +216,20 @@ class AccountFindPageState extends State<AccountFindPage> {
               onClick: () async {
                 if (_findPwFormKey.currentState!.validate()) {
                   // 입력값이 정상이면
-                  try {
-                    await findPw(
-                      _nameController.text,
-                      _emailController.text,
-                      _idController.text,
-                    );
+                  service.findPassword({
+                    'name': _nameController.text,
+                    'email': _emailController.text,
+                    'uid': _idController.text
+                  }).then((response) {
                     showSnackbar(
                       context,
                       "새로운 비밀번호가 메일로 전송되었어요. 메일이 도착하지 않았으면 스팸함을 확인해보세요.",
                       Colors.green,
                       Duration(seconds: 3),
                     );
-                  } on NetworkException catch (e) {
-                    showServerErrorSnackbar(context, e);
-                  }
+                  }).catchError((err) {
+                    showServerErrorSnackbar(context, err);
+                  });
                 }
               },
               backgroundColor: Color(0xff5B82D1),
