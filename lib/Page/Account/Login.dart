@@ -79,14 +79,18 @@ class LoginPageState extends State<LoginPage> {
                     }).then((value) {
                       final headers = value.response.headers.map;
                       final token = headers['x-access-token']![0];
+                      debugPrint(token);
                       service.tokenCheck(token).then((user) async {
-                        user.saveToStorage();
+                        user.token = token;
+                        await user.saveToStorage();
                         final SharedPreferences prefs =
                             await SharedPreferences.getInstance();
                         navigateRoute(
                           context,
                           MyHomePage(prefs: prefs),
                         );
+                      }).catchError((err) {
+                        debugPrint(err.toString());
                       });
                     }).catchError((err) {
                       final code = (err as DioError).response!.statusCode;

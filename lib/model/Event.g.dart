@@ -8,24 +8,24 @@ part of 'Event.dart';
 
 Event _$EventFromJson(Map<String, dynamic> json) => Event(
       id: json['id'] as String,
-      title: json['title'] as String,
+      name: json['name'] as String,
       start: json['start'] as String,
       end: json['end'] as String,
       qty: json['qty'] as int,
       totalqty: json['totalqty'] as int,
-      price: json['price'] as int,
-      content: json['content'] as String,
+      amount: json['amount'] as int,
+      desc: json['desc'] as String,
       img: json['img'] as String,
     );
 
 Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
       'id': instance.id,
-      'title': instance.title,
+      'name': instance.name,
       'start': instance.start,
       'end': instance.end,
       'qty': instance.qty,
       'totalqty': instance.totalqty,
-      'price': instance.price,
-      'content': instance.content,
+      'amount': instance.amount,
+      'desc': instance.desc,
       'img': instance.img,
     };

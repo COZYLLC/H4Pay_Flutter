@@ -17,7 +17,7 @@ part 'H4PayService.g.dart';
 H4PayService getService() {
   final Dio dio = new Dio();
   dio.interceptors.add(H4PayInterceptor());
-  final H4PayService service = H4PayService(dio, baseUrl: API_URL!);
+  final H4PayService service = H4PayService(dio, baseUrl: apiUrl!);
   return service;
 }
 
@@ -27,6 +27,9 @@ abstract class H4PayService {
 
   @GET("notice")
   Future<List<Notice>> getNotices();
+
+  @GET("store")
+  Future<bool> getStoreStatus();
 
   @GET("product")
   Future<List<Product>> getProducts();

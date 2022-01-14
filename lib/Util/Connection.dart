@@ -12,7 +12,7 @@ Future<bool> connectionCheck() async {
   if (connStatus == ConnectivityResult.mobile ||
       connStatus == ConnectivityResult.wifi) {
     try {
-      final host = parseHost(API_URL!);
+      final host = parseHost(apiUrl!);
       print(host);
       final socket = await Socket.connect(
         host['host'],
@@ -79,8 +79,8 @@ showIpChangeDialog(BuildContext context, GlobalKey<FormState> formKey,
                   'API_URL',
                   ipController.text,
                 );
-                API_URL = ipController.text;
-                print("API URL newly setted: $API_URL");
+                apiUrl = ipController.text;
+                print("API URL newly setted: $apiUrl");
                 final connStatus = await connectionCheck();
                 if (connStatus) {
                   Navigator.pop(context);

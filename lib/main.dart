@@ -23,8 +23,6 @@ import 'package:h4pay/Util/Connection.dart';
 import 'package:h4pay/model/Voucher.dart';
 import 'package:h4pay/Util/creatematerialcolor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'package:dio/dio.dart';
 
 Future main() async {
   if (kReleaseMode) {
@@ -41,13 +39,13 @@ loadApiUrl(SharedPreferences prefs) async {
   if (prefs.getString("API_URL") == null || prefs.getString("API_URL") == "") {
     // prefs에 저장된 URL이 없으면(최초 실행) env URL을 prefs에 저장 후 연결테스트
     prefs.setString('API_URL', dotenv.env['API_URL']!);
-    API_URL = dotenv.env['API_URL'];
+    apiUrl = dotenv.env['API_URL'];
   } else {
     // prefs에 저장된 것으로 연결시도 후 작동하지 않으면
-    API_URL = prefs.getString("API_URL");
+    apiUrl = prefs.getString("API_URL");
     if (!await connectionCheck()) {
       // env에 저장된 것으로 시도
-      API_URL = dotenv.env['API_URL'];
+      apiUrl = dotenv.env['API_URL'];
     }
   }
 }
@@ -159,21 +157,6 @@ class MyHomePageState extends State<MyHomePage> {
   final SharedPreferences prefs;
   MyHomePageState(this.prefs);
 
-  Future<String> fetchStoreState() async {
-    final response = await http.get(Uri.parse('$API_URL/store'));
-    if (response.statusCode == 200) {
-      final Map jsonResponse = json.decode(response.body);
-      bool state = jsonResponse['result'];
-      if (state) {
-        return 'OPEN';
-      } else {
-        return 'CLOSED';
-      }
-    } else {
-      throw Exception('Failed to fetch store state.');
-    }
-  }
-
   Future updateBadges() async {
     // calculate cart items, orders, gifts, vouchers and set badge states.
     final H4PayUser? user = await userFromStorage();
@@ -245,7 +228,7 @@ class MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     updateBadges();
-    _fetchStoreStatus = fetchStoreState();
+    _fetchStoreStatus = service.getStoreStatus();
   }
 
   @override
@@ -273,8 +256,9 @@ class MyHomePageState extends State<MyHomePage> {
                   future: _fetchStoreStatus,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
+                      final bool isOpened = snapshot.data as bool;
                       return Text(
-                        snapshot.data.toString(),
+                        isOpened ? "OPEN" : "CLOSE",
                         style: TextStyle(color: Colors.black, fontSize: 20),
                       );
                     } else {

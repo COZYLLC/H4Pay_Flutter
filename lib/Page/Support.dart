@@ -281,7 +281,7 @@ class SupportFormPageState extends State<SupportFormPage> {
 
   Future<bool> _upload(String uid, String email, String title, String category,
       String content, File? img) async {
-    var uri = Uri.parse("$API_URL/upload");
+    var uri = Uri.parse("$apiUrl/upload");
     var request = new http.MultipartRequest("POST", uri);
 
     request.fields.addAll({

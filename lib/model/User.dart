@@ -26,6 +26,7 @@ class H4PayUser {
 
   factory H4PayUser.fromJson(Map<String, dynamic> json) =>
       _$H4PayUserFromJson(json);
+  Map<String, dynamic> toJson() => _$H4PayUserToJson(this);
 
   Future<bool> saveToStorage() async {
     try {

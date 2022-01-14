@@ -5,6 +5,7 @@ import 'package:h4pay/AppLink.dart';
 import 'package:h4pay/Network/Maintenance.dart';
 import 'package:h4pay/Page/Account/Login.dart';
 import 'package:h4pay/Page/Account/Register.dart';
+import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Maintenance.dart';
@@ -47,7 +48,7 @@ class IntroPageState extends State<IntroPage> {
     registerListener(context);
     connectionCheck().then((connected) async {
       if (!connected) {
-        if (dotenv.env['TEST_MODE'] == "TRUE") {
+        if (isTestMode) {
           showCustomAlertDialog(
             context,
             H4PayDialog(
@@ -287,7 +288,7 @@ class IntroPageState extends State<IntroPage> {
                         ),
                       ),
                     ),
-                    dotenv.env['TEST_MODE'] == "TRUE"
+                    isTestMode
                         ? InkWell(
                             onTap: () {
                               showIpChangeDialog(

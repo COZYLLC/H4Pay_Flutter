@@ -598,7 +598,7 @@ class EventCard extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
                   softWrap: false,
                 ),
-                Text("${getPrettyAmountStr(event.price)} 할인"),
+                Text("${getPrettyAmountStr(event.amount)} 할인"),
                 Text(
                     "${getPrettyDateStr(event.start, false)} ~ ${getPrettyDateStr(event.start, false)}")
               ],

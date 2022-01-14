@@ -168,13 +168,13 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
         if (tempPurchase['type'] == 'Order') {
           tempPurchase['uid'] = user.uid;
           final order = Order.fromJson(tempPurchase);
-          service.createOrder(order.toJson()).then((res) {
+          final createResult = await service.createOrder(order.toJson());
+          if (createResult.response.statusCode == 200) {
             _prefs!.setString('cart', json.encode({}));
             return order;
-          }).catchError((err) {
-            throw err;
-          });
-          throw NetworkException(400);
+          } else {
+            throw NetworkException(createResult.response.statusCode!);
+          }
         } else {
           tempPurchase['uidfrom'] = user.uid;
           tempPurchase['extended'] = false;

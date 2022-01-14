@@ -11,13 +11,14 @@ class H4PayDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(23.0),
-          ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(23.0),
         ),
-        title: Text(title),
-        content: SingleChildScrollView(child: content),
-        actions: actions);
+      ),
+      title: Text(title),
+      content: SingleChildScrollView(child: content),
+      actions: actions,
+    );
   }
 }

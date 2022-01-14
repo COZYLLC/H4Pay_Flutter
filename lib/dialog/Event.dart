@@ -17,7 +17,7 @@ class EventDialog extends H4PayDialog {
               Container(
                 height: 30,
               ),
-              Text("${getPrettyAmountStr(event.price)} 할인"),
+              Text("${getPrettyAmountStr(event.amount)} 할인"),
               Text(
                   "${getPrettyDateStr(event.start, false)} ~ ${getPrettyDateStr(event.end, false)}"),
               Text(event.content.replaceAll("\\n", "\n")),

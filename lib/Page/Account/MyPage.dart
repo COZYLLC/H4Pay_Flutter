@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Account/ChangePassword.dart';
-import 'package:h4pay/H4PayInfo.dart';
+import 'package:h4pay/Page/Info.dart';
 import 'package:h4pay/Page/IntroPage.dart';
 import 'package:h4pay/Page/Purchase/PurchaseList.dart';
 import 'package:h4pay/Page/Voucher/VoucherList.dart';
@@ -151,7 +151,38 @@ class MyPageState extends State<MyPage> {
               ),
             );
           } else {
-            return CircularProgressIndicator();
+            return Container(
+              padding: EdgeInsets.all(18),
+              child: InfoMenuList(
+                menu: [
+                  Container(
+                    margin: EdgeInsets.only(top: 40),
+                    child: InfoMenu(
+                      icon: Icon(Icons.info),
+                      text: "정보 보기",
+                      onClick: () {
+                        navigateRoute(context, H4PayInfoPage());
+                      },
+                    ),
+                  ),
+                  InfoMenu(
+                    icon: Icon(Icons.logout),
+                    text: "로그아웃",
+                    onClick: () {
+                      showAlertDialog(context, "로그아웃", "정말로 로그아웃 하시겠습니까?", () {
+                        logout();
+                        navigateRoute(
+                          context,
+                          IntroPage(canGoBack: false),
+                        );
+                      }, () {
+                        Navigator.pop(context);
+                      });
+                    },
+                  )
+                ],
+              ),
+            );
           }
         },
       ),
