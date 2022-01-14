@@ -93,7 +93,7 @@ class RegisterPageState extends State<RegisterPage> {
                     onEditingComplete: _checkEmailValidity,
                   ),
                   Text(
-                    "이메일의 @(골뱅이) 앞의 것을 아이디로 자동 등록합니다.",
+                    "이메일의 @(골뱅이) 앞의 문자를 아이디로 자동 등록합니다.",
                     style: TextStyle(color: Colors.red),
                   ),
                   H4PayInput(
@@ -105,6 +105,7 @@ class RegisterPageState extends State<RegisterPage> {
                   H4PayInput(
                     title: "비밀번호 확인",
                     controller: pwCheck,
+                    isPassword: true,
                     validator: (value) =>
                         pw.text == value ? null : "비밀번호가 일치하지 않습니다.",
                   ),
@@ -154,7 +155,7 @@ class RegisterPageState extends State<RegisterPage> {
                     text: "회원가입",
                     onClick: () async {
                       if (_formKey.currentState!.validate()) {
-                        final requestBody = {
+                        final Map<String, String> requestBody = {
                           'uid': email.text.split("@")[0],
                           'password': encryptPassword(pw.text),
                           'aID': '',
@@ -164,8 +165,6 @@ class RegisterPageState extends State<RegisterPage> {
                           'role': 'S',
                         };
                         service.register(requestBody).then((response) async {
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
