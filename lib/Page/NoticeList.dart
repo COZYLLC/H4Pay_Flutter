@@ -37,11 +37,7 @@ class NoticeListPage extends ListPage {
                 context,
                 snapshot.error as NetworkException,
               );
-              return ErrorPage(
-                title: "결제 오류가 발생했습니다.",
-                description:
-                    "${(snapshot.error as NetworkException).statusCode}",
-              );
+              return ErrorPage(snapshot.error as Exception);
             } else {
               return CenterInScroll(
                 child: CircularProgressIndicator(),
@@ -94,11 +90,7 @@ class EventListPage extends ListPage {
                 context,
                 snapshot.error as Exception,
               );
-              return ErrorPage(
-                title: "결제 오류가 발생했습니다.",
-                description:
-                    "${(snapshot.error as NetworkException).statusCode}",
-              );
+              return ErrorPage(snapshot.error as Exception);
             } else {
               return CenterInScroll(
                 child: CircularProgressIndicator(),

@@ -632,6 +632,26 @@ class VoucherCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isExpired =
+        DateTime.parse(voucher.expire).millisecondsSinceEpoch >
+            DateTime.now().millisecondsSinceEpoch;
+    final bool isExchanged = voucher.exchanged;
+    final bool isUsable = !isExchanged && isExpired;
+
+    final H4PayButton useButton = H4PayButton(
+      text: "사용 하기",
+      onClick: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (BuildContext context) =>
+                VoucherDetailPage(voucher: voucher),
+          ),
+        ).then(disableWakeLock);
+      },
+      backgroundColor: Theme.of(context).primaryColor,
+      width: double.infinity,
+    );
     return CardWidget(
       margin: null,
       child: Column(
@@ -646,25 +666,35 @@ class VoucherCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("${voucher.issuer['name']} 님이 발송한 선물"),
+              Text.rich(
+                TextSpan(
+                  text: voucher.issuer['name'],
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                  children: [
+                    TextSpan(
+                      text: "님이 발송한 선물",
+                      style: TextStyle(fontWeight: FontWeight.normal),
+                    ),
+                  ],
+                ),
+              ),
               Text(getPrettyAmountStr(voucher.amount)),
             ],
           ),
           Text(getPrettyDateStr(voucher.expire, true) + " 까지"),
-          H4PayButton(
-            text: "사용 하기",
-            onClick: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (BuildContext context) =>
-                      VoucherDetailPage(voucher: voucher),
-                ),
-              ).then(disableWakeLock);
-            },
-            backgroundColor: Theme.of(context).primaryColor,
-            width: double.infinity,
-          )
+          isUsable
+              ? useButton
+              : isExchanged
+                  ? Text(
+                      "교환됨",
+                      style: TextStyle(color: Colors.red),
+                    )
+                  : isExpired
+                      ? Text(
+                          "만료됨",
+                          style: TextStyle(color: Colors.red),
+                        )
+                      : Container()
         ],
       ),
     );

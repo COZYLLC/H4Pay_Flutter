@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Network/H4PayService.dart';
-
+import 'package:dio/dio.dart';
 import 'package:h4pay/Page/Cart.dart';
 import 'package:h4pay/Page/IntroPage.dart';
 import 'package:h4pay/Page/NoticeList.dart';
@@ -175,13 +175,29 @@ class MyHomePageState extends State<MyHomePage> {
     List<Voucher> vouchers;
 
     try {
-      orders = [];
-      gifts = [];
+      orders = await service.getOrders(user.uid!);
+      gifts = await service.getGifts({"uidto": user.uid!});
       vouchers = await service.getVouchers(user.tel!);
     } on NetworkException catch (e) {
       showSnackbar(
         context,
         "(${e.statusCode}) 서버 오류가 발생했습니다. 고객센터로 문의해주세요.",
+        Colors.red,
+        Duration(seconds: 3),
+      );
+      return;
+    } on DioError catch (e) {
+      showSnackbar(
+        context,
+        "(${e.message}) 서버 오류가 발생했습니다. 고객센터로 문의해주세요.",
+        Colors.red,
+        Duration(seconds: 3),
+      );
+      return;
+    } catch (e) {
+      showSnackbar(
+        context,
+        "알 수 없는 오류가 발생했습니다. 고객센터로 문의해주세요.",
         Colors.red,
         Duration(seconds: 3),
       );
@@ -201,11 +217,10 @@ class MyHomePageState extends State<MyHomePage> {
       (gift) => {if (!gift.exchanged && gift.uidto == user.uid) giftCount++},
     );
     vouchers.forEach(
-      (voucher) => {
+      (voucher) {
         if (!voucher.exchanged &&
             DateTime.parse(voucher.expire).millisecondsSinceEpoch >
-                DateTime.now().millisecondsSinceEpoch)
-          voucherCount++
+                DateTime.now().millisecondsSinceEpoch) voucherCount++;
       },
     );
 

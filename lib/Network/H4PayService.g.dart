@@ -278,7 +278,7 @@ class _H4PayService implements H4PayService {
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     final _result = await _dio.fetch(_setStreamType<HttpResponse<dynamic>>(
-        Options(method: 'POST', headers: _headers, extra: _extra)
+        Options(method: 'GET', headers: _headers, extra: _extra)
             .compose(_dio.options, 'orders/cancel/${orderId}',
                 queryParameters: queryParameters, data: _data)
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
@@ -346,7 +346,7 @@ class _H4PayService implements H4PayService {
     _data.addAll(body);
     final _result = await _dio.fetch<List<dynamic>>(_setStreamType<List<Gift>>(
         Options(method: 'POST', headers: _headers, extra: _extra)
-            .compose(_dio.options, 'gift/findbysenderid',
+            .compose(_dio.options, 'gift/findbysenderuid',
                 queryParameters: queryParameters, data: _data)
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!

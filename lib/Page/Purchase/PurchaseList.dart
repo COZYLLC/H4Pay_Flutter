@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Error.dart';
-import 'package:h4pay/exception.dart';
+import 'package:h4pay/Page/NoticeList.dart';
 import 'package:h4pay/model/Product.dart';
 import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/model/Purchase/Gift.dart';
@@ -29,12 +29,12 @@ class PurchaseListState extends State<PurchaseList> {
   Future<Map> _loadThings() async {
     final H4PayUser? user = await userFromStorage();
     final String uid = user!.uid!;
+    final List<Product>? products = await service.getProducts();
     final List<Purchase>? purchases = widget.type == Order
         ? await service.getOrders(uid)
         : widget.type == Gift
             ? await service.getGifts({"uid": uid})
             : await service.getSentGifts({"uid": uid});
-    final List<Product>? products = await service.getProducts();
     return {
       'purchases': purchases,
       'products': products,
@@ -91,12 +91,11 @@ class PurchaseListState extends State<PurchaseList> {
             );
           }
         } else if (snapshot.hasError) {
-          return ErrorPage(
-            title: "서버 오류가 발생했습니다.",
-            description: "${(snapshot.error as NetworkException).statusCode}",
+          return Center(
+            child: ErrorPage(snapshot.error as Exception),
           );
         } else {
-          return Center(
+          return CenterInScroll(
             child: CircularProgressIndicator(),
           );
         }

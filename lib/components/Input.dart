@@ -63,9 +63,10 @@ class H4PayInputState extends State<H4PayInput> {
       fillColor: widget.backgroundColor ?? defaultBackgroundColor,
       filled: true,
       border: new OutlineInputBorder(
-        borderRadius: const BorderRadius.all(const Radius.circular(38.0)),
+        borderRadius: const BorderRadius.all(const Radius.circular(23.0)),
       ),
-      contentPadding: new EdgeInsets.symmetric(vertical: 0.0, horizontal: 10.0),
+      contentPadding:
+          new EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
     );
     Container titleText = Container(
       margin: EdgeInsets.only(bottom: 10),

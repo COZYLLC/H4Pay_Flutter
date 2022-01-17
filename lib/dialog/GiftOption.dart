@@ -24,15 +24,14 @@ class GiftOptionDialog extends H4PayDialog {
   final SharedPreferences prefs;
   final Product product;
 
-  Future<List<String>?> _nameFromStudentId(String studentId) async {
-    try {
-      final UserValidResponse response = await service.nameFromStudentId({
-        'users': json.encode([studentId])
-      });
-      if (response.isValid) return response.users;
-    } catch (e) {
-      return null;
-    }
+  Future<List<Map<String, dynamic>>?> _nameFromStudentId(
+      String studentId) async {
+    final UserValidResponse response = await service.nameFromStudentId({
+      'users': json.encode([
+        {"studentid": studentId}
+      ])
+    });
+    if (response.isValid) return response.users;
   }
 
   GiftOptionDialog(
@@ -97,13 +96,12 @@ class GiftOptionDialog extends H4PayDialog {
             if (!formKey.currentState!.validate()) {
               return;
             }
-            final List<String>? result =
+            final List<Map<String, dynamic>>? result =
                 await _nameFromStudentId(studentId.text);
             if (result != null)
               _sendGift(
                 result[0],
                 product,
-                studentId.text,
                 int.parse(qty.text),
               );
             else
@@ -122,26 +120,30 @@ class GiftOptionDialog extends H4PayDialog {
     );
   }
 
-  void _sendGift(String userName, Product product, String stId, int qty) async {
+  void _sendGift(Map<String, dynamic> target, Product product, int qty) async {
     final _orderId = "2" + genOrderId() + "000";
-    final Map tempPurchase = {
-      'type': 'Gift',
-      'uidto': stId,
-      'amount': product.price * qty,
-      'item': {product.id.toString(): qty},
-      'orderId': _orderId
-    };
-    prefs.setString('tempPurchase', json.encode(tempPurchase));
-    Navigator.pop(context);
     final H4PayUser? user = await userFromStorage();
+
     if (user != null) {
-      showAlertDialog(context, "발송 확인", "$userName 님에게 선물을 발송할까요?", () {
+      final Map tempPurchase = {
+        'type': 'Gift',
+        'target': target,
+        'uidfrom': user.uid,
+        'amount': product.price * qty,
+        'item': {product.id.toString(): qty},
+        'orderId': _orderId,
+        "uidto": target['uid']
+      };
+      prefs.setString('tempPurchase', json.encode(tempPurchase));
+      Navigator.pop(context);
+
+      showAlertDialog(context, "발송 확인", "${target['name']} 님에게 선물을 발송할까요?", () {
         Navigator.pop(context);
 /*         showDropdownAlertDialog(context, "현금영수증 옵션", userName,
             product.price * qty, _orderId, product.productName, user.name!); */
         showSnackbar(
           context,
-          "$userName 님에게 선물을 전송할게요.",
+          "${target['name']} 님에게 선물을 전송할게요.",
           Colors.green,
           Duration(seconds: 1),
         );

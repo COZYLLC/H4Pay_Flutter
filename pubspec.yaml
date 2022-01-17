@@ -1,7 +1,7 @@
 name: h4pay
 description: A new Flutter project.
 publish_to: "none"
-version: 2.1.0+17
+version: 2.1.0+20
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -39,6 +39,7 @@ dependencies:
   flutter_launcher_icons:
   in_app_update: ^2.0.0
   retrofit: ^3.0.1
+  device_info_plus: ^3.2.1
 
 dev_dependencies:
   flutter_test:
@@ -62,6 +63,7 @@ flutter:
     - assets/svg/support.svg
     - assets/image/H4pay.png
     - assets/image/pattern.png
+    - assets/image/error.png
 
   fonts:
     - family: Spoqa_Han_Sans

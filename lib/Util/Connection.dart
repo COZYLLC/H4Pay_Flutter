@@ -46,6 +46,13 @@ Map parseHost(String url) {
   return result;
 }
 
+String? encodeQueryParameters(Map<String, String> params) {
+  return params.entries
+      .map((e) =>
+          '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+      .join('&');
+}
+
 showIpChangeDialog(BuildContext context, GlobalKey<FormState> formKey,
     TextEditingController ipController) {
   showCustomAlertDialog(

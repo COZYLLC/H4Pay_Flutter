@@ -69,7 +69,7 @@ abstract class H4PayService {
   @POST("orders/create")
   Future<HttpResponse> createOrder(@Body() Map<String, dynamic> body);
 
-  @POST("orders/cancel/{orderId}")
+  @GET("orders/cancel/{orderId}")
   Future<HttpResponse> cancelOrder(@Path("orderId") String orderId);
 
   @POST("gift/create")
@@ -81,7 +81,7 @@ abstract class H4PayService {
   @POST("gift/findbyorderid/{orderId}")
   Future<Gift> getGiftDetail(@Path("orderId") String orderId);
 
-  @POST("gift/findbysenderid")
+  @POST("gift/findbysenderuid")
   Future<List<Gift>> getSentGifts(@Body() Map<String, dynamic> body);
 
   @POST("gift/{orderId}/extend")

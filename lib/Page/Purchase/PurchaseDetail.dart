@@ -162,10 +162,7 @@ class PurchaseDetailPageState extends State<PurchaseDetailPage> {
               ),
             );
           } else if (snapshot.hasError) {
-            return ErrorPage(
-              title: "서버 오류가 발생했습니다.",
-              description: "${(snapshot.error as NetworkException).statusCode}",
-            );
+            return ErrorPage(snapshot.error as Exception);
           } else {
             return Center(
               child: CircularProgressIndicator(),

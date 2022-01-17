@@ -281,7 +281,7 @@ class SupportFormPageState extends State<SupportFormPage> {
 
   Future<bool> _upload(String uid, String email, String title, String category,
       String content, File? img) async {
-    var uri = Uri.parse("$apiUrl/upload");
+    var uri = Uri.parse("${apiUrl}upload");
     var request = new http.MultipartRequest("POST", uri);
 
     request.fields.addAll({
@@ -299,14 +299,17 @@ class SupportFormPageState extends State<SupportFormPage> {
           filename: basename(img.path));
       request.files.add(multipartFile);
     }
-
-    var response = await request.send();
-    if (response.statusCode == 200) {
-      final responseString = await response.stream.bytesToString();
-      final jsonResponse = json.decode(responseString);
-      return jsonResponse['status'];
-    } else {
-      throw NetworkException(response.statusCode);
+    try {
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        final responseString = await response.stream.bytesToString();
+        final jsonResponse = json.decode(responseString);
+        return jsonResponse['status'];
+      } else {
+        throw NetworkException(response.statusCode);
+      }
+    } catch (e) {
+      return false;
     }
   }
 }

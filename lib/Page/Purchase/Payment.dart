@@ -121,13 +121,10 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
               ),
             );
           } else if (snapshot.hasError) {
-            return ErrorPage(
-              title: "결제 오류가 발생했습니다.",
-              description: "${(snapshot.error as NetworkException).statusCode}",
-            );
+            return Scaffold(body: ErrorPage(snapshot.error as Exception));
           } else {
             return Center(
-              child: CircularProgressIndicator(),
+              child: Scaffold(body: CircularProgressIndicator()),
             );
           }
         },
@@ -176,16 +173,19 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
             throw NetworkException(createResult.response.statusCode!);
           }
         } else {
-          tempPurchase['uidfrom'] = user.uid;
           tempPurchase['extended'] = false;
           final gift = Gift.fromJson(tempPurchase);
-          service.createGift(gift.toJson()).then((res) {
+          try {
+            final giftJson = gift.toJson();
+            giftJson['target'] = tempPurchase['target'];
+            giftJson['issuerName'] = user.name;
+            giftJson['reason'] = "TEST";
+            await service.createGift(giftJson);
             _prefs!.setString('cart', json.encode({}));
             return gift;
-          }).catchError((err) {
-            throw err;
-          });
-          throw NetworkException(400);
+          } catch (e) {
+            throw e;
+          }
         }
       }
     } else {

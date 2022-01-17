@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Page/Purchase/Payment.dart';
+import 'package:h4pay/Setting.dart';
+import 'package:h4pay/Util/Connection.dart';
 import 'package:h4pay/main.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -55,9 +57,14 @@ class WebViewExampleState extends State<WebViewExample> {
       "orderId": widget.orderId,
       "orderName": widget.orderName,
       "customerName": widget.customerName,
-      "development": dotenv.env['TEST_MODE']!
+      "development": isTestMode.toString()
     };
-    final String uri = Uri.http(url, "/payment", queryParams).toString();
+    final splittedUrl = url.split("://");
+    final String uri = Uri(
+      scheme: splittedUrl[0],
+      path: splittedUrl[1] + "/payment",
+      query: encodeQueryParameters(queryParams),
+    ).toString();
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -133,7 +140,7 @@ class WebViewExampleState extends State<WebViewExample> {
             } catch (e) {
               return NavigationDecision.prevent;
             }
-          } else if (request.url.startsWith("http://$url/paySuccess")) {
+          } else if (request.url.startsWith("$url/paySuccess")) {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -144,7 +151,7 @@ class WebViewExampleState extends State<WebViewExample> {
               ),
             ).then(updateBadges);
             return NavigationDecision.prevent;
-          } else if (request.url.startsWith("http://$url/payFail")) {
+          } else if (request.url.startsWith("$url/payFail")) {
             Navigator.pop(context);
             return NavigationDecision.prevent;
           } else {

@@ -161,7 +161,7 @@ class RegisterPageState extends State<RegisterPage> {
                           'aID': '',
                           'gID': '',
                           'email': email.text,
-                          'tel': tel.text,
+                          'tel': tel.text.replaceAll("-", ""),
                           'role': 'S',
                         };
                         service.register(requestBody).then((response) async {

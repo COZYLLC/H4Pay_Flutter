@@ -5,7 +5,7 @@ part 'UserValidResponse.g.dart';
 @JsonSerializable()
 class UserValidResponse {
   final bool isValid;
-  final List<String> users;
+  final List<Map<String, dynamic>> users;
   UserValidResponse({
     required this.isValid,
     required this.users,

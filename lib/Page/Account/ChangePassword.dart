@@ -9,6 +9,7 @@ import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/Util/validator.dart';
+import 'package:dio/dio.dart';
 
 class ChangePWDialog extends H4PayDialog {
   final H4PayService service = getService();
@@ -85,8 +86,9 @@ class ChangePWDialog extends H4PayDialog {
 
   Future _changePassword(BuildContext context) async {
     if (formKey.currentState!.validate()) {
+      debugPrint(user.uid);
       service.changePassword({
-        'user': user.uid,
+        'uid': user.uid,
         'password': encryptPassword(prevPassword.text),
         'cpassword': encryptPassword(pw2Change.text)
       }).then((response) {
@@ -114,6 +116,7 @@ class ChangePWDialog extends H4PayDialog {
         );
       }).catchError((err) {
         Navigator.pop(context);
+        debugPrint((err as DioError).response!.data.toString());
         showSnackbar(
           context,
           "($err): 비밀번호 변경에 실패했습니다.",
