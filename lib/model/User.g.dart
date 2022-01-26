@@ -13,7 +13,7 @@ H4PayUser _$H4PayUserFromJson(Map<String, dynamic> json) => H4PayUser(
       role: json['role'] as String?,
       tel: json['tel'] as String?,
       token: json['token'] as String?,
-    );
+    )..schoolId = json['schoolId'] as String?;
 
 Map<String, dynamic> _$H4PayUserToJson(H4PayUser instance) => <String, dynamic>{
       'uid': instance.uid,
@@ -22,4 +22,5 @@ Map<String, dynamic> _$H4PayUserToJson(H4PayUser instance) => <String, dynamic>{
       'role': instance.role,
       'tel': instance.tel,
       'token': instance.token,
+      'schoolId': instance.schoolId,
     };

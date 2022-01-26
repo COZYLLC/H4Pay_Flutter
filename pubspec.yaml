@@ -26,7 +26,7 @@ dependencies:
   crypto: ^3.0.1
   localstorage:
   new_version: ^0.2.0
-  flutter_secure_storage: ^4.2.1
+  flutter_secure_storage: ^5.0.2
   flutter_svg: ^0.22.0
   blur: ^3.0.0
   connectivity: ^3.0.6

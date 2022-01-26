@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/AppLink.dart';
 import 'package:h4pay/Network/Maintenance.dart';
@@ -23,7 +25,11 @@ import 'package:url_launcher/url_launcher.dart';
 class EmptyAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return AppBar(
+      systemOverlayStyle: SystemUiOverlayStyle.light,
+      backgroundColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+    );
   }
 
   @override
@@ -41,11 +47,10 @@ class IntroPage extends StatefulWidget {
 class IntroPageState extends State<IntroPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _ipController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
-    registerListener(context);
+    if (!kIsWeb) registerListener(context);
     connectionCheck().then((connected) async {
       if (!connected) {
         if (isTestMode) {
@@ -125,14 +130,17 @@ class IntroPageState extends State<IntroPage> {
           debugPrint("no maintenance");
         }
         checkUpdate();
-        final Widget? route = await initUniLinks(context);
-        if (route != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => route),
-          );
-          return;
+        if (!kIsWeb) {
+          final Widget? route = await initUniLinks(context);
+          if (route != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => route),
+            );
+            return;
+          }
         }
+
         final H4PayUser? user = await userFromStorage();
         final SharedPreferences _prefs = await SharedPreferences.getInstance();
         if (user != null) {
@@ -260,13 +268,8 @@ class IntroPageState extends State<IntroPage> {
                     H4PayButton(
                       text: "회원가입",
                       width: double.infinity,
-                      onClick: () async {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RegisterPage(),
-                          ),
-                        );
+                      onClick: () {
+                        navigateRoute(context, RegisterPage());
                       },
                       backgroundColor: Color(0xff4F83D6),
                     ),

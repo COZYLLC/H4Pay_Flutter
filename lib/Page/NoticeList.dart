@@ -6,6 +6,7 @@ import 'package:h4pay/model/Event.dart';
 import 'package:h4pay/model/Notice.dart';
 import 'package:h4pay/Page/Purchase/PurchaseList.dart';
 import 'package:h4pay/components/Card.dart';
+import 'package:h4pay/model/User.dart';
 
 class NoticeListPage extends ListPage {
   NoticeListPage()
@@ -62,12 +63,18 @@ class CenterInScroll extends StatelessWidget {
   }
 }
 
+Future<List<Event>> _getAllEvents() async {
+  await Future.delayed(Duration(seconds: 1));
+  return [];
+}
+
 class EventListPage extends ListPage {
   EventListPage()
       : super(
           withAppBar: true,
           type: Event,
-          dataFuture: getService().getAllEvents(),
+          //dataFuture: getService().getAllEvents(),
+          dataFuture: _getAllEvents(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               List data = snapshot.data as List;

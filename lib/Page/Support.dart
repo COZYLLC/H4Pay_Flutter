@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:h4pay/Page/NoticeList.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Page/Success.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/User.dart';
 import 'package:h4pay/components/Input.dart';
@@ -76,7 +77,7 @@ class SupportPageState extends State<SupportPage> {
                       return CardWidget(
                         margin: EdgeInsets.symmetric(vertical: 4),
                         child: Text(type.value),
-                        onClick: () {
+                        onClick: () async {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -113,8 +114,20 @@ class SupportFormPageState extends State<SupportFormPage> {
   final _formKey = GlobalKey<FormState>();
   final title = TextEditingController();
   final content = TextEditingController();
+  final fileName = TextEditingController();
   String? photoName;
   File? file;
+
+  void _openFileSelector() async {
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(type: FileType.image);
+    if (result != null) {
+      setState(() {
+        file = File(result.files.single.path!);
+        fileName.text = file != null ? file!.path.split('/')[7] : "";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -167,105 +180,20 @@ class SupportFormPageState extends State<SupportFormPage> {
                           (MediaQuery.of(context).size.height / 55).floor(),
                     ),
                   ),
-                  Container(
-                    margin: EdgeInsets.symmetric(vertical: 10),
-                    child: Text(
-                      "사진 첨부",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                    ),
+                  H4PayInput.button(
+                    title: "사진 첨부",
+                    controller: fileName,
+                    buttonText: "선택",
+                    onButtonClick: _openFileSelector,
+                    onFieldClick: _openFileSelector,
                   ),
-                  LayoutBuilder(builder: (context, constraints) {
-                    return Container(
-                      height: 40,
-                      child: Stack(
-                        children: [
-                          Container(
-                            alignment: Alignment.centerLeft,
-                            height: constraints.maxHeight,
-                            child: Container(
-                              width: constraints.maxWidth * 0.6,
-                              child: Text(
-                                file != null ? file!.path.split('/')[7] : "",
-                                softWrap: false,
-                                overflow: TextOverflow.fade,
-                              ),
-                            ),
-                            padding: EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200]!,
-                              borderRadius: BorderRadius.circular(38),
-                              border: Border.all(color: Colors.grey[400]!),
-                            ),
-                          ),
-                          Container(
-                            alignment: Alignment.topRight,
-                            child: H4PayButton(
-                              text: "사진 업로드",
-                              onClick: () async {
-                                FilePickerResult? result = await FilePicker
-                                    .platform
-                                    .pickFiles(type: FileType.image);
-                                if (result != null) {
-                                  setState(() {
-                                    file = File(result.files.single.path!);
-                                    photoName = file!.path.split('/')[7];
-                                  });
-                                }
-                              },
-                              backgroundColor: Theme.of(context).primaryColor,
-                              width: MediaQuery.of(context).size.width * 0.3,
-                              height: constraints.maxHeight,
-                            ),
-                          )
-                        ],
-                      ),
-                    );
-                  }),
                   Container(
                     height: 20,
                   ),
                   H4PayButton(
                     text: "제출하기",
-                    onClick: () async {
-                      if (_formKey.currentState!.validate()) {
-                        final H4PayUser? user = await userFromStorage();
-                        if (user != null) {
-                          await _upload(
-                            user.uid!,
-                            user.email!,
-                            title.text,
-                            widget.type,
-                            content.text,
-                            file,
-                          );
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SuccessPage(
-                                canGoBack: false,
-                                successText: "문의가 완료되었습니다.",
-                                title: "문의 완료",
-                                bottomDescription: [
-                                  Text("더 좋은 서비스를 위해 노력하겠습니다.")
-                                ],
-                                actions: [
-                                  H4PayButton(
-                                    text: "지원 페이지로 돌아가기",
-                                    onClick: () {
-                                      Navigator.pop(context);
-                                      Navigator.pop(context);
-                                    },
-                                    backgroundColor:
-                                        Theme.of(context).primaryColor,
-                                    width: double.infinity,
-                                  )
-                                ],
-                              ),
-                            ),
-                          );
-                        }
-                      }
+                    onClick: () {
+                      _submit(context);
                     },
                     backgroundColor: Theme.of(context).primaryColor,
                     width: double.infinity,
@@ -279,9 +207,45 @@ class SupportFormPageState extends State<SupportFormPage> {
     );
   }
 
+  _submit(BuildContext context) async {
+    if (_formKey.currentState!.validate()) {
+      final H4PayUser? user = await userFromStorage();
+      if (user != null) {
+        await _upload(
+          user.uid!,
+          user.email!,
+          title.text,
+          widget.type,
+          content.text,
+          file,
+        );
+        navigateRoute(
+          context,
+          SuccessPage(
+            canGoBack: false,
+            successText: "문의가 완료되었습니다.",
+            title: "문의 완료",
+            bottomDescription: [Text("더 좋은 서비스를 위해 노력하겠습니다.")],
+            actions: [
+              H4PayButton(
+                text: "지원 페이지로 돌아가기",
+                onClick: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+                backgroundColor: Theme.of(context).primaryColor,
+                width: double.infinity,
+              )
+            ],
+          ),
+        );
+      }
+    }
+  }
+
   Future<bool> _upload(String uid, String email, String title, String category,
       String content, File? img) async {
-    var uri = Uri.parse("${apiUrl}upload");
+    var uri = Uri.parse("${apiUrl}uploads");
     var request = new http.MultipartRequest("POST", uri);
 
     request.fields.addAll({

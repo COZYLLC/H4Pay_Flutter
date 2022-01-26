@@ -14,6 +14,7 @@ import 'package:h4pay/Page/Account/MyPage.dart';
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Page/Support.dart';
+import 'package:h4pay/Util/Exit.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Purchase/Gift.dart';
 import 'package:h4pay/model/Purchase/Order.dart';
@@ -66,6 +67,9 @@ class MyApp extends StatelessWidget {
           child: MaterialApp(
             theme: ThemeData(
               fontFamily: 'Spoqa_Han_Sans',
+              appBarTheme: AppBarTheme(
+                systemOverlayStyle: SystemUiOverlayStyle.dark,
+              ),
               primarySwatch: createMaterialColor(Color(0xff5B82D1)),
               primaryColor: Color(0xff5B82D1),
             ),
@@ -168,15 +172,15 @@ class MyHomePageState extends State<MyHomePage> {
         Duration(seconds: 1),
       );
       await Future.delayed(Duration(seconds: 3));
-      exit(0);
+      exitApp();
     }
     List<Order> orders;
     List<Gift> gifts;
     List<Voucher> vouchers;
 
     try {
-      orders = await service.getOrders(user.uid!);
-      gifts = await service.getGifts({"uidto": user.uid!});
+      orders = await service.getOrders(user!.uid!);
+      gifts = await service.getGifts(user.uid!);
       vouchers = await service.getVouchers(user.tel!);
     } on NetworkException catch (e) {
       showSnackbar(

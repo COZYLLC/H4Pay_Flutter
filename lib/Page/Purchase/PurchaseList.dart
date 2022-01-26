@@ -33,8 +33,8 @@ class PurchaseListState extends State<PurchaseList> {
     final List<Purchase>? purchases = widget.type == Order
         ? await service.getOrders(uid)
         : widget.type == Gift
-            ? await service.getGifts({"uid": uid})
-            : await service.getSentGifts({"uid": uid});
+            ? await service.getGifts(uid)
+            : await service.getSentGifts(uid);
     return {
       'purchases': purchases,
       'products': products,

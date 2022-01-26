@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Cart.dart';
+import 'package:h4pay/Page/Error.dart';
+import 'package:h4pay/components/Carousel.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Event.dart';
 import 'package:h4pay/model/Notice.dart';
@@ -14,6 +17,7 @@ import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/dialog/Event.dart';
 import 'package:h4pay/dialog/GiftOption.dart';
 import 'package:h4pay/dialog/Notice.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:h4pay/main.dart';
 
@@ -33,41 +37,18 @@ class HomeState extends State<Home> {
   bool cartClicked = false;
   bool moving = false;
 
-  Future<Map>? future;
   HomeState(this.prefs);
 
   @override
   void initState() {
     super.initState();
-    future = _fetchThings();
   }
 
-  Future<Map> _fetchThings() async {
+  Future<Map> _getAds(H4PayUser user) async {
     Map data = {};
-    try {
-      List<Product> products = await service.getVisibleProducts();
-      products.sort((a, b) => a.productName.compareTo(b.productName));
-      data['product'] = products;
-      data['notice'] = await service.getNotices();
-      data['event'] = await service.getAllEvents();
-      return data;
-    } on NetworkException catch (e) {
-      if (dotenv.env['TEST_MODE'] == 'FALSE') {
-        showServerErrorSnackbar(
-          context,
-          e,
-        );
-      }
-      return {};
-    } on UserNotFoundException {
-      showSnackbar(
-        context,
-        "사용자 정보를 불러올 수 없습니다.",
-        Colors.red,
-        Duration(seconds: 3),
-      );
-      return {};
-    }
+    data['notices'] = await service.getNotices();
+    data['events'] = await service.getAllEvents();
+    return data;
   }
 
   @override
@@ -78,120 +59,137 @@ class HomeState extends State<Home> {
       MediaQuery.of(context).size.height * 0.35
     ];
     return FutureBuilder(
-      future: future,
+      future: userFromStorage(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          final data = snapshot.data as Map;
-          final products = data['product'] as List<Product>;
-          final notices = data['notice'] as List<Notice>;
-          final event = data['event'] as List<Event>;
-          final noticeSublist =
-              notices.length > 3 ? notices.sublist(0, 2) : notices;
-          final eventSublist = event.length > 3 ? event.sublist(0, 2) : event;
-          final adList = [...noticeSublist, ...eventSublist];
-          return Stack(
-            children: [
-              SingleChildScrollView(
-                child: Column(
-                  children: [
-                    CarouselSlider(
-                      options: CarouselOptions(
-                        height: MediaQuery.of(context).size.width * 0.35,
-                      ),
-                      items: adList.map((i) {
-                        return LayoutBuilder(
-                          builder: (BuildContext context, constraint) {
-                            return InkWell(
-                              onTap: () {
-                                i.runtimeType == Notice
-                                    ? showCustomAlertDialog(
-                                        context,
-                                        NoticeDialog(
-                                          context: context,
-                                          notice: i,
-                                        ),
-                                        true,
-                                      )
-                                    : showCustomAlertDialog(
-                                        context,
-                                        EventDialog(
-                                          context: context,
-                                          event: i as Event,
-                                        ),
-                                        true,
-                                      );
-                              },
-                              child: Container(
-                                width: MediaQuery.of(context).size.width,
-                                margin: EdgeInsets.fromLTRB(5, 12, 5, 0),
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      i.img,
-                                    ),
-                                    fit: BoxFit.cover,
-                                  ),
-                                  color: Theme.of(context).primaryColor,
-                                  borderRadius: BorderRadius.circular(23),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Color(0x1a000000),
-                                      offset: Offset(0.0, 1.0),
-                                      blurRadius: 6.0,
-                                      spreadRadius: 0.1,
-                                    ),
-                                  ],
+          final H4PayUser? user = snapshot.data as H4PayUser?;
+          if (user == null) {
+            return ErrorPage(UserNotFoundException());
+          }
+          return FutureBuilder(
+            future: service.getVisibleProducts(),
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.hasData) {
+                final List<Product> products = snapshot.data;
+                products.sort((a, b) => a.productName.compareTo(b.productName));
+                return Stack(children: [
+                  SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        FutureBuilder(
+                          future: _getAds(user),
+                          builder:
+                              (BuildContext context, AsyncSnapshot snapshot) {
+                            if (snapshot.hasData) {
+                              final List<Notice> notices =
+                                  snapshot.data['notices'] as List<Notice>;
+                              final List<Event> events =
+                                  snapshot.data['events'] as List<Event>;
+                              final noticeSublist = notices.length > 3
+                                  ? notices.sublist(0, 2)
+                                  : notices;
+                              final eventSublist = events.length > 3
+                                  ? events.sublist(0, 2)
+                                  : events;
+                              final adList = [
+                                ...noticeSublist,
+                                ...eventSublist
+                              ];
+
+                              return CarouselSlider(
+                                options: CarouselOptions(
+                                  height:
+                                      MediaQuery.of(context).size.width * 0.35,
                                 ),
-                              ),
-                            );
+                                items: adList.map((i) {
+                                  return LayoutBuilder(
+                                    builder:
+                                        (BuildContext context, constraint) {
+                                      return InkWell(
+                                          onTap: () {
+                                            i.runtimeType == Notice
+                                                ? showCustomAlertDialog(
+                                                    context,
+                                                    NoticeDialog(
+                                                      context: context,
+                                                      notice: i,
+                                                    ),
+                                                    true,
+                                                  )
+                                                : showCustomAlertDialog(
+                                                    context,
+                                                    EventDialog(
+                                                      context: context,
+                                                      event: i as Event,
+                                                    ),
+                                                    true,
+                                                  );
+                                          },
+                                          child: CarouselBox(imageUrl: i.img));
+                                    },
+                                  );
+                                }).toList(),
+                              );
+                            } else if (snapshot.hasError) {
+                              return ErrorPage(snapshot.error as Exception);
+                            } else {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
                           },
-                        );
-                      }).toList(),
-                    ),
-                    GridView.count(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
-                      children: List.generate(
-                        products.length,
-                        (index) {
-                          EdgeInsets margin;
-                          index % 2 == 0
-                              ? margin = EdgeInsets.fromLTRB(22, 12, 9, 12)
-                              : margin = EdgeInsets.fromLTRB(9, 12, 22, 12);
-                          return ProductCard(
-                            product: products[index],
-                            isClicked: currentTile == products[index].id,
-                            cartOnClick: addProductToCart,
-                            giftOnClick: () {
-                              openGiftAlert(products[index]);
+                        ),
+                        GridView.count(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          crossAxisCount: 2,
+                          children: List.generate(
+                            products.length,
+                            (index) {
+                              EdgeInsets margin;
+                              index % 2 == 0
+                                  ? margin = EdgeInsets.fromLTRB(22, 12, 9, 12)
+                                  : margin = EdgeInsets.fromLTRB(9, 12, 22, 12);
+                              return ProductCard(
+                                product: products[index],
+                                isClicked: currentTile == products[index].id,
+                                cartOnClick: addProductToCart,
+                                giftOnClick: () {
+                                  openGiftAlert(products[index]);
+                                },
+                              );
                             },
-                          );
-                        },
-                      ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              AnimatedPositioned(
-                curve: Curves.fastOutSlowIn,
-                child: cartClicked
-                    ? CachedNetworkImage(
-                        imageUrl: products
-                            .firstWhere((product) => product.id == currentTile!)
-                            .img,
-                        width: MediaQuery.of(context).size.width * 0.3,
-                      )
-                    : Container(),
-                duration: Duration(
-                  milliseconds: 500,
-                ),
-                left: moving
-                    ? MediaQuery.of(context).size.width * 0.55
-                    : center[0],
-                bottom: moving ? 0 : center[1],
-              )
-            ],
+                  ),
+                  AnimatedPositioned(
+                    curve: Curves.fastOutSlowIn,
+                    child: cartClicked
+                        ? CachedNetworkImage(
+                            imageUrl: products
+                                .firstWhere(
+                                    (product) => product.id == currentTile!)
+                                .img,
+                            width: MediaQuery.of(context).size.width * 0.3,
+                          )
+                        : Container(),
+                    duration: Duration(milliseconds: 500),
+                    left: moving
+                        ? MediaQuery.of(context).size.width * 0.55
+                        : center[0],
+                    bottom: moving ? 0 : center[1],
+                  )
+                ]);
+              } else if (snapshot.hasError) {
+                return ErrorPage(snapshot.error as Exception);
+              } else {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            },
           );
         } else if (snapshot.hasError) {
           showSnackbar(

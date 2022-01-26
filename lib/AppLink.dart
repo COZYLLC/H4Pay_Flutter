@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:h4pay/Network/H4PayService.dart';
+import 'package:h4pay/Page/Error.dart';
 import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Wakelock.dart';
@@ -21,19 +22,26 @@ Future<Widget?> appLinkToRoute(H4PayRoute route) async {
   final prefs = await SharedPreferences.getInstance();
 
   if (route.route == 'giftView') {
-    service.getGiftDetail(route.data!).then((gift) {
-      return PurchaseDetailPage(purchase: gift);
-    }).catchError((err) {
+    try {
+      final gift = await service.getGiftDetail(route.data!);
+      if (gift.isNotEmpty)
+        return PurchaseDetailPage(purchase: gift[0]);
+      else
+        throw Exception("선물 정보를 불러오지 못했습니다.");
+    } catch (e) {
       debugPrint("Failed to fetch gift");
-    });
-    return MyApp(prefs);
+      return ErrorPage(
+        e as Exception,
+      );
+    }
   } else if (route.route == 'voucherView') {
-    service.getVoucherDetail(route.data!).then((vouchers) {
+    try {
+      final vouchers = await service.getVoucherDetail(route.data!);
       return VoucherDetailPage(voucher: vouchers[0]);
-    }).catchError((err) {
+    } catch (e) {
       debugPrint("Failed to fetch voucher");
-    });
-    return MyApp(prefs);
+      return ErrorPage(e as Exception);
+    }
   } else if (route.route == 'main') {
     return MyApp(prefs);
   }

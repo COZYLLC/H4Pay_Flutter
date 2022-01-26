@@ -15,17 +15,17 @@ class Event extends Notice {
   final String desc;
   final String img;
 
-  Event(
-      {required this.id,
-      required this.name,
-      required this.start,
-      required this.end,
-      required this.qty,
-      required this.totalqty,
-      required this.amount,
-      required this.desc,
-      required this.img})
-      : super(
+  Event({
+    required this.id,
+    required this.name,
+    required this.start,
+    required this.end,
+    required this.qty,
+    required this.totalqty,
+    required this.amount,
+    required this.desc,
+    required this.img,
+  }) : super(
           id: id,
           title: name,
           content: desc,

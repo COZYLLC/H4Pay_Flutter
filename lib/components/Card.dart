@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Network/H4PayService.dart';
@@ -334,10 +336,13 @@ class CartCardState extends State<CartCard> {
               ),
               TextButton(
                 onPressed: () {
-                  parentState!.setState(() {
-                    parentState.cartMap.remove('${widget.product.id}');
-                  });
-                  parentState.updateCart();
+                  showAlertDialog(context, "제품 삭제", "장바구니에서 제품을 제거하시겠습니까?", () {
+                    parentState!.setState(() {
+                      parentState.cartMap.remove('${widget.product.id}');
+                    });
+                    parentState.updateCart();
+                    Navigator.pop(context);
+                  }, () {});
                 },
                 child: Text("삭제"),
               ),

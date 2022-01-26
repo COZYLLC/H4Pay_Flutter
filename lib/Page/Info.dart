@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/Seller.dart';
-import 'package:h4pay/Setting.dart';
-import 'package:h4pay/Util/Connection.dart';
 import 'package:h4pay/Util/Dialog.dart';
+import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/dialog/IpChanger.dart';
 import 'package:h4pay/main.dart';
+import 'package:h4pay/model/School.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:package_info/package_info.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 enum InfoType {
@@ -56,7 +55,18 @@ class InfoButton extends StatelessWidget {
           case InfoType.Dialog:
             showCustomAlertDialog(
               context,
-              H4PayDialog(title: text, content: page!),
+              H4PayDialog(
+                title: text,
+                content: page!,
+                actions: [
+                  H4PayOkButton(
+                    context: context,
+                    onClick: () {
+                      Navigator.pop(context);
+                    },
+                  )
+                ],
+              ),
               true,
             );
             break;
@@ -91,17 +101,36 @@ class H4PayInfoPage extends StatefulWidget {
 }
 
 class H4PayInfoPageState extends State<H4PayInfoPage> {
+  final H4PayService service = getService();
+
+  _getSchool() async {
+    await Future.delayed(Duration(seconds: 1));
+    return School(
+      name: "서전고등학교",
+      id: "M100002171",
+      seller: Seller(
+        name: "서전고 사회적협동조합",
+        address: "충청북도 진천군 덕산읍 대하로 47, 서전고 사회적협동조합",
+        founderName: "안상희",
+        tel: "043-537-8737",
+        businessId: "564-82-00214",
+        sellerId: "2021-충북진천-0007",
+      ),
+    );
+  }
+
   Future<List<InfoButton>> _fetchInfos() async {
+    final H4PayUser? user = await userFromStorage();
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String version = packageInfo.version;
-    Seller seller = Seller(
-      name: "서전고 사회적협동조합",
-      ceo: "대표이사: 안상희",
-      address: "충북 진천군 덕산읍 대하로 47",
-      tel: "043-537-8737",
-      businessId: "564-82-00214",
-      sellerId: "2021-충북진천-0007",
-    );
+    if (user == null) {
+      showSnackbar(
+          context, "사용자 정보를 불러올 수 없습니다.", Colors.red, Duration(seconds: 3));
+      return [];
+    }
+
+    // School school = (await service.getSchools(id: user.schoolId))[0];
+    School school = await _getSchool(); // fake api call
     return [
       InfoButton.none("버전: $version"),
       InfoButton.dialog(
@@ -155,16 +184,16 @@ class H4PayInfoPageState extends State<H4PayInfoPage> {
         parentContext: context,
       ),
       InfoButton.dialog(
-        "${seller.name} 사업자 정보",
+        "${school.seller.name} 사업자 정보",
         page: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(seller.ceo),
-            Text("주소: ${seller.address}"),
-            Text("Tel: ${seller.tel}"),
-            Text("사업자등록번호: ${seller.businessId}"),
+            Text("대표: ${school.seller.founderName}"),
+            Text("주소: ${school.seller.address}"),
+            Text("Tel: ${school.seller.tel}"),
+            Text("사업자등록번호: ${school.seller.businessId}"),
             HyperLinkText(
-              text: "통신판매업신고: ${seller.sellerId}",
+              text: "통신판매업신고: ${school.seller.sellerId}",
               url:
                   "https://ftc.go.kr/www/bizCommView.do?key=232&apv_perm_no=2021445011930200007&pageUnit=10&searchCnd=apv_perm_mgt_no&searchKrwd=2021%EC%B6%A9%EB%B6%81%EC%A7%84%EC%B2%9C0007&pageIndex=1",
             )
@@ -209,7 +238,9 @@ class H4PayInfoPageState extends State<H4PayInfoPage> {
               ),
             );
           } else {
-            return CircularProgressIndicator();
+            return Center(
+              child: CircularProgressIndicator(),
+            );
           }
         },
       ),

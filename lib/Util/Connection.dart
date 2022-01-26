@@ -9,21 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 Future<bool> connectionCheck() async {
   final connStatus = await Connectivity().checkConnectivity();
-  if (connStatus == ConnectivityResult.mobile ||
-      connStatus == ConnectivityResult.wifi) {
-    try {
-      final host = parseHost(apiUrl!);
-      print(host);
-      final socket = await Socket.connect(
-        host['host'],
-        host['port'],
-        timeout: Duration(seconds: 3),
-      );
-      socket.destroy();
-      return true;
-    } catch (e) {
-      return false;
-    }
+  if (connStatus == ConnectivityResult.wifi ||
+      connStatus == ConnectivityResult.mobile) {
+    return true;
   }
   return false;
 }

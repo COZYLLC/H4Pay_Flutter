@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'School.dart';
 
 part 'User.g.dart';
 
@@ -13,6 +16,7 @@ class H4PayUser {
   String? role;
   String? tel;
   String? token;
+  String? schoolId;
   final storage = new FlutterSecureStorage();
 
   H4PayUser({
@@ -27,7 +31,6 @@ class H4PayUser {
   factory H4PayUser.fromJson(Map<String, dynamic> json) =>
       _$H4PayUserFromJson(json);
   Map<String, dynamic> toJson() => _$H4PayUserToJson(this);
-
   Future<bool> saveToStorage() async {
     try {
       await storage.deleteAll();
@@ -37,6 +40,7 @@ class H4PayUser {
       storage.write(key: 'role', value: this.role);
       storage.write(key: 'tel', value: this.tel);
       storage.write(key: 'token', value: this.token);
+      storage.write(key: 'school', value: this.schoolId);
       return true;
     } catch (e) {
       return false;
@@ -49,7 +53,10 @@ Future<H4PayUser?> userFromStorage() async {
   try {
     final Map<String, dynamic> userJson = await storage.readAll();
     final H4PayUser user = H4PayUser.fromJson(userJson);
-    return await getService().tokenCheck(user.token!);
+    final H4PayUser renewedUser = await getService().tokenCheck(user.token!);
+    renewedUser.token = user.token;
+    await renewedUser.saveToStorage();
+    return renewedUser;
   } catch (e) {
     return null;
   }

@@ -42,7 +42,7 @@ class _H4PayService implements H4PayService {
     final _result = await _dio.fetch<List<dynamic>>(
         _setStreamType<List<Notice>>(
             Options(method: 'GET', headers: _headers, extra: _extra)
-                .compose(_dio.options, 'notice',
+                .compose(_dio.options, 'notices',
                     queryParameters: queryParameters, data: _data)
                 .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!
@@ -59,7 +59,7 @@ class _H4PayService implements H4PayService {
     final _data = <String, dynamic>{};
     final _result = await _dio.fetch<bool>(_setStreamType<bool>(
         Options(method: 'GET', headers: _headers, extra: _extra)
-            .compose(_dio.options, 'store',
+            .compose(_dio.options, 'stores',
                 queryParameters: queryParameters, data: _data)
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     final value = _result.data!;
@@ -75,7 +75,7 @@ class _H4PayService implements H4PayService {
     final _result = await _dio.fetch<List<dynamic>>(
         _setStreamType<List<Product>>(
             Options(method: 'GET', headers: _headers, extra: _extra)
-                .compose(_dio.options, 'product',
+                .compose(_dio.options, 'products',
                     queryParameters: queryParameters, data: _data)
                 .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!
@@ -93,12 +93,47 @@ class _H4PayService implements H4PayService {
     final _result = await _dio.fetch<List<dynamic>>(
         _setStreamType<List<Product>>(
             Options(method: 'GET', headers: _headers, extra: _extra)
-                .compose(_dio.options, 'product/filter?withStored=0',
+                .compose(_dio.options, 'products/filter?withStored=0',
                     queryParameters: queryParameters, data: _data)
                 .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!
         .map((dynamic i) => Product.fromJson(i as Map<String, dynamic>))
         .toList();
+    return value;
+  }
+
+  @override
+  Future<List<School>> getSchools({id, name}) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'id': id, r'name': name};
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    final _result = await _dio.fetch<List<dynamic>>(
+        _setStreamType<List<School>>(
+            Options(method: 'GET', headers: _headers, extra: _extra)
+                .compose(_dio.options, 'schools/filter',
+                    queryParameters: queryParameters, data: _data)
+                .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    var value = _result.data!
+        .map((dynamic i) => School.fromJson(i as Map<String, dynamic>))
+        .toList();
+    return value;
+  }
+
+  @override
+  Future<String> authTel(body) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(body);
+    final _result = await _dio.fetch<String>(_setStreamType<String>(
+        Options(method: 'POST', headers: _headers, extra: _extra)
+            .compose(_dio.options, 'users/authpin',
+                queryParameters: queryParameters, data: _data)
+            .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = _result.data!;
     return value;
   }
 
@@ -296,7 +331,7 @@ class _H4PayService implements H4PayService {
     _data.addAll(body);
     final _result = await _dio.fetch(_setStreamType<HttpResponse<dynamic>>(
         Options(method: 'POST', headers: _headers, extra: _extra)
-            .compose(_dio.options, 'gift/create',
+            .compose(_dio.options, 'gifts/create',
                 queryParameters: queryParameters, data: _data)
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     final value = _result.data;
@@ -305,15 +340,14 @@ class _H4PayService implements H4PayService {
   }
 
   @override
-  Future<List<Gift>> getGifts(body) async {
+  Future<List<Gift>> getGifts(uidTo) async {
     const _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'uidTo': uidTo};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
-    _data.addAll(body);
     final _result = await _dio.fetch<List<dynamic>>(_setStreamType<List<Gift>>(
-        Options(method: 'POST', headers: _headers, extra: _extra)
-            .compose(_dio.options, 'gift/recipientlist',
+        Options(method: 'GET', headers: _headers, extra: _extra)
+            .compose(_dio.options, 'gifts/filter',
                 queryParameters: queryParameters, data: _data)
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!
@@ -323,30 +357,31 @@ class _H4PayService implements H4PayService {
   }
 
   @override
-  Future<Gift> getGiftDetail(orderId) async {
+  Future<List<Gift>> getGiftDetail(orderId) async {
     const _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'orderId': orderId};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
-    final _result = await _dio.fetch<Map<String, dynamic>>(_setStreamType<Gift>(
-        Options(method: 'POST', headers: _headers, extra: _extra)
-            .compose(_dio.options, 'gift/findbyorderid/${orderId}',
+    final _result = await _dio.fetch<List<dynamic>>(_setStreamType<List<Gift>>(
+        Options(method: 'GET', headers: _headers, extra: _extra)
+            .compose(_dio.options, 'gifts/filter',
                 queryParameters: queryParameters, data: _data)
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
-    final value = Gift.fromJson(_result.data!);
+    var value = _result.data!
+        .map((dynamic i) => Gift.fromJson(i as Map<String, dynamic>))
+        .toList();
     return value;
   }
 
   @override
-  Future<List<Gift>> getSentGifts(body) async {
+  Future<List<Gift>> getSentGifts(uidFrom) async {
     const _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'uidFrom': uidFrom};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
-    _data.addAll(body);
     final _result = await _dio.fetch<List<dynamic>>(_setStreamType<List<Gift>>(
-        Options(method: 'POST', headers: _headers, extra: _extra)
-            .compose(_dio.options, 'gift/findbysenderuid',
+        Options(method: 'GET', headers: _headers, extra: _extra)
+            .compose(_dio.options, 'gifts/filter',
                 queryParameters: queryParameters, data: _data)
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!
@@ -363,7 +398,7 @@ class _H4PayService implements H4PayService {
     final _data = <String, dynamic>{};
     final _result = await _dio.fetch(_setStreamType<HttpResponse<dynamic>>(
         Options(method: 'POST', headers: _headers, extra: _extra)
-            .compose(_dio.options, 'gift/${orderId}/extend',
+            .compose(_dio.options, 'gifts/${orderId}/extend',
                 queryParameters: queryParameters, data: _data)
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     final value = _result.data;
@@ -381,7 +416,7 @@ class _H4PayService implements H4PayService {
     final _result = await _dio.fetch<Map<String, dynamic>>(
         _setStreamType<UserValidResponse>(
             Options(method: 'POST', headers: _headers, extra: _extra)
-                .compose(_dio.options, 'gift/uid/fromstid',
+                .compose(_dio.options, 'gifts/uid/fromstid',
                     queryParameters: queryParameters, data: _data)
                 .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     final value = UserValidResponse.fromJson(_result.data!);
@@ -397,7 +432,7 @@ class _H4PayService implements H4PayService {
     final _result = await _dio.fetch<List<dynamic>>(
         _setStreamType<List<Voucher>>(
             Options(method: 'GET', headers: _headers, extra: _extra)
-                .compose(_dio.options, 'voucher/filter',
+                .compose(_dio.options, 'vouchers/filter',
                     queryParameters: queryParameters, data: _data)
                 .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!
@@ -415,7 +450,7 @@ class _H4PayService implements H4PayService {
     final _result = await _dio.fetch<List<dynamic>>(
         _setStreamType<List<Voucher>>(
             Options(method: 'GET', headers: _headers, extra: _extra)
-                .compose(_dio.options, 'voucher/filter',
+                .compose(_dio.options, 'vouchers/filter',
                     queryParameters: queryParameters, data: _data)
                 .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!
@@ -432,7 +467,7 @@ class _H4PayService implements H4PayService {
     final _data = <String, dynamic>{};
     final _result = await _dio.fetch<List<dynamic>>(_setStreamType<List<Event>>(
         Options(method: 'GET', headers: _headers, extra: _extra)
-            .compose(_dio.options, 'event',
+            .compose(_dio.options, 'events',
                 queryParameters: queryParameters, data: _data)
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!
@@ -449,7 +484,7 @@ class _H4PayService implements H4PayService {
     final _data = <String, dynamic>{};
     final _result = await _dio.fetch<List<dynamic>>(_setStreamType<List<Event>>(
         Options(method: 'GET', headers: _headers, extra: _extra)
-            .compose(_dio.options, 'event/${uid}/match',
+            .compose(_dio.options, 'events/${uid}/match',
                 queryParameters: queryParameters, data: _data)
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!

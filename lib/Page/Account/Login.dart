@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Util/Encryption.dart';
+import 'package:h4pay/Util/mp.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
@@ -21,7 +22,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class LoginPageState extends State<LoginPage> {
-  final _idController = TextEditingController();
+  final _telController = TextEditingController();
   final _pwController = TextEditingController();
 
   @override
@@ -48,15 +49,22 @@ class LoginPageState extends State<LoginPage> {
         body: Container(
           margin: EdgeInsets.all(40),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Form(
                 key: _loginFormKey,
                 child: Column(
                   children: [
                     H4PayInput(
-                      title: "아이디",
-                      controller: _idController,
-                      validator: idValidator,
+                      title: "휴대전화번호",
+                      controller: _telController,
+                      validator: telValidator,
+                      inputFormatters: [
+                        MultiMaskedTextInputFormatter(
+                          masks: ["xxx-xxxx-xxxx"],
+                          separator: "-",
+                        )
+                      ],
                     ),
                     H4PayInput.done(
                       isPassword: true,
@@ -74,7 +82,7 @@ class LoginPageState extends State<LoginPage> {
                   if (_loginFormKey.currentState!.validate()) {
                     final service = getService();
                     service.login({
-                      "uid": _idController.text,
+                      "tel": _telController.text.replaceAll("-", ""),
                       "password": encryptPassword(_pwController.text),
                     }).then((value) {
                       final headers = value.response.headers.map;
@@ -93,6 +101,7 @@ class LoginPageState extends State<LoginPage> {
                         debugPrint(err.toString());
                       });
                     }).catchError((err) {
+                      debugPrint(err.toString());
                       final code = (err as DioError).response!.statusCode;
                       if (code == 400) {
                         showSnackbar(
@@ -133,7 +142,7 @@ class AccountFindPageState extends State<AccountFindPage> {
   final GlobalKey<FormState> _findPwFormKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _telController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
   @override
@@ -204,7 +213,7 @@ class AccountFindPageState extends State<AccountFindPage> {
                   ),
                   H4PayInput(
                     title: "아이디",
-                    controller: _idController,
+                    controller: _telController,
                     validator: idValidator,
                   ),
                   H4PayInput.done(
@@ -223,7 +232,7 @@ class AccountFindPageState extends State<AccountFindPage> {
                   service.findPassword({
                     'name': _nameController.text,
                     'email': _emailController.text,
-                    'uid': _idController.text
+                    'uid': _telController.text
                   }).then((response) {
                     showSnackbar(
                       context,

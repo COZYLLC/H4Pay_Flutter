@@ -6,12 +6,14 @@ import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Encryption.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Input.dart';
+import 'package:h4pay/components/SchoolSelectDialog.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/main.dart';
 import 'package:h4pay/Util/mp.dart';
 import 'package:h4pay/Util/validator.dart';
+import 'package:h4pay/model/School.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -26,7 +28,18 @@ class RegisterPageState extends State<RegisterPage> {
   final pwCheck = TextEditingController();
   final email = TextEditingController();
   final tel = TextEditingController();
+  final pin = TextEditingController();
+  final school = TextEditingController();
+  bool? isTelChecked;
+  String? generatedPin;
   String? selectedUserType;
+  List<School>? schools;
+  School? selectedSchool;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   List<Map<String, dynamic>> terms = [
     {
@@ -41,38 +54,6 @@ class RegisterPageState extends State<RegisterPage> {
     }
   ];
 
-  _checkEmailValidity() {
-    service.checkUidValid(
-      {'uid': email.text.split("@")[0]},
-    ).then((isDuplicated) {
-      if (isDuplicated) {
-        do {
-          FocusScope.of(context).nextFocus();
-        } while (FocusScope.of(context).focusedChild!.context!.widget
-            is! EditableText);
-      } else if (!isDuplicated) {
-        showCustomAlertDialog(
-          context,
-          H4PayDialog(
-            title: "아이디 중복",
-            content: Text("이미 존재하는 아이디입니다."),
-            actions: [
-              H4PayOkButton(
-                context: context,
-                onClick: () {
-                  Navigator.pop(context);
-                },
-              )
-            ],
-          ),
-          true,
-        );
-      }
-    }).catchError((e) {
-      showServerErrorSnackbar(context, e);
-    });
-  }
-
   List<String> userTypes = ['S'];
   @override
   Widget build(BuildContext context) {
@@ -86,6 +67,15 @@ class RegisterPageState extends State<RegisterPage> {
               key: _formKey,
               child: Column(
                 children: [
+                  H4PayInput.button(
+                    title: "학교 선택",
+                    controller: school,
+                    buttonText: "검색",
+                    onButtonClick: _openSchoolSelectDialog,
+                    onFieldClick: _openSchoolSelectDialog,
+                    validator: (value) =>
+                        value!.length < 1 ? "학교를 선택해주세요." : null,
+                  ),
                   H4PayInput(
                     title: "이메일",
                     controller: email,
@@ -109,8 +99,9 @@ class RegisterPageState extends State<RegisterPage> {
                     validator: (value) =>
                         pw.text == value ? null : "비밀번호가 일치하지 않습니다.",
                   ),
-                  H4PayInput.done(
+                  H4PayInput.button(
                     isNumber: true,
+                    buttonText: "인증",
                     title: "휴대전화 번호",
                     controller: tel,
                     validator: telValidator,
@@ -120,7 +111,41 @@ class RegisterPageState extends State<RegisterPage> {
                         separator: '-',
                       )
                     ],
+                    onButtonClick: _sendAuthPin,
                   ),
+                  H4PayInput.button(
+                    onEditingComplete: () {
+                      _formKey.currentState!.validate();
+                    },
+                    isNumber: true,
+                    buttonText: "확인",
+                    title: "인증번호 입력",
+                    validator: (value) {
+                      return generatedPin == null
+                          ? "인증번호를 전송해주세요."
+                          : !(isNumeric(value!) && value.length <= 6)
+                              ? "인증번호의 형식이 올바르지 않습니다."
+                              : null;
+                    },
+                    controller: pin,
+                    onButtonClick: () {
+                      setState(() {
+                        isTelChecked =
+                            encryptPassword(pin.text) == generatedPin;
+                      });
+                    },
+                  ),
+                  isTelChecked == true
+                      ? Text(
+                          "인증이 완료되었습니다.",
+                          style: TextStyle(color: Colors.green),
+                        )
+                      : isTelChecked == false
+                          ? Text(
+                              "인증번호가 올바르지 않습니다.",
+                              style: TextStyle(color: Colors.red),
+                            )
+                          : Container(),
                   ListView.builder(
                     itemCount: terms.length,
                     shrinkWrap: true,
@@ -153,51 +178,7 @@ class RegisterPageState extends State<RegisterPage> {
                   ),
                   H4PayButton(
                     text: "회원가입",
-                    onClick: () async {
-                      if (_formKey.currentState!.validate()) {
-                        final Map<String, String> requestBody = {
-                          'uid': email.text.split("@")[0],
-                          'password': encryptPassword(pw.text),
-                          'aID': '',
-                          'gID': '',
-                          'email': email.text,
-                          'tel': tel.text.replaceAll("-", ""),
-                          'role': 'S',
-                        };
-                        service.register(requestBody).then((response) async {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SuccessPage(
-                                title: "가입 완료",
-                                canGoBack: false,
-                                successText: "회원가입이 완료되었습니다.",
-                                bottomDescription: [Text("더 간편한 매점을 이용해보세요!")],
-                                actions: [
-                                  H4PayButton(
-                                    text: "로그인 하러 가기",
-                                    onClick: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              LoginPage(canGoBack: false),
-                                        ),
-                                      );
-                                    },
-                                    backgroundColor:
-                                        Theme.of(context).primaryColor,
-                                    width: double.infinity,
-                                  )
-                                ],
-                              ),
-                            ),
-                          );
-                        }).catchError((err) {
-                          showServerErrorSnackbar(context, err);
-                        });
-                      }
-                    },
+                    onClick: _register,
                     backgroundColor: Theme.of(context).primaryColor,
                     width: double.infinity,
                   )
@@ -208,5 +189,136 @@ class RegisterPageState extends State<RegisterPage> {
         ),
       ),
     );
+  }
+
+  void _openSchoolSelectDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => SchoolSelectDialog(),
+    ).then((value) {
+      debugPrint("${value.id} selected");
+      setState(() {
+        school.text = value.name;
+        selectedSchool = value;
+      });
+    });
+  }
+
+  void _sendAuthPin() {
+    if (telValidator(tel.text) == null)
+      service.authTel({"tel": tel.text.replaceAll("-", "")}).then((value) {
+        showSnackbar(
+          context,
+          "인증번호가 발송되었습니다. 카카오 알림톡 혹은 문자를 확인해주세요.",
+          Colors.green,
+          Duration(seconds: 1),
+        );
+        setState(() {
+          isTelChecked = null;
+          generatedPin = value;
+        });
+      });
+  }
+
+  void _checkEmailValidity() {
+    service.checkUidValid(
+      {'uid': email.text.split("@")[0]},
+    ).then((isDuplicated) {
+      if (isDuplicated) {
+        do {
+          FocusScope.of(context).nextFocus();
+        } while (FocusScope.of(context).focusedChild!.context!.widget
+            is! EditableText);
+      } else if (!isDuplicated) {
+        showCustomAlertDialog(
+          context,
+          H4PayDialog(
+            title: "아이디 중복",
+            content: Text("이미 존재하는 아이디입니다."),
+            actions: [
+              H4PayOkButton(
+                context: context,
+                onClick: () {
+                  Navigator.pop(context);
+                },
+              )
+            ],
+          ),
+          true,
+        );
+      }
+    }).catchError((e) {
+      showServerErrorSnackbar(context, e);
+    });
+  }
+
+  Future<void> _register() async {
+    if (selectedSchool == null) {
+      showSnackbar(
+        context,
+        "학교를 선택해주세요.",
+        Colors.red,
+        Duration(seconds: 3),
+      );
+      return;
+    }
+    if (!_formKey.currentState!.validate()) {
+      showSnackbar(
+        context,
+        "모든 정보를 올바르게 입력해주세요.",
+        Colors.red,
+        Duration(seconds: 3),
+      );
+      return;
+    }
+    if (generatedPin != encryptPassword(pin.text)) {
+      showSnackbar(
+        context,
+        "인증번호가 올바르지 않습니다.",
+        Colors.red,
+        Duration(seconds: 3),
+      );
+      return;
+    }
+    final Map<String, String> requestBody = {
+      'uid': email.text.split("@")[0],
+      'password': encryptPassword(pw.text),
+      'aID': '',
+      'gID': '',
+      'email': email.text,
+      'tel': tel.text.replaceAll("-", ""),
+      'role': 'S',
+      'school': selectedSchool!.id,
+    };
+    service.register(requestBody).then((response) async {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SuccessPage(
+            title: "가입 완료",
+            canGoBack: false,
+            successText: "회원가입이 완료되었습니다.",
+            bottomDescription: [Text("더 간편한 매점을 이용해보세요!")],
+            actions: [
+              H4PayButton(
+                text: "로그인 하러 가기",
+                onClick: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginPage(canGoBack: false),
+                    ),
+                  );
+                },
+                backgroundColor: Theme.of(context).primaryColor,
+                width: double.infinity,
+              )
+            ],
+          ),
+        ),
+      );
+    }).catchError((err) {
+      showServerErrorSnackbar(context, err);
+    });
   }
 }

@@ -1,3 +1,10 @@
+bool isNumeric(String s) {
+  if (s == null) {
+    return false;
+  }
+  return double.tryParse(s) != null;
+}
+
 String? nameValidator(value) {
   final RegExp regExp = RegExp(r'^[가-힣]{2,8}$');
   return regExp.hasMatch(value!) ? null : "이름이 올바르지 않습니다.";

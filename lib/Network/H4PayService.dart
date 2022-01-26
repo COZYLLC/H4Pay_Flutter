@@ -5,6 +5,7 @@ import 'package:h4pay/model/Notice.dart';
 import 'package:h4pay/model/Product.dart';
 import 'package:h4pay/model/Purchase/Gift.dart';
 import 'package:h4pay/model/Purchase/Order.dart';
+import 'package:h4pay/model/School.dart';
 import 'package:h4pay/model/User.dart';
 import 'package:h4pay/model/UserValidResponse.dart';
 import 'package:h4pay/model/Voucher.dart';
@@ -17,6 +18,7 @@ part 'H4PayService.g.dart';
 H4PayService getService() {
   final Dio dio = new Dio();
   dio.interceptors.add(H4PayInterceptor());
+
   final H4PayService service = H4PayService(dio, baseUrl: apiUrl!);
   return service;
 }
@@ -25,17 +27,26 @@ H4PayService getService() {
 abstract class H4PayService {
   factory H4PayService(Dio dio, {String baseUrl}) = _H4PayService;
 
-  @GET("notice")
+  @GET("notices")
   Future<List<Notice>> getNotices();
 
-  @GET("store")
+  @GET("stores")
   Future<bool> getStoreStatus();
 
-  @GET("product")
+  @GET("products")
   Future<List<Product>> getProducts();
 
-  @GET("product/filter?withStored=0")
+  @GET("products/filter?withStored=0")
   Future<List<Product>> getVisibleProducts();
+
+  @GET("schools/filter")
+  Future<List<School>> getSchools({
+    @Query("id") String? id,
+    @Query("name") String? name,
+  });
+
+  @POST("users/authpin")
+  Future<String> authTel(@Body() Map<String, dynamic> body);
 
   @POST("users/login") // may not be used
   Future<HttpResponse> login(@Body() Map<String, dynamic> body);
@@ -72,35 +83,36 @@ abstract class H4PayService {
   @GET("orders/cancel/{orderId}")
   Future<HttpResponse> cancelOrder(@Path("orderId") String orderId);
 
-  @POST("gift/create")
+  @POST("gifts/create")
   Future<HttpResponse> createGift(@Body() Map<String, dynamic> body);
 
-  @POST("gift/recipientlist")
-  Future<List<Gift>> getGifts(@Body() Map<String, dynamic> body);
+  @GET("gifts/filter")
+  Future<List<Gift>> getGifts(@Query("uidTo") String uidTo);
 
-  @POST("gift/findbyorderid/{orderId}")
-  Future<Gift> getGiftDetail(@Path("orderId") String orderId);
+  @GET("gifts/filter")
+  Future<List<Gift>> getGiftDetail(@Query("orderId") String orderId);
 
-  @POST("gift/findbysenderuid")
-  Future<List<Gift>> getSentGifts(@Body() Map<String, dynamic> body);
+  @GET("gifts/filter")
+  Future<List<Gift>> getSentGifts(@Query("uidFrom") String uidFrom);
 
-  @POST("gift/{orderId}/extend")
+  @POST("gifts/{orderId}/extend")
   Future<HttpResponse> extendGift(@Path("orderId") String orderId);
 
-  @POST("gift/uid/fromstid")
+  @POST("gifts/uid/fromstid")
   Future<UserValidResponse> nameFromStudentId(
-      @Body() Map<String, dynamic> body);
+    @Body() Map<String, dynamic> body,
+  );
 
-  @GET("voucher/filter")
+  @GET("vouchers/filter")
   Future<List<Voucher>> getVouchers(@Query("tel") String tel);
 
-  @GET("voucher/filter")
+  @GET("vouchers/filter")
   Future<List<Voucher>> getVoucherDetail(@Query("id") String id);
 
-  @GET("event")
+  @GET("events")
   Future<List<Event>> getAllEvents();
 
-  @GET("event/{uid}/match")
+  @GET("events/{uid}/match")
   Future<List<Event>> getMatchingEvents(@Path("uid") String uid);
 }
 

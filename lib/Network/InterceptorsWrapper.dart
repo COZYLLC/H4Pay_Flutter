@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 
@@ -10,13 +12,17 @@ class H4PayInterceptor extends Interceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    final Map<String, dynamic> rawJsonResponse = response.data ?? "{}";
+    final Map<String, dynamic> rawJsonResponse =
+        response.data.runtimeType == String
+            ? json.decode(response.data)
+            : response.data ?? {};
     final ResponseWrapper responseWrapper =
         ResponseWrapper.fromJson(rawJsonResponse);
     response.statusMessage = responseWrapper.message ?? response.statusMessage;
     response.data = responseWrapper.result;
     print(
         'RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}');
+    print(responseWrapper.result);
     return super.onResponse(response, handler);
   }
 

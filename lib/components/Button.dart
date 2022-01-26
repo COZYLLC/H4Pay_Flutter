@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class H4PayButton extends StatelessWidget {
   final String text;
   final Function()? onClick;
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final Color? textColor;
   final double? width;
   final double? height;
@@ -12,7 +12,7 @@ class H4PayButton extends StatelessWidget {
       {Key? key,
       required this.text,
       required this.onClick,
-      required this.backgroundColor,
+      this.backgroundColor,
       this.textColor,
       this.width,
       this.height})
@@ -34,7 +34,7 @@ class H4PayButton extends StatelessWidget {
             ),
           ),
           backgroundColor: MaterialStateProperty.all(
-            backgroundColor,
+            backgroundColor ?? Theme.of(context).primaryColor,
           ),
         ),
       ),

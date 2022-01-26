@@ -9,12 +9,13 @@ class Notice {
   final String img;
   final String date;
 
-  Notice(
-      {required this.id,
-      required this.title,
-      required this.content,
-      required this.img,
-      required this.date});
+  Notice({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.img,
+    required this.date,
+  });
 
   factory Notice.fromJson(Map<String, dynamic> json) => _$NoticeFromJson(json);
 }
