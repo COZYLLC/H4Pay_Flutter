@@ -282,7 +282,7 @@ class CartState extends State<Cart> {
       'orderId': _orderId
     };
     prefs.setString('tempPurchase', json.encode(tempPurchase));
-    final H4PayUser? user = await userFromStorage();
+    final H4PayUser? user = await userFromStorageAndVerify();
     if (user != null) {
       showBottomSheet(
         context: context,

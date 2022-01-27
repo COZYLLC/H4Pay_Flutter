@@ -53,6 +53,17 @@ Future<H4PayUser?> userFromStorage() async {
   try {
     final Map<String, dynamic> userJson = await storage.readAll();
     final H4PayUser user = H4PayUser.fromJson(userJson);
+    return user;
+  } catch (e) {
+    return null;
+  }
+}
+
+Future<H4PayUser?> userFromStorageAndVerify() async {
+  final storage = new FlutterSecureStorage();
+  try {
+    final Map<String, dynamic> userJson = await storage.readAll();
+    final H4PayUser user = H4PayUser.fromJson(userJson);
     final H4PayUser renewedUser = await getService().tokenCheck(user.token!);
     renewedUser.token = user.token;
     await renewedUser.saveToStorage();

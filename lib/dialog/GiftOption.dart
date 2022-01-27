@@ -122,7 +122,7 @@ class GiftOptionDialog extends H4PayDialog {
 
   void _sendGift(Map<String, dynamic> target, Product product, int qty) async {
     final _orderId = "2" + genOrderId() + "000";
-    final H4PayUser? user = await userFromStorage();
+    final H4PayUser? user = await userFromStorageAndVerify();
 
     if (user != null) {
       final Map tempPurchase = {

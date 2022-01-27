@@ -163,7 +163,7 @@ class MyHomePageState extends State<MyHomePage> {
 
   Future updateBadges() async {
     // calculate cart items, orders, gifts, vouchers and set badge states.
-    final H4PayUser? user = await userFromStorage();
+    final H4PayUser? user = await userFromStorageAndVerify();
     if (user == null) {
       showSnackbar(
         context,

@@ -27,7 +27,7 @@ class PurchaseListState extends State<PurchaseList> {
   PurchaseListState({required this.title});
 
   Future<Map> _loadThings() async {
-    final H4PayUser? user = await userFromStorage();
+    final H4PayUser? user = await userFromStorageAndVerify();
     final String uid = user!.uid!;
     final List<Product>? products = await service.getProducts();
     final List<Purchase>? purchases = widget.type == Order

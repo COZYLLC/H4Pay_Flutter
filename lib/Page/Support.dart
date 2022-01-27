@@ -209,7 +209,7 @@ class SupportFormPageState extends State<SupportFormPage> {
 
   _submit(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
-      final H4PayUser? user = await userFromStorage();
+      final H4PayUser? user = await userFromStorageAndVerify();
       if (user != null) {
         await _upload(
           user.uid!,

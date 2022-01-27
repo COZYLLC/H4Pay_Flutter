@@ -147,7 +147,7 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
 
   Future<Purchase> _processPayment() async {
     _prefs = await SharedPreferences.getInstance();
-    final H4PayUser? user = await userFromStorage();
+    final H4PayUser? user = await userFromStorageAndVerify();
     if (user != null) {
       final Map<String, dynamic> tempPurchase =
           json.decode(_prefs!.getString('tempPurchase')!);

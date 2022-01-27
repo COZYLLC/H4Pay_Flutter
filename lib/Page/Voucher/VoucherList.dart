@@ -17,7 +17,7 @@ class VoucherListState extends State<VoucherList> {
   final H4PayService service = getService();
 
   Future<Map> _loadThings() async {
-    final H4PayUser? user = await userFromStorage();
+    final H4PayUser? user = await userFromStorageAndVerify();
     final String tel = user!.tel!;
     final List<Voucher> vouchers = await service.getVouchers(tel);
     final List<Product> products = await service.getProducts();

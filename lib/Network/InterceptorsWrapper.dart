@@ -2,12 +2,21 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:h4pay/Network/H4PayService.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/User.dart';
 
 class H4PayInterceptor extends Interceptor {
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
     print('REQUEST[${options.method}] => PATH: ${options.path}');
-    return super.onRequest(options, handler);
+    final H4PayUser? user = await userFromStorage();
+    if (user == null) {
+      throw UserNotFoundException();
+    } else {
+      options.headers['x-access-token'] = user.token;
+      return super.onRequest(options, handler);
+    }
   }
 
   @override

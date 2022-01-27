@@ -449,14 +449,13 @@ class MyInfoPageState extends State<MyInfoPage> {
         child: H4PayButton(
           text: "H4Pay 탈퇴하기",
           onClick: () async {
-            final H4PayUser? user = await userFromStorage();
-            if (user != null) {
+            if (widget.user != null) {
               showAlertDialog(
                 context,
                 "탈퇴하기",
                 "구매 내역과 모든 교횐권, 선물 발송 내역, 받은 선물 등의 정보가 모두 삭제됩니다.\n정말로 탈퇴하시겠습니까?",
                 () {
-                  _withdraw(user);
+                  _withdraw(widget.user);
                 },
                 () {
                   Navigator.pop(context);

@@ -59,7 +59,7 @@ class HomeState extends State<Home> {
       MediaQuery.of(context).size.height * 0.35
     ];
     return FutureBuilder(
-      future: userFromStorage(),
+      future: userFromStorageAndVerify(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final H4PayUser? user = snapshot.data as H4PayUser?;
