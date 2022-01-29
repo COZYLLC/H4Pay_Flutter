@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Network/H4PayService.dart';
@@ -9,7 +10,7 @@ import 'package:h4pay/dialog/IpChanger.dart';
 import 'package:h4pay/main.dart';
 import 'package:h4pay/model/School.dart';
 import 'package:h4pay/model/User.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 enum InfoType {
@@ -102,35 +103,24 @@ class H4PayInfoPage extends StatefulWidget {
 
 class H4PayInfoPageState extends State<H4PayInfoPage> {
   final H4PayService service = getService();
-
-  _getSchool() async {
-    await Future.delayed(Duration(seconds: 1));
-    return School(
-      name: "서전고등학교",
-      id: "M100002171",
-      seller: Seller(
-        name: "서전고 사회적협동조합",
-        address: "충청북도 진천군 덕산읍 대하로 47, 서전고 사회적협동조합",
-        founderName: "안상희",
-        tel: "043-537-8737",
-        businessId: "564-82-00214",
-        sellerId: "2021-충북진천-0007",
-      ),
-    );
-  }
+  Future<List<InfoButton>>? _infoFuture;
 
   Future<List<InfoButton>> _fetchInfos() async {
     final H4PayUser? user = await userFromStorage();
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String version = packageInfo.version;
+
     if (user == null) {
       showSnackbar(
-          context, "사용자 정보를 불러올 수 없습니다.", Colors.red, Duration(seconds: 3));
+        context,
+        "사용자 정보를 불러올 수 없습니다.",
+        Colors.red,
+        Duration(seconds: 3),
+      );
       return [];
     }
 
-    // School school = (await service.getSchools(id: user.schoolId))[0];
-    School school = await _getSchool(); // fake api call
+    School school = (await service.getSchools(id: user.schoolId))[0];
     return [
       InfoButton.none("버전: $version"),
       InfoButton.dialog(
@@ -210,11 +200,17 @@ class H4PayInfoPageState extends State<H4PayInfoPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _infoFuture = _fetchInfos();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: H4PayAppbar(title: "H4Pay 정보", height: 56.0, canGoBack: true),
       body: FutureBuilder(
-        future: _fetchInfos(),
+        future: _infoFuture,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             final List<InfoButton> infos = snapshot.data as List<InfoButton>;

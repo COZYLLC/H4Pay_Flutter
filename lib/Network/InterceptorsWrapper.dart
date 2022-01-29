@@ -14,7 +14,8 @@ class H4PayInterceptor extends Interceptor {
     if (user == null) {
       throw UserNotFoundException();
     } else {
-      options.headers['x-access-token'] = user.token;
+      if (user.token != null && user.token != "")
+        options.headers['x-access-token'] = user.token;
       return super.onRequest(options, handler);
     }
   }
@@ -29,9 +30,7 @@ class H4PayInterceptor extends Interceptor {
         ResponseWrapper.fromJson(rawJsonResponse);
     response.statusMessage = responseWrapper.message ?? response.statusMessage;
     response.data = responseWrapper.result;
-    print(
-        'RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}');
-    print(responseWrapper.result);
+
     return super.onResponse(response, handler);
   }
 

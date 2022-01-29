@@ -8,6 +8,7 @@ import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Wakelock.dart';
 import 'package:h4pay/Page/Voucher/VoucherView.dart';
 import 'package:h4pay/main.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_links/uni_links.dart';
 
@@ -23,6 +24,7 @@ Future<Widget?> appLinkToRoute(H4PayRoute route) async {
 
   if (route.route == 'giftView') {
     try {
+      debugPrint((await userFromStorage())!.token);
       final gift = await service.getGiftDetail(route.data!);
       if (gift.isNotEmpty)
         return PurchaseDetailPage(purchase: gift[0]);

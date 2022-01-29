@@ -163,16 +163,16 @@ class MyHomePageState extends State<MyHomePage> {
 
   Future updateBadges() async {
     // calculate cart items, orders, gifts, vouchers and set badge states.
-    final H4PayUser? user = await userFromStorageAndVerify();
+    final H4PayUser? user = await userFromStorage();
+    debugPrint(user!.token);
     if (user == null) {
       showSnackbar(
         context,
-        "사용자 정보를 불러올 수 없습니다. 앱을 종료합니다.",
+        "사용자 정보를 불러올 수 없습니다.",
         Colors.red,
         Duration(seconds: 1),
       );
-      await Future.delayed(Duration(seconds: 3));
-      exitApp();
+      return;
     }
     List<Order> orders;
     List<Gift> gifts;

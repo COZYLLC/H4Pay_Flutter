@@ -82,10 +82,6 @@ class RegisterPageState extends State<RegisterPage> {
                     validator: emailValidator,
                     onEditingComplete: _checkEmailValidity,
                   ),
-                  Text(
-                    "이메일의 @(골뱅이) 앞의 문자를 아이디로 자동 등록합니다.",
-                    style: TextStyle(color: Colors.red),
-                  ),
                   H4PayInput(
                     title: "비밀번호",
                     controller: pw,
@@ -288,7 +284,7 @@ class RegisterPageState extends State<RegisterPage> {
       'email': email.text,
       'tel': tel.text.replaceAll("-", ""),
       'role': 'S',
-      'school': selectedSchool!.id,
+      'schoolId': selectedSchool!.id,
     };
     service.register(requestBody).then((response) async {
       Navigator.push(

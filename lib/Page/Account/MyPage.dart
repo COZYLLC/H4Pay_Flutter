@@ -133,8 +133,8 @@ class MyPageState extends State<MyPage> {
                           text: "로그아웃",
                           onClick: () {
                             showAlertDialog(context, "로그아웃", "정말로 로그아웃 하시겠습니까?",
-                                () {
-                              logout();
+                                () async {
+                              await logout();
                               navigateRoute(
                                 context,
                                 IntroPage(canGoBack: false),

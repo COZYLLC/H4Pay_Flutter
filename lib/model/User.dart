@@ -66,7 +66,7 @@ Future<H4PayUser?> userFromStorageAndVerify() async {
     final H4PayUser user = H4PayUser.fromJson(userJson);
     final H4PayUser renewedUser = await getService().tokenCheck(user.token!);
     renewedUser.token = user.token;
-    await renewedUser.saveToStorage();
+    debugPrint((await renewedUser.saveToStorage()).toString());
     return renewedUser;
   } catch (e) {
     return null;

@@ -75,7 +75,7 @@ class _H4PayService implements H4PayService {
     final _result = await _dio.fetch<List<dynamic>>(
         _setStreamType<List<Product>>(
             Options(method: 'GET', headers: _headers, extra: _extra)
-                .compose(_dio.options, 'products',
+                .compose(_dio.options, 'products/filter?withStored=1',
                     queryParameters: queryParameters, data: _data)
                 .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!
@@ -280,7 +280,7 @@ class _H4PayService implements H4PayService {
     final _data = <String, dynamic>{};
     final _result = await _dio.fetch<List<dynamic>>(_setStreamType<List<Order>>(
         Options(method: 'GET', headers: _headers, extra: _extra)
-            .compose(_dio.options, 'orders/fromuid/${uid}',
+            .compose(_dio.options, 'orders/filter',
                 queryParameters: queryParameters, data: _data)
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!

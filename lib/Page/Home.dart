@@ -36,12 +36,16 @@ class HomeState extends State<Home> {
   int? currentTile;
   bool cartClicked = false;
   bool moving = false;
+  Future<H4PayUser?>? _userFuture;
+  Future<List<Product>>? _productFuture;
 
   HomeState(this.prefs);
 
   @override
   void initState() {
     super.initState();
+    _userFuture = userFromStorage();
+    _productFuture = service.getVisibleProducts();
   }
 
   Future<Map> _getAds(H4PayUser user) async {
@@ -59,15 +63,16 @@ class HomeState extends State<Home> {
       MediaQuery.of(context).size.height * 0.35
     ];
     return FutureBuilder(
-      future: userFromStorageAndVerify(),
+      future: _userFuture,
       builder: (context, snapshot) {
+        debugPrint(snapshot.data.toString());
         if (snapshot.hasData) {
           final H4PayUser? user = snapshot.data as H4PayUser?;
           if (user == null) {
             return ErrorPage(UserNotFoundException());
           }
           return FutureBuilder(
-            future: service.getVisibleProducts(),
+            future: _productFuture,
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               if (snapshot.hasData) {
                 final List<Product> products = snapshot.data;
@@ -95,7 +100,6 @@ class HomeState extends State<Home> {
                                 ...noticeSublist,
                                 ...eventSublist
                               ];
-
                               return CarouselSlider(
                                 options: CarouselOptions(
                                   height:

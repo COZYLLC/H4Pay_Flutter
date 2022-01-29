@@ -117,7 +117,7 @@ class CartState extends State<Cart> {
       resizeToAvoidBottomInset: false,
       body: SingleChildScrollView(
         child: FutureBuilder(
-          future: _fetchProduct!,
+          future: _fetchProduct,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               products = snapshot.data as List<Product>;

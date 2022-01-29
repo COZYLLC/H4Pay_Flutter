@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Cart.dart';
@@ -143,7 +144,8 @@ class ProductCardState extends State<ProductCard> {
                       child: Column(
                         children: [
                           CachedNetworkImage(
-                            imageUrl: widget.product.img,
+                            imageUrl:
+                                "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png",
                             progressIndicatorBuilder:
                                 (context, url, downloadProgress) =>
                                     CircularProgressIndicator(
@@ -336,13 +338,17 @@ class CartCardState extends State<CartCard> {
               ),
               TextButton(
                 onPressed: () {
-                  showAlertDialog(context, "제품 삭제", "장바구니에서 제품을 제거하시겠습니까?", () {
+                  showAlertDialog(context, "제품 삭제",
+                      "장바구니에서 ${widget.product.productName} 을(를) 제거하시겠습니까?",
+                      () {
                     parentState!.setState(() {
                       parentState.cartMap.remove('${widget.product.id}');
                     });
                     parentState.updateCart();
                     Navigator.pop(context);
-                  }, () {});
+                  }, () {
+                    Navigator.pop(context);
+                  });
                 },
                 child: Text("삭제"),
               ),
@@ -365,7 +371,12 @@ class WideCardScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: [ProductImage(imageUrl: imageUrl), ...cardContent],
+      children: [
+        ProductImage(
+            imageUrl:
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png"),
+        ...cardContent
+      ],
     );
   }
 }

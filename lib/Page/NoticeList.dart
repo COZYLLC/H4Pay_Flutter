@@ -17,6 +17,7 @@ class NoticeListPage extends ListPage {
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               List<Notice> data = snapshot.data;
+
               if (data.length != 0) {
                 return ListView.builder(
                   itemCount: data.length,
@@ -63,18 +64,12 @@ class CenterInScroll extends StatelessWidget {
   }
 }
 
-Future<List<Event>> _getAllEvents() async {
-  await Future.delayed(Duration(seconds: 1));
-  return [];
-}
-
 class EventListPage extends ListPage {
   EventListPage()
       : super(
           withAppBar: true,
           type: Event,
-          //dataFuture: getService().getAllEvents(),
-          dataFuture: _getAllEvents(),
+          dataFuture: getService().getAllEvents(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               List data = snapshot.data as List;

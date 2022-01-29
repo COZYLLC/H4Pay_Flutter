@@ -81,7 +81,7 @@ class IntroPageState extends State<IntroPage> {
               title: "서버 오류",
               content: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [Text("서버와 연결할 수 없습니다.\n앱을 종료합니다.")],
+                children: [Text("서버와 연결할 수 없습니다.")],
               ),
               actions: [
                 H4PayOkButton(
@@ -96,39 +96,6 @@ class IntroPageState extends State<IntroPage> {
           );
         }
       } else {
-        try {
-          final Maintenance maintenance = await fetchMaintenence();
-          if (maintenance.start.millisecondsSinceEpoch <
-                  DateTime.now().millisecondsSinceEpoch &&
-              maintenance.end.millisecondsSinceEpoch >
-                  DateTime.now().millisecondsSinceEpoch) {
-            showCustomAlertDialog(
-              context,
-              H4PayDialog(
-                title: maintenance.title,
-                content: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(maintenance.detail),
-                    Text(
-                        "시작: ${dateFormat.format(maintenance.start)},\n종료: ${dateFormat.format(maintenance.end)}"),
-                    H4PayButton(
-                      text: "확인",
-                      onClick: () {
-                        exit(0);
-                      },
-                      backgroundColor: Colors.red,
-                      width: double.infinity,
-                    )
-                  ],
-                ),
-              ),
-              false,
-            );
-          }
-        } on NetworkException {
-          debugPrint("no maintenance");
-        }
         checkUpdate();
         if (!kIsWeb) {
           final Widget? route = await initUniLinks(context);
@@ -141,7 +108,8 @@ class IntroPageState extends State<IntroPage> {
           }
         }
 
-        final H4PayUser? user = await userFromStorage();
+        final H4PayUser? user = await userFromStorageAndVerify();
+        debugPrint("hi");
         final SharedPreferences _prefs = await SharedPreferences.getInstance();
         if (user != null) {
           Navigator.push(
@@ -158,6 +126,9 @@ class IntroPageState extends State<IntroPage> {
   }
 
   Future<void> checkUpdate() async {
+    if (kIsWeb) {
+      return;
+    }
     if (Platform.isAndroid) {
       final status = await InAppUpdate.checkForUpdate();
       if (status.updateAvailability == UpdateAvailability.updateAvailable) {

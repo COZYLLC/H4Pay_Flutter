@@ -33,7 +33,7 @@ abstract class H4PayService {
   @GET("stores")
   Future<bool> getStoreStatus();
 
-  @GET("products")
+  @GET("products/filter?withStored=1")
   Future<List<Product>> getProducts();
 
   @GET("products/filter?withStored=0")
@@ -74,7 +74,7 @@ abstract class H4PayService {
   @POST("users/find/password")
   Future<HttpResponse> findPassword(@Body() Map<String, dynamic> body);
 
-  @GET("orders/fromuid/{uid}")
+  @GET("orders/filter")
   Future<List<Order>> getOrders(@Path("uid") String uid);
 
   @POST("orders/create")

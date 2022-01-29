@@ -78,16 +78,16 @@ class LoginPageState extends State<LoginPage> {
               H4PayButton(
                 text: "로그인",
                 width: double.infinity,
-                onClick: () async {
+                onClick: () {
                   if (_loginFormKey.currentState!.validate()) {
                     final service = getService();
                     service.login({
                       "tel": _telController.text.replaceAll("-", ""),
                       "password": encryptPassword(_pwController.text),
-                    }).then((value) {
+                    }).then((value) async {
                       final headers = value.response.headers.map;
                       final token = headers['x-access-token']![0];
-                      debugPrint(token);
+                      await H4PayUser(token: token).saveToStorage();
                       service.tokenCheck(token).then((user) async {
                         user.token = token;
                         await user.saveToStorage();
