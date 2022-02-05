@@ -48,7 +48,7 @@ class PurchaseListState extends State<PurchaseList> {
       withAppBar: true,
       appBarTitle: title,
       type: widget.type,
-      dataFuture: _loadThings(),
+      dataFuture: _loadThings,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
           final Map data = snapshot.data as Map;
@@ -108,7 +108,7 @@ class ListPage extends StatefulWidget {
   final bool withAppBar;
   final String? appBarTitle;
   final Type type;
-  final Future dataFuture;
+  final Future Function() dataFuture;
   final Widget Function(BuildContext, AsyncSnapshot) builder;
 
   const ListPage(
@@ -125,6 +125,14 @@ class ListPage extends StatefulWidget {
 }
 
 class ListPageState extends State<ListPage> {
+  Future? _future;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _future = widget.dataFuture();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -139,7 +147,7 @@ class ListPageState extends State<ListPage> {
         return Container(
           child: SingleChildScrollView(
             child: FutureBuilder(
-              future: widget.dataFuture,
+              future: _future,
               builder: widget.builder,
             ),
           ),

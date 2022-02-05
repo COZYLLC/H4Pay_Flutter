@@ -56,7 +56,7 @@ abstract class H4PayService {
     @Header("X-Access-Token") String token,
   );
 
-  @POST("users/create")
+  @POST("users/register")
   Future<HttpResponse> register(@Body() Map<String, dynamic> body);
 
   @GET("users/valid")

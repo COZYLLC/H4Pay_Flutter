@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:async/async.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Cart.dart';
@@ -38,6 +39,7 @@ class HomeState extends State<Home> {
   bool moving = false;
   Future<H4PayUser?>? _userFuture;
   Future<List<Product>>? _productFuture;
+  final AsyncMemoizer _memoizer = AsyncMemoizer();
 
   HomeState(this.prefs);
 
@@ -48,11 +50,13 @@ class HomeState extends State<Home> {
     _productFuture = service.getVisibleProducts();
   }
 
-  Future<Map> _getAds(H4PayUser user) async {
-    Map data = {};
-    data['notices'] = await service.getNotices();
-    data['events'] = await service.getAllEvents();
-    return data;
+  _getAds(H4PayUser user) async {
+    return this._memoizer.runOnce(() async {
+      Map data = {};
+      data['notices'] = await service.getNotices();
+      data['events'] = await service.getAllEvents();
+      return data;
+    });
   }
 
   @override

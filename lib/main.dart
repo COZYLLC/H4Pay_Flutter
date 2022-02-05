@@ -179,7 +179,7 @@ class MyHomePageState extends State<MyHomePage> {
     List<Voucher> vouchers;
 
     try {
-      orders = await service.getOrders(user!.uid!);
+      orders = await service.getOrders(user.uid!);
       gifts = await service.getGifts(user.uid!);
       vouchers = await service.getVouchers(user.tel!);
     } on NetworkException catch (e) {

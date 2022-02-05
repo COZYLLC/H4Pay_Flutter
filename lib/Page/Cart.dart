@@ -255,6 +255,15 @@ class CartState extends State<Cart> {
   }
 
   _payment() async {
+    if (totalPrice > 100 * 10000) {
+      showSnackbar(
+        context,
+        "1회 최대 결제 금액은 1백만원정입니다.",
+        Colors.red,
+        Duration(seconds: 3),
+      );
+      return;
+    }
     products = await service.getProducts();
     final List<String?>? soldoutList = checkSoldout();
     if (soldoutList != null) {

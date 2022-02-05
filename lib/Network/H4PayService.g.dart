@@ -180,7 +180,7 @@ class _H4PayService implements H4PayService {
     _data.addAll(body);
     final _result = await _dio.fetch(_setStreamType<HttpResponse<dynamic>>(
         Options(method: 'POST', headers: _headers, extra: _extra)
-            .compose(_dio.options, 'users/create',
+            .compose(_dio.options, 'users/register',
                 queryParameters: queryParameters, data: _data)
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     final value = _result.data;

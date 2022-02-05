@@ -50,10 +50,15 @@ class GiftOptionDialog extends H4PayDialog {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(23.0),
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(23.0)),
       ),
+      titlePadding: EdgeInsets.all(10),
+      titleTextStyle: TextStyle(
+        fontSize: 28,
+        color: Colors.black,
+        fontWeight: FontWeight.bold,
+      ),
+      contentPadding: EdgeInsets.all(10),
       title: Text(title),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -65,6 +70,7 @@ class GiftOptionDialog extends H4PayDialog {
                 Expanded(
                   flex: 8,
                   child: H4PayInput(
+                    maxLength: 4,
                     isNumber: true,
                     title: "학번",
                     controller: studentId,
@@ -77,11 +83,12 @@ class GiftOptionDialog extends H4PayDialog {
                 Expanded(
                   flex: 8,
                   child: H4PayInput.done(
+                    maxLength: 3,
                     isNumber: true,
                     controller: qty,
                     title: "수량",
                     validator: (value) {
-                      return value!.length == 1 ? null : "올바른 수량을 입력해주세요.";
+                      return value!.length <= 3 ? null : "올바른 수량을 입력해주세요.";
                     },
                   ),
                 ),

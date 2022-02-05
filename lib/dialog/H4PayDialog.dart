@@ -16,6 +16,7 @@ class H4PayDialog extends StatelessWidget {
           Radius.circular(23.0),
         ),
       ),
+      contentPadding: EdgeInsets.zero,
       title: Text(title),
       content: SingleChildScrollView(child: content),
       actions: actions,

@@ -10,6 +10,7 @@ import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/exception.dart';
+import 'package:h4pay/main.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
@@ -72,75 +73,81 @@ class ErrorPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image.asset(
-          "assets/image/error.png",
-          width: MediaQuery.of(context).size.width * 0.4,
-        ),
-        Container(
-          margin: EdgeInsets.symmetric(vertical: 20),
-          child: Text(
-            "오류가 발생했습니다.",
-            style: TextStyle(fontSize: 28),
-          ),
-        ),
-        Text(extractMessage()),
-        Container(
-          margin: EdgeInsets.symmetric(vertical: 20),
-          child: H4PayButton(
-            text: "오류 대응 빠르게 받는 방법 알아보기",
-            onClick: () {
-              showCustomAlertDialog(
-                  context,
-                  H4PayDialog(
-                    title: "오류 신고 방법",
-                    content: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text.rich(
-                          TextSpan(
-                            text: "스크린샷을 찍어 앱 내 왼쪽 하단 지원 페이지 혹은 ",
-                            children: [
+    return Scaffold(
+      appBar: H4PayAppbar(canGoBack: true, height: 56, title: "오류"),
+      body: Padding(
+        padding: const EdgeInsets.all(40.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              "assets/image/error.png",
+              width: MediaQuery.of(context).size.width * 0.4,
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                "오류가 발생했습니다.",
+                style: TextStyle(fontSize: 28),
+              ),
+            ),
+            Text(extractMessage().replaceFirst("Exception: ", "오류 상세 내용: ")),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 20),
+              child: H4PayButton(
+                text: "오류 대응 빠르게 받는 방법 알아보기",
+                onClick: () {
+                  showCustomAlertDialog(
+                      context,
+                      H4PayDialog(
+                        title: "오류 신고 방법",
+                        content: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text.rich(
                               TextSpan(
-                                text: "support@cozyllc.co.kr",
-                                recognizer: new TapGestureRecognizer()
-                                  ..onTap = () async {
-                                    final body = await buildExampleBody();
-                                    final launchRes = await launch(
-                                      body,
-                                    );
-                                    debugPrint(launchRes.toString());
-                                  },
-                                style: TextStyle(
-                                  decoration: TextDecoration.underline,
-                                ),
+                                text: "스크린샷을 찍어 앱 내 왼쪽 하단 지원 페이지 혹은 ",
+                                children: [
+                                  TextSpan(
+                                    text: "support@cozyllc.co.kr",
+                                    recognizer: new TapGestureRecognizer()
+                                      ..onTap = () async {
+                                        final body = await buildExampleBody();
+                                        final launchRes = await launch(
+                                          body,
+                                        );
+                                        debugPrint(launchRes.toString());
+                                      },
+                                    style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: " 로 문의주시면 빠르게 대응해드리겠습니다.",
+                                  )
+                                ],
                               ),
-                              TextSpan(
-                                text: " 로 문의주시면 빠르게 대응해드리겠습니다.",
-                              )
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    actions: [
-                      H4PayOkButton(
-                        context: context,
-                        onClick: () {
-                          Navigator.pop(context);
-                        },
-                      )
-                    ],
-                  ),
-                  true);
-            },
-            backgroundColor: Colors.green,
-          ),
-        )
-      ],
+                        actions: [
+                          H4PayOkButton(
+                            context: context,
+                            onClick: () {
+                              Navigator.pop(context);
+                            },
+                          )
+                        ],
+                      ),
+                      true);
+                },
+                backgroundColor: Colors.green,
+              ),
+            )
+          ],
+        ),
+      ),
     );
   }
 }

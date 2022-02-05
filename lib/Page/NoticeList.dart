@@ -13,7 +13,7 @@ class NoticeListPage extends ListPage {
       : super(
           withAppBar: true,
           type: Notice,
-          dataFuture: getService().getNotices(),
+          dataFuture: getService().getNotices,
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               List<Notice> data = snapshot.data;
@@ -69,7 +69,7 @@ class EventListPage extends ListPage {
       : super(
           withAppBar: true,
           type: Event,
-          dataFuture: getService().getAllEvents(),
+          dataFuture: getService().getAllEvents,
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               List data = snapshot.data as List;

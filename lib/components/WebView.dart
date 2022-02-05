@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:h4pay/Page/Error.dart';
 import 'package:h4pay/Page/Purchase/Payment.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Util/Connection.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/main.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -152,7 +154,14 @@ class WebViewExampleState extends State<WebViewExample> {
             ).then(updateBadges);
             return NavigationDecision.prevent;
           } else if (request.url.startsWith("$url/payFail")) {
+            final errMsg = Uri.decodeFull(
+              Uri.dataFromString(request.url).queryParameters['message']!,
+            );
             Navigator.pop(context);
+            navigateRoute(
+              context,
+              ErrorPage(Exception(errMsg)),
+            );
             return NavigationDecision.prevent;
           } else {
             return NavigationDecision.navigate;

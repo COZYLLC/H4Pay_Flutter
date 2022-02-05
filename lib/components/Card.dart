@@ -144,8 +144,7 @@ class ProductCardState extends State<ProductCard> {
                       child: Column(
                         children: [
                           CachedNetworkImage(
-                            imageUrl:
-                                "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png",
+                            imageUrl: widget.product.img,
                             progressIndicatorBuilder:
                                 (context, url, downloadProgress) =>
                                     CircularProgressIndicator(
@@ -373,8 +372,8 @@ class WideCardScaffold extends StatelessWidget {
     return Row(
       children: [
         ProductImage(
-            imageUrl:
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png"),
+          imageUrl: imageUrl,
+        ),
         ...cardContent
       ],
     );

@@ -20,6 +20,7 @@ class H4PayInput extends StatefulWidget {
   final String? buttonText;
   final Function()? onButtonClick;
   final Function()? onFieldClick;
+  final int? maxLength;
 
   const H4PayInput(
       {Key? key,
@@ -31,6 +32,7 @@ class H4PayInput extends StatefulWidget {
       this.borderColor,
       this.isMultiLine,
       this.validator,
+      this.maxLength,
       this.minLines,
       this.onEditingComplete,
       this.inputFormatters,
@@ -56,6 +58,7 @@ class H4PayInput extends StatefulWidget {
     required this.buttonText,
     this.onButtonClick,
     this.onFieldClick,
+    this.maxLength,
   })  : type = H4PayInputType.button,
         super(key: key);
 
@@ -75,6 +78,7 @@ class H4PayInput extends StatefulWidget {
     this.buttonText,
     this.onButtonClick,
     this.onFieldClick,
+    this.maxLength,
   })  : type = H4PayInputType.done,
         super(key: key);
 
@@ -127,13 +131,14 @@ class H4PayInputState extends State<H4PayInput> {
                           ? TextInputAction.done
                           : TextInputAction.next,
                   keyboardType: widget.isNumber ?? false
-                      ? TextInputType.phone
+                      ? TextInputType.number
                       : widget.isMultiLine ?? false
                           ? TextInputType.multiline
                           : TextInputType.text,
                   maxLines: widget.isMultiLine ?? false ? null : 1,
                   minLines:
                       widget.isMultiLine ?? false ? widget.minLines : null,
+                  maxLength: widget.maxLength,
                   validator: widget.validator,
                   onEditingComplete: widget.onEditingComplete,
                   inputFormatters: widget.inputFormatters,
@@ -181,7 +186,13 @@ class H4PayInputState extends State<H4PayInput> {
                                 EdgeInsets.symmetric(horizontal: 15),
                             isDense: true,
                           ),
+                          keyboardType: widget.isNumber ?? false
+                              ? TextInputType.number
+                              : widget.isMultiLine ?? false
+                                  ? TextInputType.multiline
+                                  : TextInputType.text,
                           onTap: widget.onFieldClick,
+                          maxLength: widget.maxLength,
                           inputFormatters: widget.inputFormatters,
                         ),
                       ),

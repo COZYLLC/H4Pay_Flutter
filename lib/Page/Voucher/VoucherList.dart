@@ -33,7 +33,7 @@ class VoucherListState extends State<VoucherList> {
       appBarTitle: "상품권 보관함",
       withAppBar: true,
       type: Voucher,
-      dataFuture: _loadThings(),
+      dataFuture: _loadThings,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
           final Map data = snapshot.data as Map;

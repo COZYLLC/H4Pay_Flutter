@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Error.dart';
 import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
+import 'package:h4pay/Util/Wakelock.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Purchase/Gift.dart';
 import 'package:h4pay/model/Purchase/Order.dart';
@@ -108,7 +109,7 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
                                       purchase: purchase,
                                     ),
                                   ),
-                                );
+                                ).then(disableWakeLock);
                               },
                               backgroundColor: Theme.of(context).primaryColor,
                             ),
@@ -121,7 +122,7 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
               ),
             );
           } else if (snapshot.hasError) {
-            return Scaffold(body: ErrorPage(snapshot.error as Exception));
+            return ErrorPage(snapshot.error as Exception);
           } else {
             return Center(
               child: Scaffold(body: CircularProgressIndicator()),

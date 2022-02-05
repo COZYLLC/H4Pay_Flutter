@@ -4,6 +4,7 @@ import 'package:h4pay/Page/NoticeList.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Page/Success.dart';
 import 'package:h4pay/Util/Dialog.dart';
+import 'package:h4pay/dialog/Loading.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/User.dart';
 import 'package:h4pay/components/Input.dart';
@@ -212,6 +213,7 @@ class SupportFormPageState extends State<SupportFormPage> {
       final H4PayUser? user = await userFromStorageAndVerify();
       if (user != null) {
         await _upload(
+          context,
           user.uid!,
           user.email!,
           title.text,
@@ -243,8 +245,10 @@ class SupportFormPageState extends State<SupportFormPage> {
     }
   }
 
-  Future<bool> _upload(String uid, String email, String title, String category,
-      String content, File? img) async {
+  Future<bool> _upload(BuildContext context, String uid, String email,
+      String title, String category, String content, File? img) async {
+    showCustomAlertDialog(
+        context, LoadingDialog(title: "잠시만 기다려주세요..."), false);
     var uri = Uri.parse("${apiUrl}uploads");
     var request = new http.MultipartRequest("POST", uri);
 
@@ -265,6 +269,7 @@ class SupportFormPageState extends State<SupportFormPage> {
     }
     try {
       var response = await request.send();
+      Navigator.pop(context);
       if (response.statusCode == 200) {
         final responseString = await response.stream.bytesToString();
         final jsonResponse = json.decode(responseString);

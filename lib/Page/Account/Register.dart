@@ -116,6 +116,7 @@ class RegisterPageState extends State<RegisterPage> {
                     isNumber: true,
                     buttonText: "확인",
                     title: "인증번호 입력",
+                    maxLength: 6,
                     validator: (value) {
                       return generatedPin == null
                           ? "인증번호를 전송해주세요."

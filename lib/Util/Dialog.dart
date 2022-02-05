@@ -44,6 +44,7 @@ void showAlertDialog(BuildContext context, String title, String content,
         title: Text(title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(content),
             Container(
