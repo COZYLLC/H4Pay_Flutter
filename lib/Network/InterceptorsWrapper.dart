@@ -30,7 +30,6 @@ class H4PayInterceptor extends Interceptor {
         ResponseWrapper.fromJson(rawJsonResponse);
     response.statusMessage = responseWrapper.message ?? response.statusMessage;
     response.data = responseWrapper.result;
-
     return super.onResponse(response, handler);
   }
 

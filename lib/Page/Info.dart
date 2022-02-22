@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Util/Dialog.dart';
@@ -24,23 +26,31 @@ class InfoButton extends StatelessWidget {
   final String text;
   final Widget? page;
   final BuildContext? parentContext;
+  final bool? withButton;
+  final FutureOr Function()? onClick;
   InfoButton.dialog(
     this.text, {
     this.type = InfoType.Dialog,
     required this.page,
     required this.parentContext,
+    this.withButton,
+    this.onClick,
   });
   InfoButton.route(
     this.text, {
     this.type = InfoType.Route,
     required this.page,
     required this.parentContext,
+    this.withButton,
+    this.onClick,
   });
   InfoButton.none(
     this.text, {
     this.type = InfoType.None,
     this.page,
     this.parentContext,
+    this.withButton,
+    this.onClick,
   });
 
   @override
@@ -59,14 +69,17 @@ class InfoButton extends StatelessWidget {
               H4PayDialog(
                 title: text,
                 content: page!,
-                actions: [
-                  H4PayOkButton(
-                    context: context,
-                    onClick: () {
-                      Navigator.pop(context);
-                    },
-                  )
-                ],
+                actions: withButton ?? false
+                    ? [
+                        H4PayOkButton(
+                          context: context,
+                          onClick: onClick ??
+                              () {
+                                Navigator.pop(context);
+                              },
+                        )
+                      ]
+                    : null,
               ),
               true,
             );
@@ -101,6 +114,11 @@ class H4PayInfoPage extends StatefulWidget {
   H4PayInfoPageState createState() => H4PayInfoPageState();
 }
 
+String getFtcLicenseUrl(String businessId) {
+  final String idWithoutHypen = businessId.replaceAll("-", "");
+  return "https://www.ftc.go.kr/bizCommPop.do?wrkr_no=$idWithoutHypen";
+}
+
 class H4PayInfoPageState extends State<H4PayInfoPage> {
   final H4PayService service = getService();
   Future<List<InfoButton>>? _infoFuture;
@@ -124,15 +142,16 @@ class H4PayInfoPageState extends State<H4PayInfoPage> {
     return [
       InfoButton.none("버전: $version"),
       InfoButton.dialog(
-        "COZY 정보",
+        "유한책임회사 코지 사업자 정보",
         page: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("대표: 송치원"),
+            Text("대표: 김현빈"),
             HyperLinkText(
                 text: "Tel: 010-6795-8358", url: "tel://010-6795-8358"),
             Text("Fax: 0508-941-8358"),
-            Text("사업자등록번호: 619-88-02154\n"),
+            Text("사업자등록번호: 619-88-02154"),
+            Text(""),
             HyperLinkText(
               text: "인스타그램: cozyllc",
               url: "https://www.instagram.com/cozyllc/",
@@ -145,9 +164,12 @@ class H4PayInfoPageState extends State<H4PayInfoPage> {
               text: "홈페이지: https://cozyllc.co.kr",
               url: "https://cozyllc.co.kr",
             ),
+            Text(
+                "유한책임회사 코지는 통신판매의 당사자가 아닌 통신판매중개자로서 상품, 상품정보, 거래에 대한 책임이 제한될 수 있습니다."),
           ],
         ),
         parentContext: context,
+        withButton: true,
       ),
       InfoButton.route(
         "이용 약관",
@@ -184,17 +206,18 @@ class H4PayInfoPageState extends State<H4PayInfoPage> {
             Text("사업자등록번호: ${school.seller.businessId}"),
             HyperLinkText(
               text: "통신판매업신고: ${school.seller.sellerId}",
-              url:
-                  "https://ftc.go.kr/www/bizCommView.do?key=232&apv_perm_no=2021445011930200007&pageUnit=10&searchCnd=apv_perm_mgt_no&searchKrwd=2021%EC%B6%A9%EB%B6%81%EC%A7%84%EC%B2%9C0007&pageIndex=1",
+              url: getFtcLicenseUrl(school.seller.businessId),
             )
           ],
         ),
         parentContext: context,
+        withButton: true,
       ),
       InfoButton.dialog(
         "IP주소 변경",
         page: IpChangerDialog(context),
         parentContext: context,
+        onClick: () {},
       )
     ];
   }

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,6 +17,7 @@ import 'package:h4pay/Util/Exit.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Purchase/Gift.dart';
 import 'package:h4pay/model/Purchase/Order.dart';
+import 'package:h4pay/model/School.dart';
 import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Connection.dart';
@@ -156,6 +156,15 @@ class MyHomePageState extends State<MyHomePage> {
   int cartBadgeCount = 0;
   Map<String, int> badges = {'order': 0, 'gift': 0, 'voucher': 0};
   String _title = "H4Pay";
+  List<String> titles = ["지원", "이벤트", "H4Pay", "장바구니", "마이페이지"];
+
+  setSchool(String schoolId) async {
+    final List<School> schools = await service.getSchools(id: schoolId);
+    setState(() {
+      titles[2] = schools[0].name;
+    });
+  }
+
   Future? _fetchStoreStatus;
 
   final SharedPreferences prefs;
@@ -259,7 +268,6 @@ class MyHomePageState extends State<MyHomePage> {
       Cart(prefs),
       MyPage(prefs: prefs, badges: badges)
     ];
-    List<String> titles = ["지원", "이벤트", "H4Pay", "장바구니", "마이페이지"];
 
     return WillPopScope(
       onWillPop: () async => onBackPressed(context, true),

@@ -10,7 +10,6 @@ class Product {
   final String desc;
   final String img;
   final bool soldout;
-  final bool isVisible;
 
   Product({
     required this.id,
@@ -19,7 +18,6 @@ class Product {
     required this.price,
     required this.productName,
     required this.soldout,
-    required this.isVisible,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) =>

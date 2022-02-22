@@ -40,7 +40,7 @@ class H4PayUser {
       storage.write(key: 'role', value: this.role);
       storage.write(key: 'tel', value: this.tel);
       storage.write(key: 'token', value: this.token);
-      storage.write(key: 'school', value: this.schoolId);
+      storage.write(key: 'schoolId', value: this.schoolId);
       return true;
     } catch (e) {
       return false;

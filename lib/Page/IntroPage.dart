@@ -9,6 +9,7 @@ import 'package:h4pay/Page/Account/Login.dart';
 import 'package:h4pay/Page/Account/Register.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Util/Beautifier.dart';
+import 'package:h4pay/dialog/IpChanger.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Maintenance.dart';
 import 'package:h4pay/model/User.dart';
@@ -265,8 +266,13 @@ class IntroPageState extends State<IntroPage> {
                     isTestMode
                         ? InkWell(
                             onTap: () {
-                              showIpChangeDialog(
-                                  context, _formKey, _ipController);
+                              showDialog(
+                                context: context,
+                                builder: (context) => H4PayDialog(
+                                  title: "IP 주소 변경",
+                                  content: IpChangerDialog(context),
+                                ),
+                              );
                             },
                             child: Text(
                               "서버 IP 변경",

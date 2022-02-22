@@ -15,6 +15,7 @@ import 'package:h4pay/Util/mp.dart';
 import 'package:h4pay/Util/validator.dart';
 import 'package:h4pay/model/School.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -214,7 +215,7 @@ class RegisterPageState extends State<RegisterPage> {
           isTelChecked = null;
           generatedPin = value;
         });
-      });
+      }).catchError((err) {});
   }
 
   void _checkEmailValidity() {
@@ -315,7 +316,20 @@ class RegisterPageState extends State<RegisterPage> {
         ),
       );
     }).catchError((err) {
-      showServerErrorSnackbar(context, err);
+      if (err.runtimeType == DioError) {
+        final DioError error = err as DioError;
+        if (error.response!.statusCode == 400) {
+          showSnackbar(
+            context,
+            "이미 존재하는 아이디입니다.",
+            Colors.red,
+            Duration(seconds: 2),
+          );
+        }
+      } else {
+        debugPrint(err.toString());
+        showServerErrorSnackbar(context, err);
+      }
     });
   }
 }

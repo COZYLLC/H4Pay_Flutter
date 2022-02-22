@@ -90,6 +90,7 @@ class LoginPageState extends State<LoginPage> {
                       await H4PayUser(token: token).saveToStorage();
                       service.tokenCheck(token).then((user) async {
                         user.token = token;
+                        print(user.toJson());
                         await user.saveToStorage();
                         final SharedPreferences prefs =
                             await SharedPreferences.getInstance();

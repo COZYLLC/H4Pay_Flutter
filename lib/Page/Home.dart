@@ -8,7 +8,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Cart.dart';
 import 'package:h4pay/Page/Error.dart';
+import 'package:h4pay/Page/IntroPage.dart';
+import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Carousel.dart';
+import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Event.dart';
 import 'package:h4pay/model/Notice.dart';
@@ -68,18 +71,35 @@ class HomeState extends State<Home> {
     ];
     return FutureBuilder(
       future: _userFuture,
-      builder: (context, snapshot) {
+      builder: (context, AsyncSnapshot<H4PayUser?> snapshot) {
         debugPrint(snapshot.data.toString());
         if (snapshot.hasData) {
-          final H4PayUser? user = snapshot.data as H4PayUser?;
+          final H4PayUser? user = snapshot.data;
           if (user == null) {
             return ErrorPage(UserNotFoundException());
           }
+          if (user.schoolId == null) {
+            return ErrorPage(
+              UserNotFoundException(
+                message: "앱 데이터베이스 변경 작업으로 인해 재로그인이 필요합니다. 재로그인 후 이용해주세요.",
+                onClick: () async {
+                  await logout();
+                  navigateRoute(context, IntroPage(canGoBack: true));
+                },
+              ),
+            );
+          }
+          final MyHomePageState homePageState =
+              context.findAncestorStateOfType<MyHomePageState>()!;
+          homePageState.setSchool(user.schoolId!);
           return FutureBuilder(
             future: _productFuture,
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
+            builder: (
+              BuildContext context,
+              AsyncSnapshot<List<Product>> snapshot,
+            ) {
               if (snapshot.hasData) {
-                final List<Product> products = snapshot.data;
+                final List<Product> products = snapshot.data!;
                 products.sort((a, b) => a.productName.compareTo(b.productName));
                 return Stack(children: [
                   SingleChildScrollView(
@@ -191,7 +211,8 @@ class HomeState extends State<Home> {
                   )
                 ]);
               } else if (snapshot.hasError) {
-                return ErrorPage(snapshot.error as Exception);
+                debugPrint(snapshot.error.toString());
+                return Text(snapshot.error.toString());
               } else {
                 return Center(
                   child: CircularProgressIndicator(),
@@ -201,7 +222,7 @@ class HomeState extends State<Home> {
           );
         } else if (snapshot.hasError) {
           showSnackbar(
-              context, "이벤트 정보를 불러올 수 없습니다.", Colors.red, Duration(seconds: 3));
+              context, "사용자 정보를 불러올 수 없습니다.", Colors.red, Duration(seconds: 3));
           return CircularProgressIndicator();
         } else {
           return CircularProgressIndicator();

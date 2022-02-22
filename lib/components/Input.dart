@@ -101,6 +101,7 @@ class H4PayInputState extends State<H4PayInput> {
       border: roundBorder,
       contentPadding: new EdgeInsets.all(10),
       isDense: true,
+      counter: Offstage(),
     );
     final Container titleText = Container(
       margin: EdgeInsets.only(bottom: 10),
@@ -185,6 +186,7 @@ class H4PayInputState extends State<H4PayInput> {
                             contentPadding:
                                 EdgeInsets.symmetric(horizontal: 15),
                             isDense: true,
+                            counter: Offstage(),
                           ),
                           keyboardType: widget.isNumber ?? false
                               ? TextInputType.number

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/gestures.dart';
@@ -59,15 +60,10 @@ class ErrorPage extends StatelessWidget {
   }
 
   String extractMessage() {
-    switch (error.runtimeType) {
-      case DioError:
-        return (error as DioError).message;
-      case NetworkException:
-        return "(${(error as NetworkException).statusCode}) 오류가 발생했습니다. 고객센터로 문의해주세요.";
-      case UserNotFoundException:
-        return "사용자 정보룰 불러올 수 없습니다.";
-      default:
-        return error.toString();
+    if (error is H4PayException) {
+      return (error as H4PayException).message;
+    } else {
+      return error.toString();
     }
   }
 
@@ -94,7 +90,7 @@ class ErrorPage extends StatelessWidget {
             ),
             Text(extractMessage().replaceFirst("Exception: ", "오류 상세 내용: ")),
             Container(
-              margin: EdgeInsets.symmetric(vertical: 20),
+              margin: EdgeInsets.only(top: 20),
               child: H4PayButton(
                 text: "오류 대응 빠르게 받는 방법 알아보기",
                 onClick: () {
@@ -143,6 +139,14 @@ class ErrorPage extends StatelessWidget {
                       true);
                 },
                 backgroundColor: Colors.green,
+              ),
+            ),
+            Visibility(
+              visible: (error is H4PayException &&
+                  (error as H4PayException).onClick != null),
+              child: H4PayButton(
+                text: "확인",
+                onClick: (error as H4PayException).onClick,
               ),
             )
           ],

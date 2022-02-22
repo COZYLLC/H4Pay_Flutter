@@ -13,7 +13,6 @@ Product _$ProductFromJson(Map<String, dynamic> json) => Product(
       price: json['price'] as int,
       productName: json['productName'] as String,
       soldout: json['soldout'] as bool,
-      isVisible: json['isVisible'] as bool,
     );
 
 Map<String, dynamic> _$ProductToJson(Product instance) => <String, dynamic>{
@@ -23,5 +22,4 @@ Map<String, dynamic> _$ProductToJson(Product instance) => <String, dynamic>{
       'desc': instance.desc,
       'img': instance.img,
       'soldout': instance.soldout,
-      'isVisible': instance.isVisible,
     };
