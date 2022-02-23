@@ -89,9 +89,6 @@ class HomeState extends State<Home> {
               ),
             );
           }
-          final MyHomePageState homePageState =
-              context.findAncestorStateOfType<MyHomePageState>()!;
-          homePageState.setSchool(user.schoolId!);
           return FutureBuilder(
             future: _productFuture,
             builder: (

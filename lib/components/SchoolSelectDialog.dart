@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Error.dart';
 import 'package:h4pay/components/Button.dart';
-import 'package:h4pay/components/SelectorBottomSheet.dart';
+import 'package:h4pay/components/SchoolSelectorItem.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/model/School.dart';
 
@@ -91,7 +91,6 @@ class SchoolSelectDialogState extends State<SchoolSelectDialog> {
       content: Container(
         width: double.maxFinite,
         height: MediaQuery.of(context).size.height * 0.4,
-        padding: EdgeInsets.all(23),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -99,12 +98,16 @@ class SchoolSelectDialogState extends State<SchoolSelectDialog> {
           children: [
             Column(
               children: [
-                TextField(
-                  keyboardType: TextInputType.text,
-                  onChanged: (value) {
-                    _searchStream.add(value);
-                  },
-                  decoration: InputDecoration(icon: Icon(Icons.search)),
+                Container(
+                  margin: EdgeInsets.only(bottom: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: TextField(
+                    keyboardType: TextInputType.text,
+                    onChanged: (value) {
+                      _searchStream.add(value);
+                    },
+                    decoration: InputDecoration(icon: Icon(Icons.search)),
+                  ),
                 ),
                 StreamBuilder(
                   stream: _searchStream.stream,

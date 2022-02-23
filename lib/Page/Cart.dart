@@ -296,7 +296,7 @@ class CartState extends State<Cart> {
       showBottomSheet(
         context: context,
         builder: (context) => Container(
-          //height: MediaQuery.of(context).size.height,
+          height: MediaQuery.of(context).size.height * 0.7,
           child: WebViewExample(
               type: Order,
               amount: this.totalPrice,

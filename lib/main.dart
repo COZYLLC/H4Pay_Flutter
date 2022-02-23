@@ -13,7 +13,6 @@ import 'package:h4pay/Page/Account/MyPage.dart';
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 import 'package:h4pay/Setting.dart';
 import 'package:h4pay/Page/Support.dart';
-import 'package:h4pay/Util/Exit.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Purchase/Gift.dart';
 import 'package:h4pay/model/Purchase/Order.dart';
@@ -162,6 +161,7 @@ class MyHomePageState extends State<MyHomePage> {
     final List<School> schools = await service.getSchools(id: schoolId);
     setState(() {
       titles[2] = schools[0].name;
+      _title = titles[_currentIdx];
     });
   }
 
@@ -183,6 +183,8 @@ class MyHomePageState extends State<MyHomePage> {
       );
       return;
     }
+    setSchool(user.schoolId!);
+
     List<Order> orders;
     List<Gift> gifts;
     List<Voucher> vouchers;

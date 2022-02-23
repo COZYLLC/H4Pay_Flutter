@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Page/Error.dart';
@@ -50,6 +52,10 @@ class WebViewExampleState extends State<WebViewExample> {
     Navigator.pop(context);
   }
 
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers = {
+    Factory(() => EagerGestureRecognizer())
+  };
+
   @override
   Widget build(BuildContext context) {
     final url = dotenv.env['WEB_URL']!;
@@ -70,10 +76,10 @@ class WebViewExampleState extends State<WebViewExample> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        backgroundColor: Colors.grey[100],
+        backgroundColor: Colors.grey[200],
         toolbarHeight: 20,
         centerTitle: true,
-        shadowColor: Colors.transparent,
+        shadowColor: Colors.grey[100],
         automaticallyImplyLeading: false,
         shape: ContinuousRectangleBorder(
           borderRadius: const BorderRadius.only(
@@ -103,6 +109,7 @@ class WebViewExampleState extends State<WebViewExample> {
         onWebViewCreated: (WebViewController webViewController) {
           _webViewController = webViewController;
         },
+        gestureRecognizers: gestureRecognizers,
         navigationDelegate: (request) async {
           final appInfo = AppInfo(url: request.url);
           if (appInfo.isAppLink()) {
