@@ -14,7 +14,6 @@ import 'package:h4pay/main.dart';
 import 'package:h4pay/Util/mp.dart';
 import 'package:h4pay/Util/validator.dart';
 import 'package:h4pay/model/School.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -25,6 +24,8 @@ class RegisterPage extends StatefulWidget {
 class RegisterPageState extends State<RegisterPage> {
   final H4PayService service = getService();
   final _formKey = GlobalKey<FormState>();
+  final name = TextEditingController();
+  final studentId = TextEditingController();
   final pw = TextEditingController();
   final pwCheck = TextEditingController();
   final email = TextEditingController();
@@ -76,6 +77,16 @@ class RegisterPageState extends State<RegisterPage> {
                     onFieldClick: _openSchoolSelectDialog,
                     validator: (value) =>
                         value!.length < 1 ? "학교를 선택해주세요." : null,
+                  ),
+                  H4PayInput(
+                    title: "이름",
+                    controller: name,
+                    validator: nameValidator,
+                  ),
+                  H4PayInput(
+                    title: "학번",
+                    controller: studentId,
+                    maxLength: 6,
                   ),
                   H4PayInput(
                     title: "이메일",
@@ -215,7 +226,14 @@ class RegisterPageState extends State<RegisterPage> {
           isTelChecked = null;
           generatedPin = value;
         });
-      }).catchError((err) {});
+      }).catchError((err) {
+        showSnackbar(
+          context,
+          "해당 전화번호로 이미 가입된 것 같아요.",
+          Colors.red,
+          Duration(seconds: 3),
+        );
+      });
   }
 
   void _checkEmailValidity() {
@@ -286,6 +304,8 @@ class RegisterPageState extends State<RegisterPage> {
       'email': email.text,
       'tel': tel.text.replaceAll("-", ""),
       'role': 'S',
+      "name": name.text,
+      'studentId': studentId.text,
       'schoolId': selectedSchool!.id,
     };
     service.register(requestBody).then((response) async {
