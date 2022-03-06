@@ -25,7 +25,6 @@ class RegisterPageState extends State<RegisterPage> {
   final H4PayService service = getService();
   final _formKey = GlobalKey<FormState>();
   final name = TextEditingController();
-  final studentId = TextEditingController();
   final pw = TextEditingController();
   final pwCheck = TextEditingController();
   final email = TextEditingController();
@@ -33,6 +32,7 @@ class RegisterPageState extends State<RegisterPage> {
   final pin = TextEditingController();
   final school = TextEditingController();
   bool? isTelChecked;
+  bool? isEmailChecked;
   String? generatedPin;
   String? selectedUserType;
   List<School>? schools;
@@ -83,17 +83,25 @@ class RegisterPageState extends State<RegisterPage> {
                     controller: name,
                     validator: nameValidator,
                   ),
-                  H4PayInput(
-                    title: "학번",
-                    controller: studentId,
-                    maxLength: 6,
+                  Focus(
+                    child: H4PayInput(
+                      title: "이메일",
+                      controller: email,
+                      validator: emailValidator,
+                      onEditingComplete: _checkEmailValidity,
+                    ),
+                    onFocusChange: (hasFocus) {
+                      if (!hasFocus) {
+                        _checkEmailValidity();
+                      }
+                    },
                   ),
-                  H4PayInput(
-                    title: "이메일",
-                    controller: email,
-                    validator: emailValidator,
-                    onEditingComplete: _checkEmailValidity,
-                  ),
+                  isEmailChecked == false
+                      ? Text(
+                          "이메일이 이미 사용중입니다.",
+                          style: TextStyle(color: Colors.red),
+                        )
+                      : Container(),
                   H4PayInput(
                     title: "비밀번호",
                     controller: pw,
@@ -237,35 +245,40 @@ class RegisterPageState extends State<RegisterPage> {
   }
 
   void _checkEmailValidity() {
-    service.checkUidValid(
-      {'uid': email.text.split("@")[0]},
-    ).then((isDuplicated) {
-      if (isDuplicated) {
-        do {
-          FocusScope.of(context).nextFocus();
-        } while (FocusScope.of(context).focusedChild!.context!.widget
-            is! EditableText);
-      } else if (!isDuplicated) {
-        showCustomAlertDialog(
-          context,
-          H4PayDialog(
-            title: "아이디 중복",
-            content: Text("이미 존재하는 아이디입니다."),
-            actions: [
-              H4PayOkButton(
-                context: context,
-                onClick: () {
-                  Navigator.pop(context);
-                },
-              )
-            ],
-          ),
-          true,
-        );
-      }
-    }).catchError((e) {
-      showServerErrorSnackbar(context, e);
-    });
+    print("checking email validity");
+    if (emailValidator(email.text) == null)
+      service.checkUidValid(
+        {'email': email.text, "type": "live"},
+      ).then((isValid) {
+        print(isValid);
+        if (isValid) {
+          setState(() {
+            isEmailChecked = true;
+          });
+        } else if (!isValid) {
+          setState(() {
+            isEmailChecked = false;
+          });
+          showCustomAlertDialog(
+            context,
+            H4PayDialog(
+              title: "아이디 중복",
+              content: Text("이미 존재하는 아이디입니다."),
+              actions: [
+                H4PayOkButton(
+                  context: context,
+                  onClick: () {
+                    Navigator.pop(context);
+                  },
+                )
+              ],
+            ),
+            true,
+          );
+        }
+      }).catchError((e) {
+        showServerErrorSnackbar(context, e);
+      });
   }
 
   Future<void> _register() async {
@@ -305,7 +318,6 @@ class RegisterPageState extends State<RegisterPage> {
       'tel': tel.text.replaceAll("-", ""),
       'role': 'S',
       "name": name.text,
-      'studentId': studentId.text,
       'schoolId': selectedSchool!.id,
     };
     service.register(requestBody).then((response) async {
@@ -347,7 +359,6 @@ class RegisterPageState extends State<RegisterPage> {
           );
         }
       } else {
-        debugPrint(err.toString());
         showServerErrorSnackbar(context, err);
       }
     });

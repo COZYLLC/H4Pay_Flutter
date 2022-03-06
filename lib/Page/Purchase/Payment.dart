@@ -1,25 +1,29 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Error.dart';
 import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
 import 'package:h4pay/Util/Wakelock.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Purchase/Gift.dart';
-import 'package:h4pay/model/Purchase/Order.dart';
 import 'package:h4pay/model/Purchase/Purchase.dart';
+import 'package:h4pay/model/Purchase/TempPurchase.dart';
 import 'package:h4pay/model/User.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/main.dart';
+import 'package:kakao_flutter_sdk/all.dart' as kakao;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animated_check/animated_check.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PaymentSuccessPage extends StatefulWidget {
-  final Type type;
+  final TempPurchase tempPurchase;
   final Map params;
 
-  const PaymentSuccessPage({Key? key, required this.type, required this.params})
+  const PaymentSuccessPage(
+      {Key? key, required this.tempPurchase, required this.params})
       : super(key: key);
   @override
   PaymentSuccessPageState createState() => PaymentSuccessPageState();
@@ -36,7 +40,7 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
   @override
   void initState() {
     super.initState();
-    _processFuture = _processPayment();
+    _processFuture = _processPayment(widget.tempPurchase);
     _initAnimation();
   }
 
@@ -56,33 +60,40 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
                 height: 56.0,
                 canGoBack: false,
               ),
-              body: Align(
-                alignment: Alignment.center,
-                child: Container(
-                  margin: EdgeInsets.all(40),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      AnimatedCheck(progress: _animation!, size: 200),
-                      Container(
-                        height: MediaQuery.of(context).size.height * 0.15,
-                      ),
-                      ReceiptText(title: "주문 번호", content: purchase.orderId),
-                      Divider(color: Colors.black),
-                      ReceiptText(
-                        title: "주문 일시",
-                        content: getPrettyDateStr(purchase.date, true),
-                      ),
-                      ReceiptText(
-                        title: "만료 일시",
-                        content: getPrettyDateStr(purchase.expire, true),
-                      ),
-                      ReceiptText(title: "결제 방법", content: "토스"),
-                      Container(
-                        height: MediaQuery.of(context).size.height * 0.1,
-                      ),
-                      Row(
+              body: Container(
+                margin: EdgeInsets.all(40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    AnimatedCheck(progress: _animation!, size: 200),
+                    Column(
+                      children: [
+                        ReceiptText(title: "주문 번호", content: purchase.orderId),
+                        Divider(color: Colors.black),
+                        ReceiptText(
+                          title: "주문 일시",
+                          content: getPrettyDateStr(purchase.date, true),
+                        ),
+                        ReceiptText(
+                          title: "만료 일시",
+                          content: getPrettyDateStr(purchase.expire, true),
+                        ),
+                        ReceiptText(title: "결제 방법", content: "토스"),
+                        Divider(color: Colors.black),
+                        Container(
+                          child: Visibility(
+                            child: Text(
+                              "카카오톡 선물하기가 제대로 되지 않은 경우에는 마이페이지 -> 선물 발송 내역 -> 재발송 과정을 통해 1회 재발송 가능합니다.",
+                            ),
+                            visible: purchase is Gift,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(bottom: 20),
+                      child: Row(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -93,7 +104,8 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
                               onClick: () {
                                 Navigator.pop(context);
                               },
-                              backgroundColor: Theme.of(context).primaryColor,
+                              backgroundColor: Colors.grey[200],
+                              textColor: Color(0xff000000),
                             ),
                           ),
                           Container(width: 10),
@@ -115,9 +127,9 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
                             ),
                           ),
                         ],
-                      )
-                    ],
-                  ),
+                      ),
+                    )
+                  ],
                 ),
               ),
             );
@@ -146,42 +158,50 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
     );
   }
 
-  Future<Purchase> _processPayment() async {
+  Future<Purchase> _processPayment(TempPurchase tempPurchase) async {
     _prefs = await SharedPreferences.getInstance();
     final H4PayUser? user = await userFromStorageAndVerify();
     if (user != null) {
-      final Map<String, dynamic> tempPurchase =
-          json.decode(_prefs!.getString('tempPurchase')!);
       final Map paymentData = widget.params;
       if (true) {
-        final date = DateTime.now();
-        final expire = date.add(
-          Duration(days: 7),
-        );
-        tempPurchase['date'] = date.toIso8601String();
-        tempPurchase['expire'] = expire.toIso8601String();
-        tempPurchase['exchanged'] = false;
-        tempPurchase['paymentKey'] = paymentData['paymentKey'];
+        tempPurchase.paymentKey = paymentData['paymentKey'];
+        if (tempPurchase is TempOrder) {
+          // Order
+          tempPurchase.uid = user.uid;
+          final createResult = await service.createOrder(tempPurchase.toJson());
 
-        if (tempPurchase['type'] == 'Order') {
-          tempPurchase['uid'] = user.uid;
-          final order = Order.fromJson(tempPurchase);
-          final createResult = await service.createOrder(order.toJson());
           if (createResult.response.statusCode == 200) {
             _prefs!.setString('cart', json.encode({}));
-            return order;
+            return tempPurchase;
           } else {
             throw NetworkException(createResult.response.statusCode!);
           }
         } else {
-          tempPurchase['extended'] = false;
-          final gift = Gift.fromJson(tempPurchase);
+          // Gift
+          final TempGift gift = tempPurchase as TempGift;
           try {
-            final giftJson = gift.toJson();
-            giftJson['target'] = tempPurchase['target'];
-            giftJson['issuerName'] = user.name;
-            giftJson['reason'] = "TEST";
-            await service.createGift(giftJson);
+            await service.createKakaoGift(gift.toJson());
+            kakao.KakaoContext.clientId = dotenv.env["KAKAO_API_KEY"]!;
+            final int templateId = 71671;
+            final Map<String, String> templateArgs = {
+              "productName": tempPurchase.orderName,
+              "issuerName": user.name!,
+              "message": tempPurchase.reason,
+              "orderId": gift.orderId,
+            };
+            Uri uri = await kakao.LinkClient.instance.customWithTalk(
+              templateId,
+              templateArgs: templateArgs,
+            );
+            try {
+              await launch(uri.toString());
+            } catch (e) {
+              Uri uri = await kakao.LinkClient.instance.customWithWeb(
+                templateId,
+                templateArgs: templateArgs,
+              );
+              await launch(uri.toString());
+            }
             _prefs!.setString('cart', json.encode({}));
             return gift;
           } catch (e) {

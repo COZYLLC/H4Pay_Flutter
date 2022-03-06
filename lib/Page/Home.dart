@@ -272,14 +272,14 @@ class HomeState extends State<Home> {
 
   openGiftAlert(Product product) {
     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-    final TextEditingController studentId = new TextEditingController();
+    final TextEditingController name = new TextEditingController();
     final TextEditingController qty = new TextEditingController();
     showCustomAlertDialog(
       context,
       GiftOptionDialog(
         context: context,
         formKey: _formKey,
-        studentId: studentId,
+        name: name,
         qty: qty,
         prefs: prefs,
         product: product,

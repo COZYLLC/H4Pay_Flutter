@@ -17,9 +17,10 @@ Gift _$GiftFromJson(Map<String, dynamic> json) => Gift(
       exchanged: json['exchanged'],
       paymentKey: json['paymentKey'],
       extended: json['extended'] as bool,
-    );
+    )..uid = json['uid'] as String?;
 
 Map<String, dynamic> _$GiftToJson(Gift instance) => <String, dynamic>{
+      'uid': instance.uid,
       'orderId': instance.orderId,
       'date': instance.date,
       'item': instance.item,

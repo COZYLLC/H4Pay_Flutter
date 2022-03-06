@@ -5,6 +5,7 @@ import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/model/Purchase/Gift.dart';
+import 'package:h4pay/model/Purchase/TempPurchase.dart';
 
 int? lastTimeBackPressed;
 
@@ -125,7 +126,7 @@ navigateRoute(BuildContext context, Widget widget) {
   Navigator.push(context, MaterialPageRoute(builder: (context) => widget));
 }
 
-showDropdownAlertDialog(BuildContext context, String title, String userName,
+/* showDropdownAlertDialog(BuildContext context, String title, String userName,
     int amount, String orderId, String orderName, String customerName) async {
   await showDialog(
     context: context,
@@ -175,12 +176,7 @@ showDropdownAlertDialog(BuildContext context, String title, String userName,
                     showBottomSheet(
                       context: context,
                       builder: (context) => WebViewExample(
-                        type: Gift,
-                        amount: amount,
-                        orderId: orderId,
-                        orderName: orderName,
-                        customerName: customerName,
-                        cashReceiptType: cashReceiptType,
+                        tempPurchase: TempGift(issuerName: userName, reason: "사유 불명", uidto: ", uidfrom: uidfrom, orderId: orderId, item: item, amount: amount, orderName: orderName),
                       ),
                     );
                   },
@@ -193,7 +189,7 @@ showDropdownAlertDialog(BuildContext context, String title, String userName,
       );
     },
   );
-}
+} */
 
 void showSnackbar(
     BuildContext context, String content, Color color, Duration duration) {

@@ -6,7 +6,7 @@ import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Util/Generator.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/Product.dart';
-import 'package:h4pay/model/Purchase/Order.dart';
+import 'package:h4pay/model/Purchase/TempPurchase.dart';
 import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/Util/Dialog.dart';
@@ -288,29 +288,33 @@ class CartState extends State<Cart> {
       'type': 'Order',
       'amount': this.totalPrice,
       'item': cartMap,
-      'orderId': _orderId
+      'orderId': _orderId,
     };
     prefs.setString('tempPurchase', json.encode(tempPurchase));
     final H4PayUser? user = await userFromStorageAndVerify();
     if (user != null) {
+      final orderName = getOrderName(
+        tempPurchase['item'] as Map,
+        products!
+            .singleWhereOrNull((element) =>
+                element.id.toString() == cartMap.entries.elementAt(0).key)!
+            .productName,
+      );
       showBottomSheet(
         context: context,
         builder: (context) => Container(
           height: MediaQuery.of(context).size.height * 0.7,
           child: WebViewExample(
-              type: Order,
-              amount: this.totalPrice,
+            tempPurchase: TempOrder(
+              uid: user.uid!,
               orderId: _orderId,
-              orderName: getOrderName(
-                tempPurchase['item'] as Map,
-                products!
-                    .singleWhereOrNull((element) =>
-                        element.id.toString() ==
-                        cartMap.entries.elementAt(0).key)!
-                    .productName,
-              ),
+              item: cartMap,
+              amount: this.totalPrice,
+              orderName: orderName,
+              cashReceiptType: "미발행",
               customerName: user.name!,
-              cashReceiptType: cashReceiptType),
+            ),
+          ),
         ),
       ).closed.whenComplete(() => loadCart());
     } else {

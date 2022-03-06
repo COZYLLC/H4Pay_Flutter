@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/exception.dart';
 import 'package:h4pay/model/User.dart';
@@ -30,6 +31,7 @@ class H4PayInterceptor extends Interceptor {
         ResponseWrapper.fromJson(rawJsonResponse);
     response.statusMessage = responseWrapper.message ?? response.statusMessage;
     response.data = responseWrapper.result;
+    print(response.data);
     return super.onResponse(response, handler);
   }
 

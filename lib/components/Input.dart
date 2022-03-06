@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:h4pay/Util/mp.dart';
 import 'package:h4pay/components/Button.dart';
@@ -15,7 +17,7 @@ class H4PayInput extends StatefulWidget {
   final H4PayInputType type;
   final String? Function(String?)? validator;
   final int? minLines;
-  final Function()? onEditingComplete;
+  final FutureOr Function()? onEditingComplete;
   final List<MultiMaskedTextInputFormatter>? inputFormatters;
   final String? buttonText;
   final Function()? onButtonClick;

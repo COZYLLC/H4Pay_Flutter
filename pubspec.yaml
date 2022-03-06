@@ -40,6 +40,7 @@ dependencies:
   in_app_update: ^2.0.0
   retrofit: ^3.0.1
   device_info_plus: ^3.2.1
+  kakao_flutter_sdk: ^0.9.0
 
 dev_dependencies:
   flutter_test:

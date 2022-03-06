@@ -560,30 +560,40 @@ class PurchaseCard extends StatelessWidget {
               )
             ],
           ),
-          Container(
-            child: isValid //만료되지 않았고 교환되지 않은 것
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      isUsable // 만료되지 않았고 일반 주문이거나 수신자이면
-                          ? useButton
-                          : Container(),
-                      !isGift || (isNotExtended && isReceiver)
-                          ? Expanded(
-                              flex: 8,
-                              child: Container(
-                                margin: EdgeInsets.only(left: 10),
-                                child: !isGift // 일반 주문일 경우에
-                                    ? cancelButton
-                                    : isNotExtended & isReceiver
-                                        ? extendButton
-                                        : Container(),
-                              ),
+          //만료되지 않았고 교환되지 않은 것
+          Visibility(
+            visible: isValid,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Visibility(visible: isUsable, child: useButton),
+                Visibility(
+                  visible: !isGift || (isNotExtended && isReceiver),
+                  child: Expanded(
+                    flex: 8,
+                    child: Container(
+                      margin: EdgeInsets.only(left: 10),
+                      child: isGift
+                          ? Visibility(
+                              visible: isNotExtended && isReceiver,
+                              child: extendButton,
                             )
-                          : Container()
-                    ],
-                  )
-                : Container(),
+                          : Visibility(
+                              visible: !isGift,
+                              child: cancelButton,
+                            ),
+                    ),
+                  ),
+                ),
+                Visibility(
+                  visible: isGift && !isReceiver,
+                  child: H4PayButton(
+                    text: "선물톡 재발송",
+                    onClick: () {},
+                  ),
+                )
+              ],
+            ),
           )
         ],
       ),

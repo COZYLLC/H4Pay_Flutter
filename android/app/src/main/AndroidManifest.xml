@@ -6,6 +6,10 @@
   <queries>
     <package android:name="viva.republica.toss" />
   </queries>
+  <queries>
+    <package android:name="com.kakao.talk" />
+  </queries>
+...
   <application android:label="H4Pay" android:icon="@mipmap/launcher_icon" android:usesCleartextTraffic="true" android:allowBackup="false">
     <activity android:name=".MainActivity" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize" android:exported="true">
       <!-- Specifies an Android theme to apply to this Activity as soon as
@@ -34,5 +38,15 @@
     <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
     <meta-data android:name="flutterEmbedding" android:value="2" />
+
+    <activity 
+    android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+    android:exported="true">
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+    </intent-filter>
+</activity>
   </application>
 </manifest>

@@ -4,8 +4,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import 'School.dart';
-
 part 'User.g.dart';
 
 @JsonSerializable()

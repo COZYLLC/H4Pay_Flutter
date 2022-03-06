@@ -210,6 +210,7 @@ class MyHomePageState extends State<MyHomePage> {
       );
       return;
     } catch (e) {
+      debugPrint(e.toString());
       showSnackbar(
         context,
         "알 수 없는 오류가 발생했습니다. 고객센터로 문의해주세요.",

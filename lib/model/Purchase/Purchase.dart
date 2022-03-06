@@ -1,5 +1,7 @@
-class Purchase {
-  final String? uid;
+import 'package:json_annotation/json_annotation.dart';
+
+abstract class Purchase {
+  String? uid;
   final String? uidfrom;
   final String? uidto;
   final String orderId;
@@ -8,7 +10,7 @@ class Purchase {
   final String expire;
   final int amount;
   final bool exchanged;
-  final String paymentKey;
+  String paymentKey;
   final bool? extended;
 
   Purchase({

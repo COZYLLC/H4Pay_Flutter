@@ -141,14 +141,6 @@ class ErrorPage extends StatelessWidget {
                 backgroundColor: Colors.green,
               ),
             ),
-            Visibility(
-              visible: (error is H4PayException &&
-                  (error as H4PayException).onClick != null),
-              child: H4PayButton(
-                text: "확인",
-                onClick: (error as H4PayException).onClick,
-              ),
-            )
           ],
         ),
       ),

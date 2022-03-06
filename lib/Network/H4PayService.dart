@@ -59,7 +59,7 @@ abstract class H4PayService {
   @POST("users/register")
   Future<HttpResponse> register(@Body() Map<String, dynamic> body);
 
-  @GET("users/valid")
+  @POST("users/valid")
   Future<bool> checkUidValid(@Body() Map<String, dynamic> body);
 
   @POST("users/changepass")
@@ -86,6 +86,9 @@ abstract class H4PayService {
   @POST("gifts/create")
   Future<HttpResponse> createGift(@Body() Map<String, dynamic> body);
 
+  @POST("gifts/create/kakao")
+  Future<HttpResponse> createKakaoGift(@Body() Map<String, dynamic> body);
+
   @GET("gifts/filter")
   Future<List<Gift>> getGifts(@Query("uidTo") String uidTo);
 
@@ -97,11 +100,6 @@ abstract class H4PayService {
 
   @POST("gifts/{orderId}/extend")
   Future<HttpResponse> extendGift(@Path("orderId") String orderId);
-
-  @POST("gifts/uid/fromstid")
-  Future<UserValidResponse> nameFromStudentId(
-    @Body() Map<String, dynamic> body,
-  );
 
   @GET("vouchers/filter")
   Future<List<Voucher>> getVouchers(@Query("tel") String tel);

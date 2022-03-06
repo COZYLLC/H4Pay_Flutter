@@ -2,16 +2,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/AppLink.dart';
-import 'package:h4pay/Network/Maintenance.dart';
 import 'package:h4pay/Page/Account/Login.dart';
 import 'package:h4pay/Page/Account/Register.dart';
 import 'package:h4pay/Setting.dart';
-import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/dialog/IpChanger.dart';
-import 'package:h4pay/exception.dart';
-import 'package:h4pay/model/Maintenance.dart';
 import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Connection.dart';
@@ -51,6 +46,7 @@ class IntroPageState extends State<IntroPage> {
   @override
   void initState() {
     super.initState();
+
     if (!kIsWeb) registerListener(context);
     connectionCheck().then((connected) async {
       if (!connected) {
@@ -131,6 +127,7 @@ class IntroPageState extends State<IntroPage> {
       return;
     }
     if (Platform.isAndroid) {
+      // 안드로이드는 강제 업데이트
       final status = await InAppUpdate.checkForUpdate();
       if (status.updateAvailability == UpdateAvailability.updateAvailable) {
         InAppUpdate.performImmediateUpdate().catchError(
@@ -149,19 +146,30 @@ class IntroPageState extends State<IntroPage> {
       );
       final status = await newVersion.getVersionStatus();
       if (status!.canUpdate) {
-        showAlertDialog(context, "앱 업데이트 안내",
-            "H4Pay를 더 안정적으로 이용하기 위해서 앱 업데이트가 필요해요. 앱스토어로 이동해 업데이트할까요?", () {
-          launch(status.appStoreLink).catchError((err) {
-            showSnackbar(
-              context,
-              "업데이트를 확인했지만 앱스토어 실행에 실패했어요: ${err.toString()}",
-              Colors.red,
-              Duration(seconds: 3),
-            );
-          });
-        }, () {
-          Navigator.pop(context);
-        });
+        showCustomAlertDialog(
+          context,
+          H4PayDialog(
+            title: "앱 업데이트 안내",
+            content: Text(
+                "H4Pay를 더 안정적으로 이용하기 위해서 앱 업데이트가 필요합니다. 앱스토어로 이동해 업데이트를 진행합니다."),
+            actions: [
+              H4PayOkButton(
+                context: context,
+                onClick: () {
+                  launch(status.appStoreLink).catchError((err) {
+                    showSnackbar(
+                      context,
+                      "업데이트를 확인했지만 앱스토어 실행에 실패했습니다. 앱스토어에서 직접 업데이트해주세요. 상세 에러: ${err.toString()}",
+                      Colors.red,
+                      Duration(seconds: 3),
+                    );
+                  });
+                },
+              )
+            ],
+          ),
+          false,
+        );
       }
     }
   }
