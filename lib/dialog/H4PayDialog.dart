@@ -20,6 +20,7 @@ class H4PayDialog extends StatelessWidget {
       title: Text(title),
       content: SingleChildScrollView(child: content),
       actions: actions,
+      actionsPadding: EdgeInsets.symmetric(horizontal: 23),
     );
   }
 }

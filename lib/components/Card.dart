@@ -3,8 +3,10 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Cart.dart';
+import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:h4pay/model/Event.dart';
 import 'package:h4pay/Page/Voucher/VoucherView.dart';
 import 'package:h4pay/Page/Home.dart';
@@ -14,6 +16,7 @@ import 'package:h4pay/model/Product.dart';
 import 'package:h4pay/Page/Purchase/PurchaseList.dart';
 import 'package:h4pay/Util/Wakelock.dart';
 import 'package:h4pay/model/Purchase/Purchase.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:h4pay/model/Voucher.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/Util/Dialog.dart';
@@ -21,6 +24,8 @@ import 'package:blur/blur.dart';
 import 'package:h4pay/dialog/Event.dart';
 import 'package:h4pay/dialog/Notice.dart';
 import 'package:h4pay/Util/Beautifier.dart';
+import 'package:kakao_flutter_sdk/all.dart' as kakao;
+import 'package:url_launcher/url_launcher.dart';
 
 class CardWidget extends StatefulWidget {
   final margin;
@@ -531,6 +536,9 @@ class PurchaseCard extends StatelessWidget {
       width: MediaQuery.of(context).size.width * 0.4,
     );
 
+    final orderName = getOrderName(purchase.item, product.productName);
+    final TextEditingController giftMessageController = TextEditingController();
+
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -546,7 +554,7 @@ class PurchaseCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(getOrderName(purchase.item, product.productName)),
+                    Text(orderName),
                     Text(getPrettyAmountStr(purchase.amount)),
                     Text(getPrettyDateStr(purchase.expire, true) + " 까지"),
                     (purchase.exchanged)
@@ -589,7 +597,63 @@ class PurchaseCard extends StatelessWidget {
                   visible: isGift && !isReceiver,
                   child: H4PayButton(
                     text: "선물톡 재발송",
-                    onClick: () {},
+                    onClick: () async {
+                      final H4PayUser? user = await userFromStorage();
+                      if (user != null) {
+                        showCustomAlertDialog(
+                          context,
+                          H4PayDialog(
+                            title: "선물 메시지를 입력해주세요",
+                            content: TextField(
+                              controller: giftMessageController,
+                            ),
+                            actions: [
+                              OkCancelGroup(
+                                okClicked: () async {
+                                  if (giftMessageController.text.length > 25) {
+                                    showSnackbar(
+                                      context,
+                                      "선물 메시지는 25자를 넘을 수 없습니다.",
+                                      Colors.red,
+                                      Duration(seconds: 3),
+                                    );
+                                  } else {
+                                    kakao.KakaoContext.clientId =
+                                        dotenv.env["KAKAO_API_KEY"]!;
+                                    final int templateId = 71671;
+                                    final Map<String, String> templateArgs = {
+                                      "productName": orderName,
+                                      "issuerName": user.name!,
+                                      "message": giftMessageController.text,
+                                      "orderId": purchase.orderId,
+                                    };
+                                    Uri uri = await kakao.LinkClient.instance
+                                        .customWithTalk(
+                                      templateId,
+                                      templateArgs: templateArgs,
+                                    );
+                                    try {
+                                      await launch(uri.toString());
+                                    } catch (e) {
+                                      Uri uri = await kakao.LinkClient.instance
+                                          .customWithWeb(
+                                        templateId,
+                                        templateArgs: templateArgs,
+                                      );
+                                      await launch(uri.toString());
+                                    }
+                                  }
+                                },
+                                cancelClicked: () {
+                                  Navigator.pop(context);
+                                },
+                              )
+                            ],
+                          ),
+                          true,
+                        );
+                      }
+                    },
                   ),
                 )
               ],

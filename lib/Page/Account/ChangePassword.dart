@@ -32,13 +32,8 @@ class ChangePWDialog extends H4PayDialog {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(23.0),
-        ),
-      ),
-      title: Text(title),
+    return H4PayDialog(
+      title: title,
       content: SingleChildScrollView(
         child: Column(
           children: [
@@ -72,14 +67,14 @@ class ChangePWDialog extends H4PayDialog {
         ),
       ),
       actions: [
-        H4PayButton(
-          text: "비밀번호 변경",
-          onClick: () {
+        OkCancelGroup(
+          okClicked: () {
             _changePassword(context);
           },
-          backgroundColor: Theme.of(context).primaryColor,
-          width: double.infinity,
-        ),
+          cancelClicked: () {
+            Navigator.pop(context);
+          },
+        )
       ],
     );
   }

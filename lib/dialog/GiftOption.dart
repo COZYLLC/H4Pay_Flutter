@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Util/Generator.dart';
@@ -13,7 +10,6 @@ import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/components/WebView.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
-import 'package:h4pay/model/UserValidResponse.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GiftOptionDialog extends H4PayDialog {
@@ -111,10 +107,10 @@ class GiftOptionDialog extends H4PayDialog {
                   curve: Curves.easeIn,
                 );
             } else if (_pageController.page == 1) {
-              if (reason.text.length > 30) {
+              if (reason.text.length > 25) {
                 showSnackbar(
                   context,
-                  "죄송합니다, 한줄 메시지는 30자 이상 입력 불가합니다.",
+                  "죄송합니다, 한줄 메시지는 25자 이상 입력 불가합니다.",
                   Colors.red,
                   Duration(seconds: 3),
                 );
@@ -175,7 +171,10 @@ class GiftOptionDialog extends H4PayDialog {
         );
         showBottomSheet(
           context: context,
-          builder: (context) => WebViewExample(tempPurchase: tempPurchase),
+          builder: (context) => SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: WebViewExample(tempPurchase: tempPurchase),
+          ),
         );
       }, () {
         Navigator.pop(context);

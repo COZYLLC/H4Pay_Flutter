@@ -6,7 +6,6 @@ import 'package:h4pay/model/Event.dart';
 import 'package:h4pay/model/Notice.dart';
 import 'package:h4pay/Page/Purchase/PurchaseList.dart';
 import 'package:h4pay/components/Card.dart';
-import 'package:h4pay/model/User.dart';
 
 class NoticeListPage extends ListPage {
   NoticeListPage()

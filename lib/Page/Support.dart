@@ -83,7 +83,13 @@ class SupportPageState extends State<SupportPage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => type.key == 'notice'
-                                  ? NoticeListPage()
+                                  ? Scaffold(
+                                      appBar: H4PayAppbar(
+                                          title: "공지사항",
+                                          height: 56.0,
+                                          canGoBack: true),
+                                      body: NoticeListPage(),
+                                    )
                                   : SupportFormPage(
                                       type: type.key,
                                     ),
