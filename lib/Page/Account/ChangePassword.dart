@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/IntroPage.dart';
-import 'package:h4pay/Success.dart';
-import 'package:h4pay/User.dart';
-import 'package:h4pay/Util.dart';
+import 'package:h4pay/Network/H4PayService.dart';
+import 'package:h4pay/Page/IntroPage.dart';
+import 'package:h4pay/Page/Success.dart';
+import 'package:h4pay/Util/Encryption.dart';
+import 'package:h4pay/model/User.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/components/Input.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
-import 'package:h4pay/validator.dart';
+import 'package:h4pay/Util/validator.dart';
+import 'package:dio/dio.dart';
 
 class ChangePWDialog extends H4PayDialog {
+  final H4PayService service = getService();
   final GlobalKey<FormState> formKey;
   final TextEditingController prevPassword;
   final TextEditingController pw2Change;
@@ -28,13 +32,8 @@ class ChangePWDialog extends H4PayDialog {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(23.0),
-        ),
-      ),
-      title: Text(title),
+    return H4PayDialog(
+      title: title,
       content: SingleChildScrollView(
         child: Column(
           children: [
@@ -68,21 +67,26 @@ class ChangePWDialog extends H4PayDialog {
         ),
       ),
       actions: [
-        H4PayButton(
-          text: "비밀번호 변경",
-          onClick: () {
+        OkCancelGroup(
+          okClicked: () {
             _changePassword(context);
           },
-          backgroundColor: Theme.of(context).primaryColor,
-          width: double.infinity,
-        ),
+          cancelClicked: () {
+            Navigator.pop(context);
+          },
+        )
       ],
     );
   }
 
   Future _changePassword(BuildContext context) async {
     if (formKey.currentState!.validate()) {
-      if (await changePassword(user, prevPassword.text, pw2Change.text)) {
+      debugPrint(user.uid);
+      service.changePassword({
+        'uid': user.uid,
+        'password': encryptPassword(prevPassword.text),
+        'cpassword': encryptPassword(pw2Change.text)
+      }).then((response) {
         navigateRoute(
           context,
           SuccessPage(
@@ -105,15 +109,16 @@ class ChangePWDialog extends H4PayDialog {
             ],
           ),
         );
-      } else {
+      }).catchError((err) {
         Navigator.pop(context);
+        debugPrint((err as DioError).response!.data.toString());
         showSnackbar(
           context,
-          "비밀번호 변경에 실패했습니다.",
+          "($err): 비밀번호 변경에 실패했습니다.",
           Colors.red,
           Duration(seconds: 1),
         );
-      }
+      });
     }
   }
 }

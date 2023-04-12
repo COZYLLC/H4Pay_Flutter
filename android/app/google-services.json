@@ -14,7 +14,7 @@
       },
       "oauth_client": [
         {
-          "client_id": "420160555392-6lsf3etfpv89rggepk9vr4ta9lb1bvja.apps.googleusercontent.com",
+          "client_id": "420160555392-pffnprdk524i4u3l5943si7g6k84j2sd.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.cozyllc.h4pay",
@@ -37,6 +37,14 @@
             {
               "client_id": "420160555392-50d9e464453lhrba7hqnaf6q46kn74np.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "420160555392-h3ka9p6vo7qu93pslabjqpagb88ttjv6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.cozyllc.h4pay",
+                "app_store_id": "1577073509"
+              }
             }
           ]
         }

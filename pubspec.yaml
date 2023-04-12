@@ -1,7 +1,7 @@
 name: h4pay
 description: A new Flutter project.
 publish_to: "none"
-version: 2.0.6+16
+version: 2.1.1+26
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -26,7 +26,7 @@ dependencies:
   crypto: ^3.0.1
   localstorage:
   new_version: ^0.2.0
-  flutter_secure_storage: ^4.2.1
+  flutter_secure_storage: ^5.0.2
   flutter_svg: ^0.22.0
   blur: ^3.0.0
   connectivity: ^3.0.6
@@ -38,10 +38,19 @@ dependencies:
   uni_links: ^0.5.1
   flutter_launcher_icons:
   in_app_update: ^2.0.0
+  retrofit: ^3.0.1
+  device_info_plus: ^3.2.1
+  kakao_flutter_sdk: ^0.9.0
+  firebase_core: ^2.9.0
+  firebase_analytics: ^10.2.0
+  firebase_remote_config: ^4.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  retrofit_generator: '>=3.0.0 <4.0.0'
+  build_runner: ^2.1.7 
+  json_serializable: ^6.1.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -58,6 +67,7 @@ flutter:
     - assets/svg/support.svg
     - assets/image/H4pay.png
     - assets/image/pattern.png
+    - assets/image/error.png
 
   fonts:
     - family: Spoqa_Han_Sans

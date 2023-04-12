@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:h4pay/Purchase/Gift.dart';
-import 'package:h4pay/Purchase/Order.dart';
-import 'package:h4pay/Product.dart';
-import 'package:h4pay/Purchase/Purchase.dart';
+import 'package:h4pay/Network/H4PayService.dart';
+import 'package:h4pay/Page/Error.dart';
+import 'package:h4pay/Page/NoticeList.dart';
+import 'package:h4pay/model/Product.dart';
 import 'package:h4pay/components/Card.dart';
-import 'package:h4pay/User.dart';
+import 'package:h4pay/model/Purchase/Gift.dart';
+import 'package:h4pay/model/Purchase/Order.dart';
+import 'package:h4pay/model/Purchase/Purchase.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:collection/collection.dart';
 import 'package:h4pay/main.dart';
 
@@ -20,16 +23,18 @@ class PurchaseList extends StatefulWidget {
 class PurchaseListState extends State<PurchaseList> {
   int componentKey = 0;
   final String title;
+  final H4PayService service = getService();
   PurchaseListState({required this.title});
 
   Future<Map> _loadThings() async {
-    final H4PayUser? user = await userFromStorage();
+    final H4PayUser? user = await userFromStorageAndVerify();
+    final String uid = user!.uid!;
+    final List<Product>? products = await service.getProducts();
     final List<Purchase>? purchases = widget.type == Order
-        ? await fetchOrder(user!.uid)
+        ? await service.getOrders(uid)
         : widget.type == Gift
-            ? await fetchGift(user!.uid)
-            : await fetchSentGift(user!.uid);
-    final List<Product>? products = await fetchProduct('orderList');
+            ? await service.getGifts(uid)
+            : await service.getSentGifts(uid);
     return {
       'purchases': purchases,
       'products': products,
@@ -43,7 +48,7 @@ class PurchaseListState extends State<PurchaseList> {
       withAppBar: true,
       appBarTitle: title,
       type: widget.type,
-      dataFuture: _loadThings(),
+      dataFuture: _loadThings,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
           final Map data = snapshot.data as Map;
@@ -85,8 +90,14 @@ class PurchaseListState extends State<PurchaseList> {
               },
             );
           }
+        } else if (snapshot.hasError) {
+          return Center(
+            child: ErrorPage(snapshot.error as Exception),
+          );
         } else {
-          return CircularProgressIndicator();
+          return CenterInScroll(
+            child: CircularProgressIndicator(),
+          );
         }
       },
     );
@@ -97,8 +108,8 @@ class ListPage extends StatefulWidget {
   final bool withAppBar;
   final String? appBarTitle;
   final Type type;
-  final Future dataFuture;
-  final builder;
+  final Future Function() dataFuture;
+  final Widget Function(BuildContext, AsyncSnapshot) builder;
 
   const ListPage(
       {Key? key,
@@ -114,6 +125,14 @@ class ListPage extends StatefulWidget {
 }
 
 class ListPageState extends State<ListPage> {
+  Future? _future;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _future = widget.dataFuture();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,7 +147,7 @@ class ListPageState extends State<ListPage> {
         return Container(
           child: SingleChildScrollView(
             child: FutureBuilder(
-              future: widget.dataFuture,
+              future: _future,
               builder: widget.builder,
             ),
           ),

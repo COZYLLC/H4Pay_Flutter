@@ -1,28 +1,26 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:h4pay/Payment.dart';
+import 'package:h4pay/Page/Error.dart';
+import 'package:h4pay/Page/Purchase/Payment.dart';
+import 'package:h4pay/Setting.dart';
+import 'package:h4pay/Util/Connection.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/main.dart';
+import 'package:h4pay/model/AppInfo.dart';
+import 'package:h4pay/model/Purchase/TempPurchase.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class WebViewExample extends StatefulWidget {
-  final int amount;
-  final String orderId;
-  final String orderName;
-  final String customerName;
-  final Type type;
+const IOS_STORE_URL_PREFIX = "https://apps.apple.com/app/";
+const ANDROID_STORE_URL_PREFIX = "market://details?id=";
 
-  final String cashReceiptType;
-  WebViewExample({
-    required this.amount,
-    required this.orderId,
-    required this.orderName,
-    required this.customerName,
-    required this.type,
-    required this.cashReceiptType,
-  });
+class WebViewExample extends StatefulWidget {
+  final TempPurchase tempPurchase;
+  WebViewExample({required this.tempPurchase});
 
   @override
   WebViewExampleState createState() => WebViewExampleState();
@@ -46,25 +44,34 @@ class WebViewExampleState extends State<WebViewExample> {
     Navigator.pop(context);
   }
 
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers = {
+    Factory(() => EagerGestureRecognizer())
+  };
+
   @override
   Widget build(BuildContext context) {
     final url = dotenv.env['WEB_URL']!;
     final Map<String, String> queryParams = {
-      "cashReceipt": widget.cashReceiptType,
-      "amount": widget.amount.toString(),
-      "orderId": widget.orderId,
-      "orderName": widget.orderName,
-      "customerName": widget.customerName,
-      "development": dotenv.env['TEST_MODE']!
+      "cashReceipt": widget.tempPurchase.cashReceiptType,
+      "amount": widget.tempPurchase.amount.toString(),
+      "orderId": widget.tempPurchase.orderId,
+      "orderName": widget.tempPurchase.orderName,
+      "customerName": widget.tempPurchase.customerName,
+      "development": isTestMode.toString()
     };
-    final String uri = Uri.http(url, "/payment", queryParams).toString();
+    final splittedUrl = url.split("://");
+    final String uri = Uri(
+      scheme: splittedUrl[0],
+      path: splittedUrl[1] + "/payment",
+      query: encodeQueryParameters(queryParams),
+    ).toString();
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        backgroundColor: Colors.grey[100],
+        backgroundColor: Colors.grey[200],
         toolbarHeight: 20,
         centerTitle: true,
-        shadowColor: Colors.transparent,
+        shadowColor: Colors.grey[100],
         automaticallyImplyLeading: false,
         shape: ContinuousRectangleBorder(
           borderRadius: const BorderRadius.only(
@@ -94,33 +101,39 @@ class WebViewExampleState extends State<WebViewExample> {
         onWebViewCreated: (WebViewController webViewController) {
           _webViewController = webViewController;
         },
+        gestureRecognizers: gestureRecognizers,
         navigationDelegate: (request) async {
           final appInfo = AppInfo(url: request.url);
           if (appInfo.isAppLink()) {
             try {
               await appInfo.getAppInfo();
+              debugPrint(appInfo.appUrl);
               if (await canLaunch(appInfo.appUrl!)) {
                 launch(appInfo.appUrl!);
                 return NavigationDecision.prevent;
               } else {
+                String? url;
+                if (Platform.isIOS) {
+                  final String? iosAppId = appInfo.getIosAppId();
+                  if (iosAppId != null) {
+                    url = IOS_STORE_URL_PREFIX + iosAppId;
+                  } else {
+                    return NavigationDecision.prevent;
+                  }
+                } else if (Platform.isAndroid) {
+                  url = ANDROID_STORE_URL_PREFIX + appInfo.package!;
+                }
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
                         title: const Text("앱 설치"),
-                        content: const Text("토스 앱이 설치되어 있지 않습니다. 스토어로 이동합니다."),
+                        content:
+                            const Text("결제를 위한 앱이 설치되어 있지 않습니다. 스토어로 이동합니다."),
                         actions: [
                           TextButton(
                             onPressed: () {
-                              if (Platform.isIOS) {
-                                launch(
-                                  "https://apps.apple.com/app/id839333328",
-                                );
-                              } else if (Platform.isAndroid) {
-                                launch(
-                                  "market://details?id=${appInfo.package}",
-                                );
-                              }
+                              launch(url!);
                               Navigator.pop(context);
                             },
                             child: Text("확인"),
@@ -133,19 +146,26 @@ class WebViewExampleState extends State<WebViewExample> {
             } catch (e) {
               return NavigationDecision.prevent;
             }
-          } else if (request.url.startsWith("http://$url/paySuccess")) {
+          } else if (request.url.startsWith("$url/paySuccess")) {
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => PaymentSuccessPage(
-                  type: widget.type,
+                  tempPurchase: widget.tempPurchase,
                   params: _parseParams(request.url),
                 ),
               ),
             ).then(updateBadges);
             return NavigationDecision.prevent;
-          } else if (request.url.startsWith("http://$url/payFail")) {
+          } else if (request.url.startsWith("$url/payFail")) {
+            final errMsg = Uri.decodeFull(
+              Uri.dataFromString(request.url).queryParameters['message']!,
+            );
             Navigator.pop(context);
+            navigateRoute(
+              context,
+              ErrorPage(Exception(errMsg)),
+            );
             return NavigationDecision.prevent;
           } else {
             return NavigationDecision.navigate;
@@ -181,14 +201,24 @@ class AppInfo {
         appScheme != 'data';
   }
 
+  String? getIosAppId() {
+    try {
+      final PreparedAppInfo appInfo = appLinks.singleWhere(
+        (element) => element.scheme == appScheme,
+      );
+      return appInfo.appleAppId;
+    } catch (e) {
+      return null;
+    }
+  }
+
   getAppInfo() async {
     List<String> splittedUrl =
         this.url.replaceFirst(RegExp(r'://'), ' ').split(' ');
     this.appScheme = splittedUrl[0];
 
     if (Platform.isIOS) {
-      this.appUrl =
-          this.appScheme == 'itmss' ? 'https://${splittedUrl[1]}' : url;
+      appUrl = appScheme == 'itmss' ? 'https://${splittedUrl[1]}' : url;
     } else if (Platform.isAndroid) {
       if (this.isAppLink()) {
         if (this.appScheme!.contains('intent')) {
@@ -216,40 +246,57 @@ class AppInfo {
     }
   }
 
-  final appLinks = [
-    'tauthlink://',
-    'ktauthexternalcall://',
-    'upluscorporation://',
-    'ispmobile://',
-    'shinsegaeeasypayment://',
-    'payco://',
-    'lpayapp://',
-    'smhyundaiansimclick://',
-    'hdcardappcardansimclick://',
-    'hanawalletmembers://',
-    'cloudpay://',
-    'citimobileapp://',
-    'citicardappkr://',
-    'citispay://',
-    'newsmartpib://',
-    'com.wooricard.wcard://',
-    'smshinhanansimclick://',
-    'shinhan-sr-ansimclick://',
-    'scardcertiapp://',
-    'samsungpay://',
-    'vguardstart://',
-    'ansimclickipcollect://',
-    'tswansimclick://',
-    'ansimclickscard://',
-    'mpocket.online.ansimclick://',
-    'lotteappcard://',
-    'lottesmartpay://',
-    'nonghyupcardansimclick://',
-    'nhallonepayansimclick://',
-    'nhappcardansimclick://',
-    'liivbank://',
-    'kb-acp://',
-    'supertoss://'
+  final List<PreparedAppInfo> appLinks = [
+    PreparedAppInfo(
+        appName: "토스", appleAppId: "id839333328", scheme: "supertoss"),
+    PreparedAppInfo(
+        appName: "현대카드 앱카드",
+        appleAppId: "id702653088",
+        scheme: "hdcardappcardansimclick"),
+    PreparedAppInfo(
+        appName: "현대카드 공인인증서",
+        appleAppId: "id702653088",
+        scheme: "smhyundaiansimclick"),
+    PreparedAppInfo(
+        appName: "우리WON카드",
+        appleAppId: "id1499598869",
+        scheme: "com.wooricard.wcard"),
+    PreparedAppInfo(
+        appName: "우리WON뱅킹", appleAppId: "id1470181651", scheme: "newsmartpib"),
+    PreparedAppInfo(
+        appName: "신한카드 앱카드",
+        appleAppId: "id572462317",
+        scheme: "shinhan-sr-ansimclick"),
+    PreparedAppInfo(
+        appName: "신한카드 공인인증서",
+        appleAppId: "id572462317",
+        scheme: "smshinhanansimclick"),
+    PreparedAppInfo(
+        appName: "KB Pay", appleAppId: "id695436326", scheme: "kb-acp"),
+    PreparedAppInfo(
+        appName: "롯데카드 앱카드", appleAppId: "id688047200", scheme: "lotteappcard"),
+    PreparedAppInfo(
+        appName: "하나카드 앱카드", appleAppId: "id847268987", scheme: "cloudpay"),
+    PreparedAppInfo(
+        appName: "농협카드 앱카드",
+        appleAppId: "id1177889176",
+        scheme: "nhappvardansimclick"),
+    PreparedAppInfo(
+        appName: "농협카드 공인인증서",
+        appleAppId: "id1177889176",
+        scheme: "nonghyupcardansimclick"),
+    PreparedAppInfo(
+        appName: "씨티카드 앱카드", appleAppId: "id1179759666", scheme: "citispay"),
+    PreparedAppInfo(
+        appName: "씨티카드 공인인증서",
+        appleAppId: "id1179759666",
+        scheme: "citicardappkr"),
+    PreparedAppInfo(
+        appName: "씨티카드 앱카드",
+        appleAppId: "id1179759666",
+        scheme: "citimobileapp"),
+    PreparedAppInfo(
+        appName: "ISP모바일", appleAppId: "id369125087", scheme: "ispmobile")
   ];
 }
 

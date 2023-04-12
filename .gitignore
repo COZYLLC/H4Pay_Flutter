@@ -48,3 +48,7 @@ app.*.map.json
 
 # DotENV file
 .env*
+
+# Firebase File
+ios/runner/GoogleService-info.plist
+/android/app/google-services.json

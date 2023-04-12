@@ -1,26 +1,28 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:h4pay/Cart.dart';
-import 'package:h4pay/IntroPage.dart';
-import 'package:h4pay/NoticeList.dart';
-import 'package:h4pay/Purchase/Gift.dart';
-import 'package:h4pay/Home.dart';
-import 'package:h4pay/MyPage.dart';
-import 'package:h4pay/Purchase/Order.dart';
+import 'package:h4pay/Network/H4PayService.dart';
+import 'package:dio/dio.dart';
+import 'package:h4pay/Page/Cart.dart';
+import 'package:h4pay/Page/IntroPage.dart';
+import 'package:h4pay/Page/NoticeList.dart';
+import 'package:h4pay/Page/Home.dart';
+import 'package:h4pay/Page/Account/MyPage.dart';
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 import 'package:h4pay/Setting.dart';
-import 'package:h4pay/Support.dart';
-import 'package:h4pay/User.dart';
-import 'package:h4pay/Util.dart';
+import 'package:h4pay/Page/Support.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Purchase/Gift.dart';
+import 'package:h4pay/model/Purchase/Order.dart';
+import 'package:h4pay/model/School.dart';
+import 'package:h4pay/model/User.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Connection.dart';
-import 'package:h4pay/Voucher.dart';
-import 'package:h4pay/creatematerialcolor.dart';
+import 'package:h4pay/model/Voucher.dart';
+import 'package:h4pay/Util/creatematerialcolor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 
 Future main() async {
   if (kReleaseMode) {
@@ -37,13 +39,13 @@ loadApiUrl(SharedPreferences prefs) async {
   if (prefs.getString("API_URL") == null || prefs.getString("API_URL") == "") {
     // prefs에 저장된 URL이 없으면(최초 실행) env URL을 prefs에 저장 후 연결테스트
     prefs.setString('API_URL', dotenv.env['API_URL']!);
-    API_URL = dotenv.env['API_URL'];
+    apiUrl = dotenv.env['API_URL'];
   } else {
     // prefs에 저장된 것으로 연결시도 후 작동하지 않으면
-    API_URL = prefs.getString("API_URL");
+    apiUrl = prefs.getString("API_URL");
     if (!await connectionCheck()) {
       // env에 저장된 것으로 시도
-      API_URL = dotenv.env['API_URL'];
+      apiUrl = dotenv.env['API_URL'];
     }
   }
 }
@@ -64,6 +66,9 @@ class MyApp extends StatelessWidget {
           child: MaterialApp(
             theme: ThemeData(
               fontFamily: 'Spoqa_Han_Sans',
+              appBarTheme: AppBarTheme(
+                systemOverlayStyle: SystemUiOverlayStyle.dark,
+              ),
               primarySwatch: createMaterialColor(Color(0xff5B82D1)),
               primaryColor: Color(0xff5B82D1),
             ),
@@ -143,72 +148,98 @@ class MyHomePage extends StatefulWidget {
 
 class MyHomePageState extends State<MyHomePage> {
   int _currentIdx = 2;
-
+  final H4PayService service = getService();
   int giftBadgeCount = 0;
   int accountBadgeCount = 0;
   int voucherBadgeCount = 0;
   int cartBadgeCount = 0;
   Map<String, int> badges = {'order': 0, 'gift': 0, 'voucher': 0};
   String _title = "H4Pay";
+  List<String> titles = ["지원", "이벤트", "H4Pay", "장바구니", "마이페이지"];
+
+  setSchool(String schoolId) async {
+    final List<School> schools = await service.getSchools(id: schoolId);
+    setState(() {
+      titles[2] = schools[0].name;
+      _title = titles[_currentIdx];
+    });
+  }
+
   Future? _fetchStoreStatus;
 
   final SharedPreferences prefs;
   MyHomePageState(this.prefs);
 
-  Future<String> fetchStoreState() async {
-    final response = await http.get(Uri.parse('$API_URL/store'));
-    if (response.statusCode == 200) {
-      bool state = jsonDecode(response.body)['isOpened'];
-      if (state) {
-        return 'OPEN';
-      } else {
-        return 'CLOSED';
-      }
-    } else {
-      throw Exception('Failed to fetch store state.');
-    }
-  }
-
   Future updateBadges() async {
     // calculate cart items, orders, gifts, vouchers and set badge states.
     final H4PayUser? user = await userFromStorage();
+    debugPrint(user!.token);
     if (user == null) {
       showSnackbar(
         context,
-        "사용자 정보를 불러올 수 없습니다. 앱을 종료합니다.",
+        "사용자 정보를 불러올 수 없습니다.",
         Colors.red,
         Duration(seconds: 1),
       );
-      await Future.delayed(Duration(seconds: 3));
-      exit(0);
+      return;
     }
-    final orders = await fetchOrder(user.uid);
-    final gifts = await fetchGift(user.uid);
-    final vouchers = await fetchVouchers(user.uid!);
+    setSchool(user.schoolId!);
+
+    List<Order> orders;
+    List<Gift> gifts;
+    List<Voucher> vouchers;
+
+    try {
+      orders = await service.getOrders(user.uid!);
+      gifts = await service.getGifts(user.uid!);
+      vouchers = await service.getVouchers(user.tel!);
+    } on NetworkException catch (e) {
+      showSnackbar(
+        context,
+        "(${e.statusCode}) 서버 오류가 발생했습니다. 고객센터로 문의해주세요.",
+        Colors.red,
+        Duration(seconds: 3),
+      );
+      return;
+    } on DioError catch (e) {
+      showSnackbar(
+        context,
+        "(${e.message}) 서버 오류가 발생했습니다. 고객센터로 문의해주세요.",
+        Colors.red,
+        Duration(seconds: 3),
+      );
+      return;
+    } catch (e) {
+      debugPrint(e.toString());
+      showSnackbar(
+        context,
+        "알 수 없는 오류가 발생했습니다. 고객센터로 문의해주세요.",
+        Colors.red,
+        Duration(seconds: 3),
+      );
+      return;
+    }
 
     int orderCount = 0;
     int giftCount = 0;
     int voucherCount = 0;
-    if (orders != null) {
-      orders.forEach(
-        (order) => {
-          if (!order.exchanged) orderCount++,
-        },
-      );
-    }
-    if (gifts != null) {
-      gifts.forEach(
-        (gift) => {if (!gift.exchanged && gift.uidto == user.uid) giftCount++},
-      );
-    }
-    if (vouchers != null) {
-      vouchers.forEach((voucher) => {
-            if (!voucher.exchanged &&
-                DateTime.parse(voucher.expire).millisecondsSinceEpoch >
-                    DateTime.now().millisecondsSinceEpoch)
-              voucherCount++
-          });
-    }
+
+    orders.forEach(
+      (order) => {
+        if (!order.exchanged) orderCount++,
+      },
+    );
+    gifts.forEach(
+      (gift) => {if (!gift.exchanged && gift.uidto == user.uid) giftCount++},
+    );
+    vouchers.forEach(
+      (voucher) {
+        if (!voucher.exchanged &&
+            DateTime.parse(voucher.expire).millisecondsSinceEpoch >
+                DateTime.now().millisecondsSinceEpoch) voucherCount++;
+      },
+    );
+
     setState(() {
       badges['order'] = orderCount;
       badges['gift'] = giftCount;
@@ -228,7 +259,7 @@ class MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     updateBadges();
-    _fetchStoreStatus = fetchStoreState();
+    _fetchStoreStatus = service.getStoreStatus();
   }
 
   @override
@@ -240,7 +271,6 @@ class MyHomePageState extends State<MyHomePage> {
       Cart(prefs),
       MyPage(prefs: prefs, badges: badges)
     ];
-    List<String> titles = ["지원", "이벤트", "H4Pay", "장바구니", "마이페이지"];
 
     return WillPopScope(
       onWillPop: () async => onBackPressed(context, true),
@@ -256,8 +286,9 @@ class MyHomePageState extends State<MyHomePage> {
                   future: _fetchStoreStatus,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
+                      final bool isOpened = snapshot.data as bool;
                       return Text(
-                        snapshot.data.toString(),
+                        isOpened ? "OPEN" : "CLOSE",
                         style: TextStyle(color: Colors.black, fontSize: 20),
                       );
                     } else {

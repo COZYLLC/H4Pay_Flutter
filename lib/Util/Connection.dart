@@ -2,28 +2,16 @@ import 'dart:io';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:h4pay/Setting.dart';
-import 'package:h4pay/Util.dart';
+import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/dialog/H4PayDialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<bool> connectionCheck() async {
   final connStatus = await Connectivity().checkConnectivity();
-  if (connStatus == ConnectivityResult.mobile ||
-      connStatus == ConnectivityResult.wifi) {
-    try {
-      final host = parseHost(API_URL!);
-      print(host);
-      final socket = await Socket.connect(
-        host['host'],
-        host['port'],
-        timeout: Duration(seconds: 3),
-      );
-      socket.destroy();
-      return true;
-    } catch (e) {
-      return false;
-    }
+  if (connStatus == ConnectivityResult.wifi ||
+      connStatus == ConnectivityResult.mobile) {
+    return true;
   }
   return false;
 }
@@ -44,6 +32,13 @@ Map parseHost(String url) {
     result['port'] = splitedByColon[0] == "https" ? 443 : 80;
   }
   return result;
+}
+
+String? encodeQueryParameters(Map<String, String> params) {
+  return params.entries
+      .map((e) =>
+          '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+      .join('&');
 }
 
 showIpChangeDialog(BuildContext context, GlobalKey<FormState> formKey,
@@ -79,8 +74,8 @@ showIpChangeDialog(BuildContext context, GlobalKey<FormState> formKey,
                   'API_URL',
                   ipController.text,
                 );
-                API_URL = ipController.text;
-                print("API URL newly setted: $API_URL");
+                apiUrl = ipController.text;
+                print("API URL newly setted: $apiUrl");
                 final connStatus = await connectionCheck();
                 if (connStatus) {
                   Navigator.pop(context);

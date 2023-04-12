@@ -1,10 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:barcode_widget/barcode_widget.dart';
-import 'package:h4pay/Payment.dart';
-import 'package:h4pay/Product.dart';
-import 'package:h4pay/Purchase/Purchase.dart';
-import 'package:h4pay/User.dart';
+import 'package:h4pay/Network/H4PayService.dart';
+import 'package:h4pay/Page/Error.dart';
+import 'package:h4pay/Page/Purchase/Payment.dart';
+import 'package:h4pay/exception.dart';
+import 'package:h4pay/model/Product.dart';
+import 'package:h4pay/model/Purchase/Purchase.dart';
+import 'package:h4pay/model/User.dart';
 import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/components/Card.dart';
 import 'package:h4pay/main.dart';
@@ -24,6 +27,7 @@ class PurchaseDetailPage extends StatefulWidget {
 class PurchaseDetailPageState extends State<PurchaseDetailPage> {
   Future<Map>? _fetchProduct;
   double? brightness;
+  final H4PayService service = getService();
 
   @override
   void initState() {
@@ -39,7 +43,7 @@ class PurchaseDetailPageState extends State<PurchaseDetailPage> {
 
   Future<Map> _loadThings() async {
     Map result = {};
-    result['product'] = await fetchProduct('PurchaseDetail');
+    result['product'] = await service.getProducts();
     result['user'] = await userFromStorage();
     return result;
   }
@@ -157,8 +161,12 @@ class PurchaseDetailPageState extends State<PurchaseDetailPage> {
                 ],
               ),
             );
+          } else if (snapshot.hasError) {
+            return ErrorPage(snapshot.error as Exception);
           } else {
-            return CircularProgressIndicator();
+            return Center(
+              child: CircularProgressIndicator(),
+            );
           }
         },
       ),
