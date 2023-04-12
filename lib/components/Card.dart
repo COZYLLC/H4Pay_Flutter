@@ -24,7 +24,7 @@ import 'package:blur/blur.dart';
 import 'package:h4pay/dialog/Event.dart';
 import 'package:h4pay/dialog/Notice.dart';
 import 'package:h4pay/Util/Beautifier.dart';
-import 'package:kakao_flutter_sdk/all.dart' as kakao;
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk_share.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CardWidget extends StatefulWidget {
@@ -618,8 +618,6 @@ class PurchaseCard extends StatelessWidget {
                                       Duration(seconds: 3),
                                     );
                                   } else {
-                                    kakao.KakaoContext.clientId =
-                                        dotenv.env["KAKAO_API_KEY"]!;
                                     final int templateId = 71671;
                                     final Map<String, String> templateArgs = {
                                       "productName": orderName,
@@ -627,21 +625,13 @@ class PurchaseCard extends StatelessWidget {
                                       "message": giftMessageController.text,
                                       "orderId": purchase.orderId,
                                     };
-                                    Uri uri = await kakao.LinkClient.instance
-                                        .customWithTalk(
-                                      templateId,
+                                    Uri uri =
+                                        await ShareClient.instance.shareCustom(
+                                      templateId: templateId,
                                       templateArgs: templateArgs,
                                     );
-                                    try {
-                                      await launch(uri.toString());
-                                    } catch (e) {
-                                      Uri uri = await kakao.LinkClient.instance
-                                          .customWithWeb(
-                                        templateId,
-                                        templateArgs: templateArgs,
-                                      );
-                                      await launch(uri.toString());
-                                    }
+                                    await ShareClient.instance
+                                        .launchKakaoTalk(uri);
                                   }
                                 },
                                 cancelClicked: () {

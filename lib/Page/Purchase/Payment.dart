@@ -13,7 +13,7 @@ import 'package:h4pay/model/User.dart';
 import 'package:h4pay/components/Button.dart';
 import 'package:h4pay/Util/Beautifier.dart';
 import 'package:h4pay/main.dart';
-import 'package:kakao_flutter_sdk/all.dart' as kakao;
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animated_check/animated_check.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -180,8 +180,10 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
           // Gift
           final TempGift gift = tempPurchase as TempGift;
           try {
-            await service.createKakaoGift(gift.toJson());
-            kakao.KakaoContext.clientId = dotenv.env["KAKAO_API_KEY"]!;
+            bool isKakaoTalkSharingAvailable =
+                await ShareClient.instance.isKakaoTalkSharingAvailable();
+            if (!isKakaoTalkSharingAvailable)
+              throw Exception("카카오톡 공유하기 기능이 사용불가합니다.");
             final int templateId = 71671;
             final Map<String, String> templateArgs = {
               "productName": tempPurchase.orderName,
@@ -189,19 +191,12 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
               "message": tempPurchase.reason,
               "orderId": gift.orderId,
             };
-            Uri uri = await kakao.LinkClient.instance.customWithTalk(
-              templateId,
+            Uri uri = await ShareClient.instance.shareCustom(
+              templateId: templateId,
               templateArgs: templateArgs,
             );
-            try {
-              await launch(uri.toString());
-            } catch (e) {
-              Uri uri = await kakao.LinkClient.instance.customWithWeb(
-                templateId,
-                templateArgs: templateArgs,
-              );
-              await launch(uri.toString());
-            }
+            await ShareClient.instance.launchKakaoTalk(uri);
+            await service.createKakaoGift(gift.toJson());
             _prefs!.setString('cart', json.encode({}));
             return gift;
           } catch (e) {

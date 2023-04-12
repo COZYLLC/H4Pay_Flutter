@@ -22,6 +22,7 @@ import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Util/Connection.dart';
 import 'package:h4pay/model/Voucher.dart';
 import 'package:h4pay/Util/creatematerialcolor.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk_common.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future main() async {
@@ -31,6 +32,9 @@ Future main() async {
     await dotenv.load(fileName: ".env.development");
   }
   SharedPreferences prefs = await SharedPreferences.getInstance();
+  KakaoSdk.init(
+    nativeAppKey: dotenv.env["KAKAO_API_KEY"],
+  );
   await loadApiUrl(prefs);
   runApp(MyApp(prefs));
 }
