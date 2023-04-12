@@ -38,7 +38,7 @@ class H4PayInterceptor extends Interceptor {
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) {
     print(
-        'ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path}');
+        'ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path} | ${err.response?.data}');
     return super.onError(err, handler);
   }
 }

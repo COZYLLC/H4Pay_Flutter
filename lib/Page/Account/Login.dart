@@ -65,6 +65,7 @@ class LoginPageState extends State<LoginPage> {
                           separator: "-",
                         )
                       ],
+                      isNumber: true,
                     ),
                     H4PayInput.done(
                       isPassword: true,

@@ -17,6 +17,7 @@ import 'package:new_version/new_version.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:uni_links/uni_links.dart';
 
 class EmptyAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
@@ -43,11 +44,38 @@ class IntroPage extends StatefulWidget {
 class IntroPageState extends State<IntroPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _ipController = TextEditingController();
+
+  void processLink() async {
+    final String? initialLink = await getInitialLink();
+    // ScaffoldMessenger.of(context)
+    // .showSnackBar(SnackBar(content: Text(initialLink ?? "null")));
+
+    final H4PayUser? user = await userFromStorageAndVerify();
+    final SharedPreferences _prefs = await SharedPreferences.getInstance();
+    if (user != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MyHomePage(
+            prefs: _prefs,
+          ),
+        ),
+      );
+    }
+    final Widget? route = await initUniLinks(context);
+    if (route != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => route),
+      );
+      return;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
 
-    if (!kIsWeb) registerListener(context);
     connectionCheck().then((connected) async {
       if (!connected) {
         if (isTestMode) {
@@ -94,30 +122,7 @@ class IntroPageState extends State<IntroPage> {
         }
       } else {
         checkUpdate();
-        if (!kIsWeb) {
-          final Widget? route = await initUniLinks(context);
-          if (route != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => route),
-            );
-            return;
-          }
-        }
-
-        final H4PayUser? user = await userFromStorageAndVerify();
-        debugPrint("hi");
-        final SharedPreferences _prefs = await SharedPreferences.getInstance();
-        if (user != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MyHomePage(
-                prefs: _prefs,
-              ),
-            ),
-          );
-        }
+        WidgetsBinding.instance.addPostFrameCallback((_) => processLink());
       }
     });
   }
