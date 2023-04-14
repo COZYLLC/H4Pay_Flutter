@@ -40,12 +40,14 @@ dependencies:
   in_app_update: ^3.0.0
   retrofit: ^3.0.1+1
   device_info_plus: ^3.2.1
-  kakao_flutter_sdk: ^1.4.1
-  kakao_flutter_sdk_share: ^1.4.1 # 카카오톡 공유
+  kakao_flutter_sdk: ^1.4.2
+  kakao_flutter_sdk_share: ^1.4.2 # 카카오톡 공유
   firebase_core: ^2.9.0
   firebase_analytics: ^10.2.0
   firebase_remote_config: ^4.0.0
-
+dependency_overrides:
+  kakao_flutter_sdk_common:
+    git: https://github.com/KimWash/kakao_flutter_sdk_common
 dev_dependencies:
   flutter_test:
     sdk: flutter

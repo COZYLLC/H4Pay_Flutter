@@ -6,7 +6,7 @@ import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/Page/Error.dart';
 import 'package:h4pay/Page/Purchase/PurchaseDetail.dart';
 import 'package:h4pay/Util/Dialog.dart';
-import 'package:h4pay/Util/Wakelock.dart';
+
 import 'package:h4pay/Page/Voucher/VoucherView.dart';
 import 'package:h4pay/main.dart';
 import 'package:h4pay/model/User.dart';
@@ -83,40 +83,7 @@ Future<Widget?> appLinkToRoute(H4PayRoute route) async {
   return null;
 }
 
-registerListener(context) {
-  if (!kIsWeb) {
-    debugPrint("registering listener");
-    StreamSubscription? _sub;
-    _sub = linkStream.listen((String? link) async {
-      debugPrint("listener works@");
-      if (link == null) throw Error();
-      final H4PayRoute? route = H4PayRoute.parseUri(link);
-      if (route == null) throw Error();
-      final Widget? routeToNavigate = await appLinkToRoute(route);
-      if (routeToNavigate != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => routeToNavigate),
-        ).then(disableWakeLock);
-      } else {
-        throw Error();
-      }
-    }, onError: (err) {
-      // Handle exception by warning the user their action did not succeed
-      showSnackbar(
-        context,
-        "앱 링크를 받았지만 열지 못했어요: ${err.toString()}",
-        Colors.red,
-        Duration(seconds: 1),
-      );
-    });
-  }
-}
-
 Future<Widget?> initUniLinks(BuildContext context) async {
-  // Platform messages may fail, so we use a try/catch PlatformException.
-  registerListener(context);
-  debugPrint("registering listener");
   try {
     final String? initialLink = await getInitialLink();
     debugPrint("$initialLink");

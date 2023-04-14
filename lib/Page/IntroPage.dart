@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:h4pay/Util/Wakelock.dart';
 
 class EmptyAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
@@ -44,6 +46,36 @@ class IntroPage extends StatefulWidget {
 class IntroPageState extends State<IntroPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _ipController = TextEditingController();
+
+  StreamSubscription? _sub;
+  registerListener(context) {
+    if (!kIsWeb) {
+      debugPrint("registering listener");
+      _sub = linkStream.listen((String? link) async {
+        debugPrint("listener works@");
+        if (link == null) throw Error();
+        final H4PayRoute? route = H4PayRoute.parseUri(link);
+        if (route == null) throw Error();
+        final Widget? routeToNavigate = await appLinkToRoute(route);
+        if (routeToNavigate != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => routeToNavigate),
+          ).then(disableWakeLock);
+        } else {
+          throw Error();
+        }
+      }, onError: (err) {
+        // Handle exception by warning the user their action did not succeed
+        showSnackbar(
+          context,
+          "앱 링크를 받았지만 열지 못했어요: ${err.toString()}",
+          Colors.red,
+          Duration(seconds: 1),
+        );
+      });
+    }
+  }
 
   void processLink() async {
     final String? initialLink = await getInitialLink();
@@ -73,8 +105,16 @@ class IntroPageState extends State<IntroPage> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _sub?.cancel();
+  }
+
+  @override
   void initState() {
     super.initState();
+    registerListener(context);
 
     connectionCheck().then((connected) async {
       if (!connected) {

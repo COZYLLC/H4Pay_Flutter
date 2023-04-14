@@ -191,12 +191,12 @@ class PaymentSuccessPageState extends State<PaymentSuccessPage>
               "message": tempPurchase.reason,
               "orderId": gift.orderId,
             };
+            await service.createKakaoGift(gift.toJson());
             Uri uri = await ShareClient.instance.shareCustom(
               templateId: templateId,
               templateArgs: templateArgs,
             );
             await ShareClient.instance.launchKakaoTalk(uri);
-            await service.createKakaoGift(gift.toJson());
             _prefs!.setString('cart', json.encode({}));
             return gift;
           } catch (e) {

@@ -63,8 +63,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '420160555392',
     projectId: 'h4pay-0921',
     storageBucket: 'h4pay-0921.appspot.com',
-    androidClientId: '420160555392-pffnprdk524i4u3l5943si7g6k84j2sd.apps.googleusercontent.com',
-    iosClientId: '420160555392-h3ka9p6vo7qu93pslabjqpagb88ttjv6.apps.googleusercontent.com',
+    androidClientId:
+        '420160555392-pffnprdk524i4u3l5943si7g6k84j2sd.apps.googleusercontent.com',
+    iosClientId:
+        '420160555392-h3ka9p6vo7qu93pslabjqpagb88ttjv6.apps.googleusercontent.com',
     iosBundleId: 'com.cozyllc.h4pay',
   );
 }

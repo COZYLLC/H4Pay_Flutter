@@ -745,12 +745,13 @@ packages:
     source: hosted
     version: "1.4.2"
   kakao_flutter_sdk_common:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: kakao_flutter_sdk_common
-      sha256: "76eccd72a4e94db9c6be69b670477528d958d2bf38f50a2158dfd306640c7abf"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: "9f060b84e91c0fc660b525ae2475b860a1313801"
+      url: "https://github.com/KimWash/kakao_flutter_sdk_common"
+    source: git
     version: "1.4.2"
   kakao_flutter_sdk_friend:
     dependency: transitive
