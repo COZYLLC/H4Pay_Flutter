@@ -6,3 +6,4 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 String? apiUrl;
 bool isTestMode = dotenv.env["TEST_MODE"] == "TRUE";
 final GlobalKey<NavigatorState> navigatorKey = new GlobalKey<NavigatorState>();
+ 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:h4pay/Util/Dialog.dart';
 import 'package:h4pay/Network/H4PayService.dart';
 import 'package:h4pay/components/Button.dart';
@@ -139,7 +140,7 @@ class H4PayInfoPageState extends State<H4PayInfoPage> {
     }
 
     School school = (await service.getSchools(id: user.schoolId))[0];
-    return [
+    List<InfoButton> buttons = [
       InfoButton.none("버전: $version"),
       InfoButton.dialog(
         "유한책임회사 코지 사업자 정보",
@@ -213,13 +214,15 @@ class H4PayInfoPageState extends State<H4PayInfoPage> {
         parentContext: context,
         withButton: true,
       ),
-      InfoButton.dialog(
+    ];
+    if (dotenv.env['TEST_MODE'] == "true")
+      buttons.add(InfoButton.dialog(
         "IP주소 변경",
         page: IpChangerDialog(context),
         parentContext: context,
         onClick: () {},
-      )
-    ];
+      ));
+    return buttons;
   }
 
   @override
