@@ -8,9 +8,7 @@ final ThemeData lightTheme = ThemeData(
     // Colors that are not relevant to AppBar in DARK mode:
     primary: Colors.grey,
     onPrimary: Colors.grey,
-    primaryVariant: Colors.grey,
     secondary: Colors.grey,
-    secondaryVariant: Colors.grey,
     onSecondary: Colors.grey,
     background: Colors.grey,
     onBackground: Colors.grey,
@@ -27,9 +25,7 @@ final ThemeData darkTheme = ThemeData(
     // Colors that are not relevant to AppBar in DARK mode:
     primary: Colors.grey,
     onPrimary: Colors.grey,
-    primaryVariant: Colors.grey,
     secondary: Colors.grey,
-    secondaryVariant: Colors.grey,
     onSecondary: Colors.grey,
     background: Colors.grey,
     onBackground: Colors.grey,

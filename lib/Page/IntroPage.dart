@@ -81,19 +81,23 @@ class IntroPageState extends State<IntroPage> {
     final String? initialLink = await getInitialLink();
     // ScaffoldMessenger.of(context)
     // .showSnackBar(SnackBar(content: Text(initialLink ?? "null")));
-
-    final H4PayUser? user = await userFromStorageAndVerify();
-    final SharedPreferences _prefs = await SharedPreferences.getInstance();
-    if (user != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MyHomePage(
-            prefs: _prefs,
+    try {
+      final H4PayUser? user = await userFromStorageAndVerify();
+      final SharedPreferences _prefs = await SharedPreferences.getInstance();
+      if (user != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MyHomePage(
+              prefs: _prefs,
+            ),
           ),
-        ),
-      );
+        );
+      }
+    } catch (e) {
+      print(e);
     }
+
     final Widget? route = await initUniLinks(context);
     if (route != null) {
       Navigator.push(
